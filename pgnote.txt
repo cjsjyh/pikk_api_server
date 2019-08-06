@@ -1,0 +1,98 @@
+//----------------------------
+        PSQL COMMAND
+//----------------------------
+\list               << show all db
+\du                 << show all users
+\c [database name]  << select database
+\dt                 << show all tables
+SHOW data_directory;
+
+//----------------------------
+          SCHEMA
+//----------------------------
+
+CREATE TYPE CLOTHES_TYPE AS ENUM ('TShirt','BlueJeans');
+
+CREATE TABLE ACCOUNT(
+        id SERIAL PRIMARY KEY,
+        username VARCHAR (50) UNIQUE NOT NULL,
+        password VARCHAR (50) NOT NULL,
+        created_on TIMESTAMP NOT NULL,
+        last_login TIMESTAMP
+);
+
+CREATE TABLE USER_INFO(
+        id SERIAL PRIMARY KEY,
+        FK_account_id INTEGER REFERENCES ACCOUNT(id) ON DELETE CASCADE,
+        first_name VARCHAR (50) NOT NULL,
+        last_name VARCHAR (50) NOT NULL,
+        phone_num VARCHAR (50) NOT NULL,
+        email VARCHAR (200) UNIQUE NOT NULL,
+        address VARCHAR(355) NOT NULL,
+        age INTEGER,
+        height INTEGER,
+        weight INTEGER
+);
+
+CREATE TABLE CHANNEL(
+        id SERIAL PRIMARY KEY,
+        FK_account_id INTEGER REFERENCES ACCOUNT(id) ON DELETE CASCADE
+
+);
+
+CREATE TABLE CHANNEL_FOLLOWER(
+        id INTEGER REFERENCES ACCOUNT(id) ON DELETE CASCADE,
+        FK_channel_id INTEGER REFERENCES CHANNEL(id) ON DELETE CASCADE,
+        PRIMARY KEY(FK_ACC_account_id, FK_CNL_channel_id)
+);
+
+CREATE TABLE ITEM(
+        id SERIAL PRIMARY KEY,
+        item_name VARCHAR (250) NOT NULL,
+        item_type CLOTHES_TYPE NOT NULL,
+        image_url VARCHAR (250),
+);
+
+CREATE TABLE ITEM_PURCHASE(
+        id SERIAL PRIMARY KEY,
+        FK_account_id INTEGER REFERENCES ACCOUNT(id) ON DELETE CASCADE,
+        FK_item_id INTEGER REFERENCES ITEM(id) ON DELETE CASCADE,
+);
+
+CREATE TABLE RECOMMEND_POST(
+        id SERIAL PRIMARY KEY,
+        FK_account_id INTEGER REFERENCES ACCOUNT(ID) On DELETE CASCADE,
+        title VARCHAR (200) NOT NULL,
+        content VARCHAR (200),
+        time TIMESTAMP,
+        view_count INTEGER,
+);
+
+CREATE TABLE POST_ITEM(
+        
+)
+
+CREATE TABLE ITEM_REVIEW(
+        id SERIAL PRIMARY KEY,
+        FK_item_id INTEGER REFERENCES ITEM(id) ON DELETE CASCADE,
+        FK_post_id INTEGER REFERENCES RECOMMEND_POST(id) ON DELETE CASCADE,
+
+);
+
+//----------------------------
+          START
+//----------------------------
+sudo -u postgres -i
+psql
+
+pg_dump -s [database name] > [output file name]
+            // directory : /var/lib/postgresql
+
+//-----------------------------
+          USERS
+//-----------------------------
+root  |  password
+
+
+
+https://www.tutorialspoint.com/postgresql/

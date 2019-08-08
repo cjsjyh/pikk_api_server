@@ -5,6 +5,7 @@ import { createServer } from "http"
 import compression from "compression"
 import cors from "cors"
 import schema from "./schema"
+
 const app = express()
 const server = new ApolloServer({
   schema,
@@ -18,6 +19,6 @@ httpServer.listen(
   { port: 3000 },
   (): void =>
     console.log(
-      `\n🚀      GraphQL is now running on http://localhost:3000/graphql`
+      `GraphQL is now running on http://localhost:3000/graphql`
     )
 )

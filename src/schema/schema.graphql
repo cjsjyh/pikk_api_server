@@ -1,3 +1,15 @@
 type Query {
   helloWorld: String!
 }
+
+type Mutation {
+  helloWorld: String!
+}
+
+type Subscription {
+  helloWorld: String!
+}
+
+type Type {
+  Photo: String!
+}

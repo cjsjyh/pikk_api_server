@@ -2,3 +2,5 @@ node_modules/
 dist/
 .git/
 fashiondogam_api.pem
+credentials.csv
+config.json

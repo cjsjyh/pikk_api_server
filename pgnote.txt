@@ -18,6 +18,8 @@ psql
 pg_dump -s [database name] > [output file name]
             // directory : /var/lib/postgresql
 
+psql -h $RDS_HOST -p $RDS_PORT -U $RDS_USERNAME postgres
+
 //-----------------------------
           USERS
 //-----------------------------

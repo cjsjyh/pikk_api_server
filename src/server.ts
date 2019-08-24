@@ -31,6 +31,23 @@ const server = new ApolloServer({
   validationRules: [depthLimit(7)]
 })
 
+const { Client } = require("pg")
+const client = new Client({
+  user: process.env.RDS_USERNAME,
+  host: process.env.RDS_HOST,
+  database: "postgres",
+  password: process.env.RDS_PASSWORD,
+  port: process.env.RDS_PORT
+})
+client.connect()
+client.query(
+  'SELECT * FROM "USER_CONFIDENTIAL"',
+  (err: Error, res: Response) => {
+    console.log(err, res)
+    client.end()
+  }
+)
+
 //Add graphql endpoint to Express
 server.applyMiddleware({ app, path: "/graphql" })
 
@@ -54,5 +71,6 @@ app.get("/UploadImage", async (req, res) => {
 const httpServer = createServer(app)
 httpServer.listen(
   { port: 3000 },
-  (): void => console.log(`GraphQL is now running on http://localhost:3000/graphql`)
+  (): void =>
+    console.log(`GraphQL is now running on http://localhost:3000/graphql`)
 )

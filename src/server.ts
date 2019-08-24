@@ -35,14 +35,7 @@ const server = new ApolloServer({
   validationRules: [depthLimit(7)]
 })
 
-const { Client } = require("pg")
-const client = new Client({
-  user: process.env.RDS_USERNAME,
-  host: process.env.RDS_HOST,
-  database: "postgres",
-  password: process.env.RDS_PASSWORD,
-  port: process.env.RDS_PORT
-})
+var { client } = require("./database/connectionPool")
 client.connect()
 client.query(
   'SELECT * FROM "USER_CONFIDENTIAL"',

@@ -12,7 +12,7 @@
 // export default Query
 
 module.exports = {
-  helloWorld(_: void, args: void): string {
+  helloWorld(parent: void, args: void): string {
     return `👋 Hello world! 👋`
   }
 }

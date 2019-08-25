@@ -23,6 +23,8 @@ const S3 = new AWS.S3({
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
 import * as fs from "fs"
+import { QueryResult, PoolClient } from "pg"
+//import { PoolClient, QueryResult, Pool } from "pg"
 
 //Create Express Server
 const app = express()
@@ -35,20 +37,38 @@ const server = new ApolloServer({
   validationRules: [depthLimit(7)]
 })
 
-var { client } = require("./database/connectionPool")
-client.connect()
-client.query(
-  'SELECT * FROM "USER_CONFIDENTIAL"',
-  (err: Error, res: Response) => {
-    console.log(err, res)
-    client.end()
-  }
-)
+var { pool } = require("./database/connectionPool")
 
+pool.connect().then((client: PoolClient) => {
+  client
+    .query('SELECT * FROM "USER_CONFIDENTIAL"')
+    .then((res: QueryResult) => {
+      client.release()
+      console.log(res)
+    })
+    .catch((err:Error) => {
+      client.release()
+      console.log(err.stack)
+    })
+})
+/*
+Pool.connect((err, client: PoolClient, release: release) => {
+  if (err) {
+    return console.error("Error acquiring client", err.stack)
+  }
+  client.query(
+    'SELECT * FROM "USER_CONFIDENTIAL"',
+    (err: Error, res: QueryResult) => {
+      console.log(err, res)
+      client.end()
+    }
+  )
+})
+*/
 //Add graphql endpoint to Express
 server.applyMiddleware({ app, path: "/graphql" })
 
-app.get("/UploadImage", async (req, res) => {
+app.get("/UploadImage", async (req: express.Request, res: express.Response) => {
   var param = {
     Bucket: "fashiondogam-images",
     Key: "image/" + "testimage.jpg",

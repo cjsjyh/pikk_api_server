@@ -5,6 +5,7 @@ import { createServer } from "http"
 import compression from "compression"
 import cors from "cors"
 const path = require("path")
+require('dotenv').config()
 
 //IMPORT GRAPHQL RELATED PACKAGES
 import depthLimit from "graphql-depth-limit"

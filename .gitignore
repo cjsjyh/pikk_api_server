@@ -4,3 +4,4 @@ dist/
 fashiondogam_api.pem
 credentials.csv
 config.json
+*.env

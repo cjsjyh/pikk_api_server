@@ -1,15 +1,17 @@
+type UserCredential {
+    username: String!
+    password: String!
+}
+
 type Query {
   helloWorld: String!
 }
 
 type Mutation {
   helloWorld: String!
+  RegisterUser(username:String! password:String!): Boolean!
 }
 
 type Subscription {
   helloWorld: String!
-}
-
-type Type {
-  Photo: String!
 }

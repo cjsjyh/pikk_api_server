@@ -54,7 +54,6 @@ module.exports = {
           args.address
         ]
       )
-      client.release()
     } catch (e) {
       console.log("[Error] Failed to Insert into User_Info")
       client.release()
@@ -63,9 +62,11 @@ module.exports = {
 
     try {
       await client.query('INSERT INTO "CHANNEL"("FK_accountId") VALUES ($1)', [id])
+      client.release()
       return true
     } catch (e) {
       console.log("[Error] Failed to Insert into Channel")
+      client.release()
       return false
     }
   },
@@ -95,13 +96,22 @@ module.exports = {
         'INSERT INTO "ITEM"("name","brand","originalPrice","currentPrice","itemType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)',
         [args.name, args.brand, args.originalPrice, args.currentPrice, args.itemType, itemImgUrl]
       )
+      client.release()
       return true
     } catch (e) {
       console.log("[Error] Failed to Insert into ITEM")
-      console.log(e)
+      client.release()
       return false
     }
+  },
 
-    return true
+  PostChannelPost: async (parent: void, args: ItemInfo): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      console.log("[Error] Failed Connecting to DB")
+      return false
+    }
   }
 }

@@ -1,14 +1,8 @@
 //https://www.apollographql.com/docs/graphql-tools/resolvers/
 
-import { QueryResult, PoolClient } from "pg"
-//import { UserCredential } from "./Type"
-
+import { UserInfo } from "./Type"
+import { addCatchUndefinedToSchema } from "graphql-tools";
 const { pool } = require("../database/connectionPool")
-
-export type UserCredential = {
-    username: string
-    password: string
-}
 
 
 module.exports = {
@@ -16,43 +10,53 @@ module.exports = {
       return `👋 Hello world! 👋`
     },
     
-    // RegisterUser(parent: Object, args: UserCredential): Boolean {
-    //     let errFlag = false;
-    //     pool.connect().then((client: PoolClient)=> {
-    //         client
-    //         .query('INSERT INTO "USER_CONFIDENTIAL"("username","password") VALUES ($1,$2)',[args.username, args.password])
-    //         .then((res: QueryResult) => {
-    //             client.release()
-    //             console.log("Query Success!")
-    //             console.log(res)
-    //             errFlag = true;
-    //         })
-    //         .catch((err:Error) => {
-    //             client.release()
-    //             console.log("[Error] Failed to Query to DB")
-    //             console.log(err.stack)
-    //             errFlag = false;
-    //         })
-    //     })
-    //     .catch((err:Error) => {
-    //         console.log("[Error] Failed to Connect to DB")
-    //         console.log(err.stack)
-    //         errFlag = false;
-    //     })
-    //     console.log("Returning: " + errFlag)
-    //     return errFlag;
-    // },
-    
-    RegisterUser: async (parent: Object, args: UserCredential): Promise<Boolean> => {
+    RegisterUser: async (parent: Object, args: UserInfo): Promise<Boolean> => {
+        //Make Connection
+        let client;
         try {
-            const client = await pool.connect();
-            const rows = await client.query('INSERT INTO "USER_CONFIDENTIAL"("username","password") VALUES ($1,$2)',[args.username, args.password]);
-            client.release()
-            console.log(rows)
-            return true;
+            client = await pool.connect();
         } catch(e){
-            console.log("[Error] Failed Pushing to DB")
+            console.log("[Error] Failed Connecting to DB")
+            return false
+        }
+
+        //Make UserCredential
+        let id;
+        try {
+            let qResult = await client.query('INSERT INTO "USER_CONFIDENTIAL"("username","password") VALUES ($1,$2) RETURNING *',[args.username, args.password])
+            id = qResult.rows[0].id;
+        }catch(e){
+            console.log("[Error] Failed to Insert into USER_CONFIDENTIAL")
+            client.release()
+            return false;
+        }
+
+        //Make UserInfo
+        try {
+            let profileImgUrl = null
+            if(args.hasOwnProperty('profileImg'))
+            {
+                //Upload Image and retrieve URL
+            }
+            let qResult = await client.query('INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImg","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
+                    [id,args.name,args.email,args.age,args.height,args.weight,profileImgUrl,args.phoneNum,args.address])
+            console.log(qResult);
+            client.release()
+        } catch(e) {
+            console.log("[Error] Failed to Insert into User_Info")
+            console.log(e);
+            client.release()
+            return false
+        }
+
+        try {
+            let qResult = await client.query('INSERT INTO "CHANNEL"("FK_accountId") VALUES ($1)',[id])
+            return true;
+        }
+        catch(e){
             return false;
         }
     }
+
+
   }

@@ -8,7 +8,7 @@ const pool = new Pool({
 
   max: 8,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000
+  connectionTimeoutMillis: 10000
 })
 
 module.exports = {

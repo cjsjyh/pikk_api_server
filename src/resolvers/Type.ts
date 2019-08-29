@@ -19,3 +19,10 @@ export type ItemInfo = {
   itemType: string
   itemImg: File
 }
+
+export type PostInfo = {
+  accountId: number
+  channelId: number
+  title: string
+  content: string
+}

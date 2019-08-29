@@ -1,14 +1,9 @@
 //https://www.apollographql.com/docs/graphql-tools/resolvers/
 
-import { UserInfo, ItemInfo } from "./Type"
-import { addCatchUndefinedToSchema } from "graphql-tools"
+import { UserInfo, ItemInfo, PostInfo } from "./Type"
 const { pool } = require("../database/connectionPool")
 
 module.exports = {
-  helloWorld(parent: void, args: void): string {
-    return `👋 Hello world! 👋`
-  },
-
   RegisterUser: async (parent: Object, args: UserInfo): Promise<Boolean> => {
     //Make Connection
     let client
@@ -28,8 +23,9 @@ module.exports = {
       )
       id = qResult.rows[0].id
     } catch (e) {
-      console.log("[Error] Failed to Insert into USER_CONFIDENTIAL")
       client.release()
+      console.log("[Error] Failed to Insert into USER_CONFIDENTIAL")
+      console.log(e)
       return false
     }
 
@@ -55,8 +51,11 @@ module.exports = {
         ]
       )
     } catch (e) {
-      console.log("[Error] Failed to Insert into User_Info")
+      //Delete Inserted Row
+      await client.query('DELETE FROM "USER_CONFIDENTIAL" WHERE id=$1', [id])
       client.release()
+      console.log("[Error] Failed to Insert into User_Info")
+      console.log(e)
       return false
     }
 
@@ -65,8 +64,9 @@ module.exports = {
       client.release()
       return true
     } catch (e) {
-      console.log("[Error] Failed to Insert into Channel")
       client.release()
+      console.log("[Error] Failed to Insert into Channel")
+      console.log(e)
       return false
     }
   },
@@ -99,18 +99,34 @@ module.exports = {
       client.release()
       return true
     } catch (e) {
-      console.log("[Error] Failed to Insert into ITEM")
       client.release()
+      console.log("[Error] Failed to Insert into ITEM")
+      console.log(e)
       return false
     }
   },
 
-  PostChannelPost: async (parent: void, args: ItemInfo): Promise<Boolean> => {
+  PostChannelPost: async (parent: void, args: PostInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()
     } catch (e) {
       console.log("[Error] Failed Connecting to DB")
+      return false
+    }
+
+    try {
+      await client.query(
+        'INSERT INTO "CHANNEL_POST"("FK_accountId","FK_channelId","title","content") VALUES ($1,$2,$3,$4)',
+        [args.accountId, args.channelId, args.title, args.content]
+      )
+      client.release()
+
+      return true
+    } catch (e) {
+      client.release()
+      console.log("[Error] Failed to Insert into CHANNEL_POST")
+      console.log(e)
       return false
     }
   }

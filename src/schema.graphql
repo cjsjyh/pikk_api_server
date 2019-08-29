@@ -10,6 +10,9 @@ type Query {
 type Mutation {
   helloWorld: String!
 
+  """
+  [true] : DB save successful  [false] : DB save unsuccessful
+  """
   RegisterUser(
     username: String!
     password: String!
@@ -23,6 +26,9 @@ type Mutation {
     address: String
   ): Boolean!
 
+  """
+  [true] : DB save successful  [false] : DB save unsuccessful
+  """
   RegisterItem(
     name: String!
     brand: String!
@@ -32,7 +38,10 @@ type Mutation {
     itemImage: Upload
   ): Boolean!
 
-  PostChannelPost(
+  """
+  [true] : DB save successful [false] : DB save unsuccessful
+  """
+  PostChannelArticle(
     accountId: Int!
     channelId: Int!
     title: String!
@@ -40,15 +49,25 @@ type Mutation {
     img: [Upload]
   ): Boolean!
 
-  PostRecommendPost(
+  """
+  postTag and styleTag have to be exactly the same as ENUM saved in DB(case Sensitive)
+  [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  PostRecommendArticle(
     accountId: Int!
     title: String!
     content: String!
+    "Need to Match ENUM in DB EXACTLY"
     postTag: String!
+    "Need to Match ENUM in DB EXACTLY"
     styleTag: String!
     img: Upload
   ): Boolean!
 
+  """
+  Toggles Account's Follow status on Channel
+  [-1] : Error [0] : Unfollowed [1] : Followed
+  """
   FollowChannel(accountId: Int!, channelId: Int!): Int!
 }
 

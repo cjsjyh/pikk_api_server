@@ -106,7 +106,7 @@ module.exports = {
     }
   },
 
-  PostChannelPost: async (parent: void, args: CustomType.PostInfo): Promise<Boolean> => {
+  PostChannelArticle: async (parent: void, args: CustomType.PostInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()
@@ -131,7 +131,7 @@ module.exports = {
     }
   },
 
-  PostRecommendPost: async (parent: void, args: CustomType.PostInfo): Promise<Boolean> => {
+  PostRecommendArticle: async (parent: void, args: CustomType.PostInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()

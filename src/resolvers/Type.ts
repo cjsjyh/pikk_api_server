@@ -16,6 +16,11 @@ export type FollowChannelInfo = {
   accountId: number
 }
 
+export type FollowPostInfo = {
+  postId: number
+  accountId: number
+}
+
 export type ItemInfo = {
   name: string
   brand: string

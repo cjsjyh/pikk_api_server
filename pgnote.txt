@@ -28,21 +28,21 @@ root  |  password
 //----------------------------
           FUNCTION
 //----------------------------
-    CREATE OR REPLACE FUNCTION toggleChannelFollow(
+    CREATE OR REPLACE FUNCTION toggleRecommendPostFollow(
         account_id NUMERIC, 
-        channel_id NUMERIC
+        post_id NUMERIC
     ) 
     RETURNS NUMERIC AS $$
     
     BEGIN
     
-        perform FROM "CHANNEL_FOLLOWER" WHERE "FK_channelId" = channel_id and "FK_accountId" = account_id;
+        perform FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_postId" = post_id and "FK_accountId" = account_id;
         IF NOT FOUND THEN
-            INSERT INTO "CHANNEL_FOLLOWER"("FK_accountId", "FK_channelId") VALUES(account_id,channel_id);
+            INSERT INTO "RECOMMEND_POST_FOLLOWER"("FK_accountId", "FK_postId") VALUES(account_id,post_id);
             RETURN 1;
            
         ELSE
-             DELETE FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId" = account_id and "FK_channelId" = channel_id;
+             DELETE FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_accountId" = account_id and "FK_postId" = post_id;
             RETURN 0;
         END IF;
     END;     
@@ -84,10 +84,10 @@ CREATE TABLE "CHANNEL"(
 
 );
 
-CREATE TABLE "CHANNEL_FOLLOWER"(
+CREATE TABLE "RECOMMEND_POST_FOLLOWER"(
         "FK_account_id" INTEGER REFERENCES "ACCOUNT"("id") ON DELETE CASCADE,
-        "FK_channel_id" INTEGER REFERENCES "CHANNEL"("id") ON DELETE CASCADE,
-        PRIMARY KEY("FK_account_id", "FK_channel_id")
+        "FK_post_id" INTEGER REFERENCES "CHANNEL"("id") ON DELETE CASCADE,
+        PRIMARY KEY("FK_account_id", "FK_post_id")
 );
 
 //----------------------------------------
@@ -153,7 +153,7 @@ CREATE TABLE "USER_ITEM_IMAGE"(
 
 CREATE TABLE "CHANNEL_POST"(
         "id" SERIAL PRIMARY KEY,
-        "FK_channel_id" INTEGER REFERENCES "CHANNEL"("id") ON DELETE CASCADE,
+        "FK_post_id" INTEGER REFERENCES "CHANNEL"("id") ON DELETE CASCADE,
         "FK_account_id" INTEGER REFERENCES "ACCOUNT"("id") ON DELETE CASCADE,
         "title" VARCHAR (200) NOT NULL,
         "content" TEXT NOT NULL,
@@ -169,7 +169,7 @@ CREATE TABLE "CHANNEL_POST_COMMENT"(
         "time" TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE "CHANNEL_POST_FOLLOWER"(
+CREATE TABLE "RECOMMEND_POST_FOLLOWER"(
         "FK_account_id" INTEGER REFERENCES "ACCOUNT"("id") ON DELETE CASCADE,
         "FK_post_id" INTEGER REFERENCES "CHANNEL_POST"("id") ON DELETE CASCADE,
         PRIMARY KEY("FK_account_id","FK_post_id")

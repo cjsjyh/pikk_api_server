@@ -1,8 +1,8 @@
 scalar Upload
 
 type UserCredential {
-    username: String!
-    password: String!
+  username: String!
+  password: String!
 }
 
 type Query {
@@ -11,14 +11,45 @@ type Query {
 
 type Mutation {
   helloWorld: String!
-  
-  RegisterUser(username:String!, password:String!, name: String!, email:String!, 
-              age:Int!, height:Int!, weight:Int!, profileImg:Upload, phoneNum:String, address:String): Boolean!
 
-  RegisterItem(name: String!, brand: String!, originalPrice: Int!, 
-              currentPrice: Int, itemType: String!, itemImage: Upload): Boolean!
+  RegisterUser(
+    username: String!
+    password: String!
+    name: String!
+    email: String!
+    age: Int!
+    height: Int!
+    weight: Int!
+    profileImg: Upload
+    phoneNum: String
+    address: String
+  ): Boolean!
 
-  PostChannelPost(accountId: Int!, channelId: Int!, title: String!, content: String!): Boolean!
+  RegisterItem(
+    name: String!
+    brand: String!
+    originalPrice: Int!
+    currentPrice: Int
+    itemType: String!
+    itemImage: Upload
+  ): Boolean!
+
+  PostChannelPost(
+    accountId: Int!
+    channelId: Int!
+    title: String!
+    content: String!
+    img: [Upload]
+  ): Boolean!
+
+  PostRecommendPost(
+    accountId: Int!
+    title: String!
+    content: String!
+    postTag: String!
+    styleTag: String!
+    img: Upload
+  ): Boolean!
 }
 
 type Subscription {

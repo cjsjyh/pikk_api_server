@@ -25,4 +25,7 @@ export type PostInfo = {
   channelId: number
   title: string
   content: string
+  postTag: string
+  styleTag: string
+  img: [File]
 }

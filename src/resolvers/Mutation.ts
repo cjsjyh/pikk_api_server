@@ -129,5 +129,35 @@ module.exports = {
       console.log(e)
       return false
     }
+  },
+
+  PostRecommendPost: async (parent: void, args: PostInfo): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      console.log("[Error] Failed Connecting to DB")
+      return false
+    }
+
+    let itemImgUrl = null
+    if (args.hasOwnProperty("img")) {
+      //Upload Image and retrieve URL
+    }
+
+    try {
+      await client.query(
+        'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postTag","styleTag","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)',
+        [args.accountId, args.title, args.content, args.postTag, args.styleTag, itemImgUrl]
+      )
+      client.release()
+
+      return true
+    } catch (e) {
+      client.release()
+      console.log("[Error] Failed to Insert into RECOMMEND_POST")
+      console.log(e)
+      return false
+    }
   }
 }

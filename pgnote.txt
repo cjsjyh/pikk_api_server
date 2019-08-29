@@ -25,6 +25,29 @@ psql -h $RDS_HOST -p $RDS_PORT -U $RDS_USERNAME postgres
 //-----------------------------
 root  |  password
 
+//----------------------------
+          FUNCTION
+//----------------------------
+    CREATE OR REPLACE FUNCTION toggleChannelFollow(
+        account_id NUMERIC, 
+        channel_id NUMERIC
+    ) 
+    RETURNS NUMERIC AS $$
+    
+    BEGIN
+    
+        perform FROM "CHANNEL_FOLLOWER" WHERE "FK_channelId" = channel_id and "FK_accountId" = account_id;
+        IF NOT FOUND THEN
+            INSERT INTO "CHANNEL_FOLLOWER"("FK_accountId", "FK_channelId") VALUES(account_id,channel_id);
+            RETURN 1;
+           
+        ELSE
+             DELETE FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId" = account_id and "FK_channelId" = channel_id;
+            RETURN 0;
+        END IF;
+    END;     
+    $$
+    LANGUAGE plpgsql;
 
 //----------------------------
           SCHEMA

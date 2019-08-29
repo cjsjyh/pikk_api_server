@@ -11,6 +11,11 @@ export type UserInfo = {
   address: string
 }
 
+export type FollowChannelInfo = {
+  channelId: number
+  accountId: number
+}
+
 export type ItemInfo = {
   name: string
   brand: string

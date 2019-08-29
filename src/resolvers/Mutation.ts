@@ -1,10 +1,10 @@
 //https://www.apollographql.com/docs/graphql-tools/resolvers/
 
-import { UserInfo, ItemInfo, PostInfo } from "./Type"
+import * as CustomType from "./Type"
 const { pool } = require("../database/connectionPool")
 
 module.exports = {
-  RegisterUser: async (parent: Object, args: UserInfo): Promise<Boolean> => {
+  RegisterUser: async (parent: Object, args: CustomType.UserInfo): Promise<Boolean> => {
     //Make Connection
     let client
     try {
@@ -71,7 +71,7 @@ module.exports = {
     }
   },
 
-  RegisterItem: async (parent: void, args: ItemInfo): Promise<Boolean> => {
+  RegisterItem: async (parent: void, args: CustomType.ItemInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()
@@ -106,7 +106,7 @@ module.exports = {
     }
   },
 
-  PostChannelPost: async (parent: void, args: PostInfo): Promise<Boolean> => {
+  PostChannelPost: async (parent: void, args: CustomType.PostInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()
@@ -131,7 +131,7 @@ module.exports = {
     }
   },
 
-  PostRecommendPost: async (parent: void, args: PostInfo): Promise<Boolean> => {
+  PostRecommendPost: async (parent: void, args: CustomType.PostInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()
@@ -151,13 +151,37 @@ module.exports = {
         [args.accountId, args.title, args.content, args.postTag, args.styleTag, itemImgUrl]
       )
       client.release()
-
       return true
     } catch (e) {
       client.release()
       console.log("[Error] Failed to Insert into RECOMMEND_POST")
       console.log(e)
       return false
+    }
+  },
+
+  FollowChannel: async (parent: void, args: CustomType.FollowChannelInfo): Promise<number> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      console.log("[Error] Failed Connecting to DB")
+      return -1
+    }
+
+    try {
+      let result = await client.query("SELECT toggleChannelFollow($1,$2)", [
+        args.accountId,
+        args.channelId
+      ])
+      client.release()
+      result = result.rows[0].togglechannelfollow
+      return result
+    } catch (e) {
+      client.release()
+      console.log("[Error] Failed to Insert into CHANNEL_FOLLOWER")
+      console.log(e)
+      return -1
     }
   }
 }

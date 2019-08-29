@@ -1,11 +1,9 @@
 scalar Upload
 
-type UserCredential {
-  username: String!
-  password: String!
-}
-
 type Query {
+  """
+  TEST!!!
+  """
   helloWorld: String!
 }
 
@@ -50,6 +48,8 @@ type Mutation {
     styleTag: String!
     img: Upload
   ): Boolean!
+
+  FollowChannel(accountId: Int!, channelId: Int!): Int!
 }
 
 type Subscription {

@@ -1,0 +1,51 @@
+input UserInfo {
+  username: String!
+  password: String!
+  name: String!
+  email: String!
+  age: Int!
+  height: Int!
+  weight: Int!
+  profileImg: Upload
+  phoneNum: String
+  address: String
+}
+
+input FollowInfo {
+  accountId: Int!
+  targetType: String!
+  targetId: Int!
+}
+
+input ItemInfo {
+  name: String!
+  brand: String!
+  originalPrice: Int!
+  currentPrice: Int
+  itemType: String!
+  itemImage: Upload
+}
+
+input ChannelPostInfo {
+  accountId: Int!
+  channelId: Int!
+  title: String!
+  content: String!
+  img: [Upload]
+}
+
+input RecommendPostInfo {
+  accountId: Int!
+  title: String!
+  content: String!
+  postTag: String!
+  styleTag: String!
+  img: Upload
+}
+
+input CommentInfo {
+  accountId: Int!
+  targetId: Int!
+  targetType: String!
+  content: String!
+}

@@ -1,0 +1,54 @@
+scalar Upload
+
+type Query {
+  """
+  TEST!!!
+  """
+  helloWorld: String!
+}
+
+type Mutation {
+  helloWorld: String!
+
+  """
+  Return > [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  RegisterUser(userInfo: UserInfo!): Boolean!
+
+  """
+  Return >  [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  RegisterItem(itemInfo: ItemInfo!): Boolean!
+
+  """
+  Return > [true] : DB save successful [false] : DB save unsuccessful
+  """
+  PostChannelArticle(postInfo: ChannelPostInfo!): Boolean!
+
+  """
+  postTag and styleTag have to be exactly the same as ENUM saved in DB(case Sensitive)
+
+  Return > [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  PostRecommendArticle(postInfo: RecommendPostInfo!): Boolean!
+
+  """
+  TargetType > ["ChannelPost"] ["RecommendPost"]
+
+  Return > [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  PostComment(commentInfo: CommentInfo!): Boolean!
+
+  """
+  Toggles Account's Follow status on Channel
+
+  TargetType > ["ChannelPost"] ["RecommendPost"] ["Channel"] ["ITEM"]
+
+  Return > [-1] : Error [0] : Unfollowed [1] : Followed
+  """
+  FollowTarget(followInfo: FollowInfo!): Int!
+}
+
+type Subscription {
+  helloWorld: String!
+}

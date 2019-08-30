@@ -1,3 +1,13 @@
+//For Type declaaration
+
+export type ArgInfo = {
+  userInfo
+  followInfo
+  itemInfo
+  postInfo
+  commentInfo
+}
+
 export type UserInfo = {
   username: string
   password: string

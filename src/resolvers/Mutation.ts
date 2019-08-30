@@ -160,7 +160,7 @@ module.exports = {
     }
   },
 
-  FollowChannel: async (parent: void, args: CustomType.FollowChannelInfo): Promise<number> => {
+  FollowTarget: async (parent: void, args: CustomType.FollowInfo): Promise<number> => {
     let client
     try {
       client = await pool.connect()
@@ -169,67 +169,16 @@ module.exports = {
       return -1
     }
 
+    let query = "SELECT toggle" + args.targetType + "Follow($1,$2)"
     try {
-      let result = await client.query("SELECT toggleChannelFollow($1,$2)", [
-        args.accountId,
-        args.channelId
-      ])
+      let result = await client.query(query, [args.accountId, args.targetId])
       client.release()
-      result = result.rows[0].togglechannelfollow
-      return result
+      //result = result.rows[0].togglechannelfollow
+      result = Object.values(result.rows[0])
+      return result[0]
     } catch (e) {
       client.release()
       console.log("[Error] Failed to Insert into CHANNEL_FOLLOWER")
-      console.log(e)
-      return -1
-    }
-  },
-
-  FollowRecommendPost: async (parent: void, args: CustomType.FollowPostInfo): Promise<number> => {
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      console.log("[Error] Failed Connecting to DB")
-      return -1
-    }
-
-    try {
-      let result = await client.query("SELECT toggleRecommendPostFollow($1,$2)", [
-        args.accountId,
-        args.postId
-      ])
-      client.release()
-      result = result.rows[0].togglerecommendpostfollow
-      return result
-    } catch (e) {
-      client.release()
-      console.log("[Error] Failed to Insert into RECOMMEND_POST_FOLLOWER")
-      console.log(e)
-      return -1
-    }
-  },
-
-  FollowChannelPost: async (parent: void, args: CustomType.FollowPostInfo): Promise<number> => {
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      console.log("[Error] Failed Connecting to DB")
-      return -1
-    }
-
-    try {
-      let result = await client.query("SELECT toggleChannelPostFollow($1,$2)", [
-        args.accountId,
-        args.postId
-      ])
-      client.release()
-      result = result.rows[0].togglechannelpostfollow
-      return result
-    } catch (e) {
-      client.release()
-      console.log("[Error] Failed to Insert into CHANNEL_POST_FOLLOWER")
       console.log(e)
       return -1
     }

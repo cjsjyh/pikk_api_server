@@ -66,21 +66,10 @@ type Mutation {
 
   """
   Toggles Account's Follow status on Channel
-  [-1] : Error [0] : Unfollowed [1] : Followed
+  TargetType > ["ChannelPost"] ["RecommendPost"] ["Channel"] ["ITEM"]
+  Return > [-1] : Error [0] : Unfollowed [1] : Followed
   """
-  FollowChannel(accountId: Int!, channelId: Int!): Int!
-
-  """
-  Toggles Account's Follow status on Channel
-  [-1] : Error [0] : Unfollowed [1] : Followed
-  """
-  FollowRecommendPost(accountId: Int!, postId: Int!): Int!
-
-  """
-  Toggles Account's Follow status on Channel
-  [-1] : Error [0] : Unfollowed [1] : Followed
-  """
-  FollowChannelPost(accountId: Int!, postId: Int!): Int!
+  FollowTarget(accountId: Int!, targetType: String!, targetId: Int!): Int!
 }
 
 type Subscription {

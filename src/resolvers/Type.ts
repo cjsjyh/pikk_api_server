@@ -11,13 +11,9 @@ export type UserInfo = {
   address: string
 }
 
-export type FollowChannelInfo = {
-  channelId: number
-  accountId: number
-}
-
-export type FollowPostInfo = {
-  postId: number
+export type FollowInfo = {
+  targetType: string
+  targetId: number
   accountId: number
 }
 

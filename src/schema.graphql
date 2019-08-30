@@ -65,6 +65,12 @@ type Mutation {
   ): Boolean!
 
   """
+  TargetType > ["ChannelPost"] ["RecommendPost"]
+  [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  PostComment(accountId: Int!, targetId: Int!, targetType: String!, content: String!): Boolean!
+
+  """
   Toggles Account's Follow status on Channel
   TargetType > ["ChannelPost"] ["RecommendPost"] ["Channel"] ["ITEM"]
   Return > [-1] : Error [0] : Unfollowed [1] : Followed

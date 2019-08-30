@@ -131,6 +131,32 @@ module.exports = {
     }
   },
 
+  PostComment: async (parent: void, args: CustomType.CommentInfo): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    if (!ValidateCommentType(args.targetType)) return false
+
+    try {
+      await client.query(
+        `INSERT INTO ` +
+          ConvertToTableName(args.targetType) +
+          `("FK_postId","FK_accountId","content") VALUES($1,$2,$3)`,
+        [args.targetId, args.accountId, args.content]
+      )
+      client.release()
+      return true
+    } catch (e) {
+      client.release()
+      console.log(e)
+      return false
+    }
+  },
+
   PostRecommendArticle: async (parent: void, args: CustomType.PostInfo): Promise<Boolean> => {
     let client
     try {
@@ -165,22 +191,42 @@ module.exports = {
     try {
       client = await pool.connect()
     } catch (e) {
-      console.log("[Error] Failed Connecting to DB")
-      return -1
+      throw new Error("[Error] Failed Connecting to DB")
     }
+
+    if (!ValidateFollowType(args.targetType)) throw new Error("[Error] Invalid Type to Follow")
 
     let query = "SELECT toggle" + args.targetType + "Follow($1,$2)"
     try {
       let result = await client.query(query, [args.accountId, args.targetId])
       client.release()
-      //result = result.rows[0].togglechannelfollow
       result = Object.values(result.rows[0])
       return result[0]
     } catch (e) {
       client.release()
-      console.log("[Error] Failed to Insert into CHANNEL_FOLLOWER")
       console.log(e)
-      return -1
+      throw new Error("[Error] Failed to Insert into CHANNEL_FOLLOWER")
     }
   }
+}
+
+function ValidateFollowType(followType: string): Boolean {
+  return ["Item", "RecommendPost", "Channel"].includes(followType)
+}
+
+function ValidateCommentType(commentType: string): Boolean {
+  return ["RecommendPost", "ChannelPost"].includes(commentType)
+}
+
+function ConvertToTableName(targetName: string): string {
+  let tableName = ""
+  switch (targetName) {
+    case "ChannelPost":
+      tableName = '"CHANNEL_POST_COMMENT"'
+      break
+    case "RecommendPost":
+      tableName = '"RECOMMEND_POST_COMMENT"'
+      break
+  }
+  return tableName
 }

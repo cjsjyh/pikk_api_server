@@ -35,3 +35,10 @@ export type PostInfo = {
   styleTag: string
   img: [File]
 }
+
+export type CommentInfo = {
+  accountId: number
+  targetId: number
+  targetType: string
+  content: string
+}

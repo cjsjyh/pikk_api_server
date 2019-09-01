@@ -11,6 +11,11 @@ input UserInfo {
   address: String
 }
 
+enum ItemOrderBy {
+  score_ASC
+  score_DESC
+}
+
 input FollowInfo {
   accountId: Int!
   targetType: String!
@@ -24,6 +29,7 @@ input ItemInfo {
   currentPrice: Int
   itemType: String!
   itemImg: Upload
+  itemImgUrl: String
 }
 
 input CommunityPostInfo {

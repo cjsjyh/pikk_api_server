@@ -1,8 +1,8 @@
 //https://www.apollographql.com/docs/graphql-tools/resolvers/
 
+const { pool } = require("../database/connectionPool")
 import * as CustomType from "./Type"
 import { ArgInfo } from "./Type"
-const { pool } = require("../database/connectionPool")
 
 module.exports = {
   createUser: async (parent: void, args: ArgInfo): Promise<Boolean> => {

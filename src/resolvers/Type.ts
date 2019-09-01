@@ -1,11 +1,11 @@
-//For Type declaaration
+//For Type declaration
 
 export type ArgInfo = {
-  userInfo
-  followInfo
-  itemInfo
-  postInfo
-  commentInfo
+  userInfo: UserInfo
+  followInfo: FollowInfo
+  itemInfo: ItemInfo
+  postInfo: PostInfo
+  commentInfo: CommentInfo
 }
 
 export type UserInfo = {

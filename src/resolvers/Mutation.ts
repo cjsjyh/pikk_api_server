@@ -2,7 +2,6 @@
 
 import * as CustomType from "./Type"
 import { ArgInfo } from "./Type"
-import { createCipher } from "crypto"
 const { pool } = require("../database/connectionPool")
 
 module.exports = {
@@ -17,11 +16,6 @@ module.exports = {
     }
 
     let arg: CustomType.UserInfo = args.userInfo
-    //arg.prototype = Object
-    console.log("ARGs!!!")
-    console.log(args)
-    console.log("ARG!!!")
-    console.log(arg)
     //Make UserCredential
     let id
     try {

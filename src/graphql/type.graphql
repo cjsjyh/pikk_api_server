@@ -23,7 +23,7 @@ input ItemInfo {
   originalPrice: Int!
   currentPrice: Int
   itemType: String!
-  itemImage: Upload
+  itemImg: Upload
 }
 
 input ChannelPostInfo {
@@ -40,7 +40,17 @@ input RecommendPostInfo {
   content: String!
   postTag: String!
   styleTag: String!
-  img: Upload
+  titleImg: Upload
+  review: [ItemReviewInfo!]!
+}
+
+input ItemReviewInfo {
+  itemId: Int!
+  recommendTag: String!
+  shortReview: String!
+  fullReview: String!
+  score: Int!
+  reviewImg: [Upload]
 }
 
 input CommentInfo {

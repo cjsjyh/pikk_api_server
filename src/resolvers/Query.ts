@@ -7,8 +7,6 @@
 //   }
 // }
 
-
-
 // export default Query
 
 module.exports = {

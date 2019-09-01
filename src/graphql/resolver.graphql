@@ -1,15 +1,10 @@
 scalar Upload
 
 type Query {
-  """
-  TEST!!!
-  """
-  helloWorld: String!
+  
 }
 
 type Mutation {
-  helloWorld: String!
-
   """
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """

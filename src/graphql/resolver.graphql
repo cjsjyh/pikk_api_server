@@ -1,7 +1,7 @@
 scalar Upload
 
 type Query {
-  
+  helloWorld: String!
 }
 
 type Mutation {

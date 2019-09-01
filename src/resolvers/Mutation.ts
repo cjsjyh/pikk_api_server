@@ -2,6 +2,7 @@
 
 import * as CustomType from "./Type"
 import { ArgInfo } from "./Type"
+import { createCipher } from "crypto"
 const { pool } = require("../database/connectionPool")
 
 module.exports = {
@@ -185,17 +186,28 @@ module.exports = {
       //Upload Image and retrieve URL
     }
 
+    let recommendPostId: number
     try {
-      await client.query(
-        'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postTag","styleTag","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)',
+      let insertResult = await client.query(
+        'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postTag","styleTag","imageUrl") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
         [arg.accountId, arg.title, arg.content, arg.postTag, arg.styleTag, itemImgUrl]
       )
       client.release()
-      return true
+      recommendPostId = insertResult.rows[0].id
     } catch (e) {
       client.release()
       console.log("[Error] Failed to Insert into RECOMMEND_POST")
       console.log(e)
+      return false
+    }
+
+    try {
+      let InsertResult = await Promise.all(
+        arg.review.map(item => InsertItemReview(recommendPostId, item))
+      )
+      console.log(InsertResult)
+      return true
+    } catch (e) {
       return false
     }
   },
@@ -244,4 +256,41 @@ function ConvertToTableName(targetName: string): string {
       break
   }
   return tableName
+}
+
+function InsertItemReview(postId: number, itemReview: CustomType.itemReviewInfo): Promise<{}> {
+  return new Promise(async (resolve, reject) => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      reject(e)
+    }
+
+    let itemImgUrl = null
+    if (Object.prototype.hasOwnProperty.call(itemReview, "reviewImg")) {
+      //Upload Image and retrieve URL
+    }
+
+    try {
+      let insertResult = await client.query(
+        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendationTag","shortReview","fullReview","score") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+        [
+          itemReview.itemId,
+          postId,
+          itemReview.recommendTag,
+          itemReview.shortReview,
+          itemReview.fullReview,
+          itemReview.score
+        ]
+      )
+      client.release()
+      let reviewId = insertResult.rows[0].id
+      resolve(reviewId)
+    } catch (e) {
+      client.release()
+      console.log(e)
+      reject(e)
+    }
+  })
 }

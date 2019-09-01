@@ -43,7 +43,17 @@ export type PostInfo = {
   content: string
   postTag: string
   styleTag: string
-  img: [File]
+  img: File[]
+  review: itemReviewInfo[]
+}
+
+export type itemReviewInfo = {
+  itemId: number
+  recommendTag: string
+  shortReview: string
+  fullReview: string
+  score: number
+  reviewImg: File[]
 }
 
 export type CommentInfo = {

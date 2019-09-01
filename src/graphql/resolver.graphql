@@ -8,36 +8,36 @@ type Mutation {
   """
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
-  RegisterUser(userInfo: UserInfo!): Boolean!
+  createUser(userInfo: UserInfo!): Boolean!
 
   """
   Return >  [true] : DB save successful  [false] : DB save unsuccessful
   """
-  RegisterItem(itemInfo: ItemInfo!): Boolean!
+  createItem(itemInfo: ItemInfo!): Boolean!
 
   """
   Return > [true] : DB save successful [false] : DB save unsuccessful
   """
-  PostChannelArticle(postInfo: ChannelPostInfo!): Boolean!
+  createCommunityArticle(postInfo: CommunityPostInfo!): Boolean!
 
   """
   postTag and styleTag have to be exactly the same as ENUM saved in DB(case Sensitive)
 
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
-  PostRecommendArticle(postInfo: RecommendPostInfo!): Boolean!
+  createRecommendArticle(postInfo: RecommendPostInfo!): Boolean!
 
   """
-  TargetType > ["ChannelPost"] ["RecommendPost"]
+  TargetType > ["CommunityPost"] ["RecommendPost"]
 
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
-  PostComment(commentInfo: CommentInfo!): Boolean!
+  createComment(commentInfo: CommentInfo!): Boolean!
 
   """
   Toggles Account's Follow status on Channel
 
-  TargetType > ["ChannelPost"] ["RecommendPost"] ["Channel"] ["ITEM"]
+  TargetType > ["CommunityPost"] ["RecommendPost"] ["Channel"] ["ITEM"]
 
   Return > [-1] : Error [0] : Unfollowed [1] : Followed
   """

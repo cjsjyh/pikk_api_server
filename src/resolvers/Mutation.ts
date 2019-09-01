@@ -5,7 +5,7 @@ import { ArgInfo } from "./Type"
 const { pool } = require("../database/connectionPool")
 
 module.exports = {
-  RegisterUser: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createUser: async (parent: void, args: ArgInfo): Promise<Boolean> => {
     //Make Connection
     let client
     try {
@@ -75,7 +75,7 @@ module.exports = {
     }
   },
 
-  RegisterItem: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createItem: async (parent: void, args: ArgInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()
@@ -112,7 +112,7 @@ module.exports = {
     }
   },
 
-  PostChannelArticle: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createCommunityArticle: async (parent: void, args: ArgInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()
@@ -138,7 +138,7 @@ module.exports = {
     }
   },
 
-  PostComment: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createComment: async (parent: void, args: ArgInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()
@@ -165,7 +165,7 @@ module.exports = {
     }
   },
 
-  PostRecommendArticle: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createRecommendArticle: async (parent: void, args: ArgInfo): Promise<Boolean> => {
     let client
     try {
       client = await pool.connect()
@@ -232,17 +232,17 @@ module.exports = {
 }
 
 function ValidateFollowType(followType: string): Boolean {
-  return ["Item", "RecommendPost", "Channel"].includes(followType)
+  return ["Item", "RecommendPost", "Community"].includes(followType)
 }
 
 function ValidateCommentType(commentType: string): Boolean {
-  return ["RecommendPost", "ChannelPost"].includes(commentType)
+  return ["RecommendPost", "CommunityPost"].includes(commentType)
 }
 
 function ConvertToTableName(targetName: string): string {
   let tableName = ""
   switch (targetName) {
-    case "ChannelPost":
+    case "CommunityPost":
       tableName = '"CHANNEL_POST_COMMENT"'
       break
     case "RecommendPost":

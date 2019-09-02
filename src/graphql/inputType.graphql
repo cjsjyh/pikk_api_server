@@ -1,0 +1,72 @@
+input ItemQuery {
+  start: Int = 0
+  first: Int = 50
+  sort: SortDirection = DESC
+  sortBy: SortableField = score
+}
+
+input UserQuery {
+  id: Int!
+}
+
+input UserInfoInput {
+  username: String!
+  password: String!
+  name: String!
+  email: String!
+  age: Int!
+  height: Int!
+  weight: Int!
+  profileImg: Upload
+  phoneNum: String
+  address: String
+}
+
+input FollowInfoInput {
+  accountId: Int!
+  targetType: String!
+  targetId: Int!
+}
+
+input ItemInfoInput {
+  name: String!
+  brand: String!
+  originalPrice: Int!
+  currentPrice: Int
+  itemType: ItemType!
+  itemImg: Upload
+}
+
+input CommunityPostInfoInput {
+  accountId: Int!
+  channelId: Int!
+  title: String!
+  content: String!
+  img: [Upload]
+}
+
+input RecommendPostInfoInput {
+  accountId: Int!
+  title: String!
+  content: String!
+  postTag: String!
+  styleTag: String!
+  titleImg: Upload
+  review: [ItemReviewInfoInput!]!
+}
+
+input ItemReviewInfoInput {
+  itemId: Int!
+  recommendTag: String!
+  shortReview: String!
+  fullReview: String!
+  score: Int!
+  reviewImg: [Upload]
+}
+
+input CommentInfoInput {
+  accountId: Int!
+  targetId: Int!
+  targetType: String!
+  content: String!
+}

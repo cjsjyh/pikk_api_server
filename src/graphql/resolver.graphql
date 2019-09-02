@@ -1,38 +1,40 @@
 scalar Upload
 
 type Query {
-  helloWorld: String!
+  allItems(itemOption: ItemQuery!): [ItemInfo!]
+
+  getUser(userOption: UserQuery!): [UserInfo!]
 }
 
 type Mutation {
   """
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
-  createUser(userInfo: UserInfo!): Boolean!
+  createUser(userInfo: UserInfoInput!): Boolean!
 
   """
   Return >  [true] : DB save successful  [false] : DB save unsuccessful
   """
-  createItem(itemInfo: ItemInfo!): Boolean!
+  createItem(itemInfo: ItemInfoInput!): Boolean!
 
   """
   Return > [true] : DB save successful [false] : DB save unsuccessful
   """
-  createCommunityArticle(postInfo: CommunityPostInfo!): Boolean!
+  createCommunityArticle(postInfo: CommunityPostInfoInput!): Boolean!
 
   """
   postTag and styleTag have to be exactly the same as ENUM saved in DB(case Sensitive)
 
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
-  createRecommendArticle(postInfo: RecommendPostInfo!): Boolean!
+  createRecommendArticle(postInfo: RecommendPostInfoInput!): Boolean!
 
   """
   TargetType > ["CommunityPost"] ["RecommendPost"]
 
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
-  createComment(commentInfo: CommentInfo!): Boolean!
+  createComment(commentInfo: CommentInfoInput!): Boolean!
 
   """
   Toggles Account's Follow status on Channel
@@ -41,7 +43,7 @@ type Mutation {
 
   Return > [-1] : Error [0] : Unfollowed [1] : Followed
   """
-  FollowTarget(followInfo: FollowInfo!): Int!
+  FollowTarget(followInfo: FollowInfoInput!): Int!
 }
 
 type Subscription {

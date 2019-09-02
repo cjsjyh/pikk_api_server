@@ -6,6 +6,7 @@ import { ArgInfo } from "./Type"
 
 module.exports = {
   createUser: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+    let arg: CustomType.UserInfo = args.userInfo
     //Make Connection
     let client
     try {
@@ -15,7 +16,6 @@ module.exports = {
       return false
     }
 
-    let arg: CustomType.UserInfo = args.userInfo
     //Make UserCredential
     let id
     try {
@@ -76,6 +76,7 @@ module.exports = {
   },
 
   createItem: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+    let arg: CustomType.ItemInfo = args.itemInfo
     let client
     try {
       client = await pool.connect()
@@ -84,11 +85,9 @@ module.exports = {
       return false
     }
 
-    let arg: CustomType.ItemInfo = args.itemInfo
-
-    let itemImgUrl = null
+    let imageUrl = null
     //Temporary//
-    itemImgUrl = "testURL"
+    imageUrl = "testURL"
     //---------//
     if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
       //Upload Image and retrieve URL
@@ -100,7 +99,7 @@ module.exports = {
     try {
       await client.query(
         'INSERT INTO "ITEM"("name","brand","originalPrice","currentPrice","itemType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)',
-        [arg.name, arg.brand, arg.originalPrice, arg.currentPrice, arg.itemType, itemImgUrl]
+        [arg.name, arg.brand, arg.originalPrice, arg.currentPrice, arg.itemType, imageUrl]
       )
       client.release()
       return true
@@ -113,6 +112,7 @@ module.exports = {
   },
 
   createCommunityArticle: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+    let arg: CustomType.PostInfo = args.postInfo
     let client
     try {
       client = await pool.connect()
@@ -121,7 +121,6 @@ module.exports = {
       return false
     }
 
-    let arg: CustomType.PostInfo = args.postInfo
     try {
       await client.query(
         'INSERT INTO "CHANNEL_POST"("FK_accountId","FK_channelId","title","content") VALUES ($1,$2,$3,$4)',
@@ -139,6 +138,7 @@ module.exports = {
   },
 
   createComment: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+    let arg: CustomType.CommentInfo = args.commentInfo
     let client
     try {
       client = await pool.connect()
@@ -146,7 +146,6 @@ module.exports = {
       throw new Error("[Error] Failed Connecting to DB")
     }
 
-    let arg: CustomType.CommentInfo = args.commentInfo
     if (!ValidateCommentType(arg.targetType)) return false
 
     try {
@@ -166,6 +165,7 @@ module.exports = {
   },
 
   createRecommendArticle: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+    let arg: CustomType.PostInfo = args.postInfo
     let client
     try {
       client = await pool.connect()
@@ -174,8 +174,7 @@ module.exports = {
       return false
     }
 
-    let arg: CustomType.PostInfo = args.postInfo
-    let itemImgUrl = null
+    let imageUrl = null
     if (Object.prototype.hasOwnProperty.call(arg, "img")) {
       //Upload Image and retrieve URL
     }
@@ -184,7 +183,7 @@ module.exports = {
     try {
       let insertResult = await client.query(
         'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postTag","styleTag","imageUrl") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-        [arg.accountId, arg.title, arg.content, arg.postTag, arg.styleTag, itemImgUrl]
+        [arg.accountId, arg.title, arg.content, arg.postTag, arg.styleTag, imageUrl]
       )
       client.release()
       recommendPostId = insertResult.rows[0].id
@@ -207,6 +206,7 @@ module.exports = {
   },
 
   FollowTarget: async (parent: void, args: ArgInfo): Promise<number> => {
+    let arg: CustomType.FollowInfo = args.followInfo
     let client
     try {
       client = await pool.connect()
@@ -214,7 +214,6 @@ module.exports = {
       throw new Error("[Error] Failed Connecting to DB")
     }
 
-    let arg: CustomType.FollowInfo = args.followInfo
     if (!ValidateFollowType(arg.targetType)) throw new Error("[Error] Invalid Type to Follow")
 
     let query = "SELECT toggle" + arg.targetType + "Follow($1,$2)"
@@ -261,7 +260,7 @@ function InsertItemReview(postId: number, itemReview: CustomType.itemReviewInfo)
       reject(e)
     }
 
-    let itemImgUrl = null
+    let imageUrl = null
     if (Object.prototype.hasOwnProperty.call(itemReview, "reviewImg")) {
       //Upload Image and retrieve URL
     }

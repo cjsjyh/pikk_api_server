@@ -1,0 +1,19 @@
+enum SortDirection {
+  ASC
+  DESC
+}
+
+enum SortableField {
+  id
+  name
+  brand
+  originalPrice
+  currentPrice
+  score
+  itemType
+}
+
+enum ItemType {
+  TSHIRT
+  BLUEJEANS
+}

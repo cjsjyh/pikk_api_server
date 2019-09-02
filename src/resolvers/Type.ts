@@ -1,4 +1,5 @@
 //For Type declaration
+import { SortDirection, SortableField } from "./enum"
 
 export type ArgInfo = {
   userInfo: UserInfo
@@ -6,6 +7,8 @@ export type ArgInfo = {
   itemInfo: ItemInfo
   postInfo: PostInfo
   commentInfo: CommentInfo
+  itemOption: ItemQuery
+  userOption: UserQuery
 }
 
 export type UserInfo = {
@@ -61,4 +64,15 @@ export type CommentInfo = {
   targetId: number
   targetType: string
   content: string
+}
+
+export type ItemQuery = {
+  start: number
+  first: number
+  sort: SortDirection
+  sortBy: SortableField
+}
+
+export type UserQuery = {
+  id: number
 }

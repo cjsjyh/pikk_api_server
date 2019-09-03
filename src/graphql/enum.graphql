@@ -3,7 +3,7 @@ enum SortDirection {
   DESC
 }
 
-enum SortableField {
+enum ItemSortableField {
   id
   name
   brand
@@ -11,6 +11,12 @@ enum SortableField {
   currentPrice
   score
   itemType
+}
+
+enum PostSortableField {
+  title
+  time
+  viewCount
 }
 
 enum ItemType {

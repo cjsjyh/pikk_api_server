@@ -3,7 +3,7 @@ export enum ItemType {
   BLUEJEANS
 }
 
-export enum SortableField {
+export enum ItemSortableField {
   id,
   name,
   brand,
@@ -11,6 +11,12 @@ export enum SortableField {
   currentPrice,
   score,
   itemType
+}
+
+export enum PostSortableField {
+  title,
+  time,
+  viewCount
 }
 
 export enum SortDirection {

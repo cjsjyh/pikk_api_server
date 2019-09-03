@@ -18,3 +18,14 @@ type UserInfo {
   phoneNum: String
   address: String
 }
+
+type CommunityPostInfo {
+  accountId: Int
+  name: String!
+  profileImgUrl: String
+
+  title: String!
+  content: String!
+  time: String!
+  imageUrl: [String]
+}

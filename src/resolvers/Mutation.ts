@@ -111,7 +111,7 @@ module.exports = {
     }
   },
 
-  createCommunityArticle: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createCommunityPost: async (parent: void, args: ArgInfo): Promise<Boolean> => {
     let arg: CustomType.PostInfo = args.postInfo
     let client
     try {
@@ -164,7 +164,7 @@ module.exports = {
     }
   },
 
-  createRecommendArticle: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createRecommendPost: async (parent: void, args: ArgInfo): Promise<Boolean> => {
     let arg: CustomType.PostInfo = args.postInfo
     let client
     try {

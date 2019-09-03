@@ -3,6 +3,9 @@ scalar Upload
 type Query {
   allItems(itemOption: ItemQuery!): [ItemInfo!]
 
+  allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
+  #CommunityPostInfo
+
   getUser(userOption: UserQuery!): [UserInfo!]
 }
 
@@ -20,14 +23,14 @@ type Mutation {
   """
   Return > [true] : DB save successful [false] : DB save unsuccessful
   """
-  createCommunityArticle(postInfo: CommunityPostInfoInput!): Boolean!
+  createCommunityPost(postInfo: CommunityPostInfoInput!): Boolean!
 
   """
   postTag and styleTag have to be exactly the same as ENUM saved in DB(case Sensitive)
 
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
-  createRecommendArticle(postInfo: RecommendPostInfoInput!): Boolean!
+  createRecommendPost(postInfo: RecommendPostInfoInput!): Boolean!
 
   """
   TargetType > ["CommunityPost"] ["RecommendPost"]

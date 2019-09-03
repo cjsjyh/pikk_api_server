@@ -1,5 +1,5 @@
 //For Type declaration
-import { SortDirection, SortableField } from "./enum"
+import { SortDirection, ItemSortableField, PostSortableField } from "./enum"
 
 export type ArgInfo = {
   userInfo: UserInfo
@@ -9,6 +9,7 @@ export type ArgInfo = {
   commentInfo: CommentInfo
   itemOption: ItemQuery
   userOption: UserQuery
+  communityPostOption: CommunityPostQuery
 }
 
 export type UserInfo = {
@@ -20,6 +21,8 @@ export type UserInfo = {
   height: number
   weight: number
   profileImg: File
+  profileImgUrl: string
+
   phoneNum: number
   address: string
 }
@@ -40,6 +43,12 @@ export type ItemInfo = {
 }
 
 export type PostInfo = {
+  FK_accountId: number
+  FK_channelId: number
+  name: string
+  profileImgUrl: string
+
+  id: number
   accountId: number
   channelId: number
   title: string
@@ -47,6 +56,7 @@ export type PostInfo = {
   postTag: string
   styleTag: string
   img: File[]
+  imageUrl: string[]
   review: itemReviewInfo[]
 }
 
@@ -57,6 +67,7 @@ export type itemReviewInfo = {
   fullReview: string
   score: number
   reviewImg: File[]
+  reviewImgUrl: string[]
 }
 
 export type CommentInfo = {
@@ -66,13 +77,27 @@ export type CommentInfo = {
   content: string
 }
 
-export type ItemQuery = {
+export type ImageInfo = {
+  imageUrl: string
+}
+
+type QueryCommon = {
   start: number
   first: number
   sort: SortDirection
-  sortBy: SortableField
+}
+
+export interface ItemQuery {
+  filter: QueryCommon
+  sortBy: ItemSortableField
 }
 
 export type UserQuery = {
   id: number
+}
+
+export interface CommunityPostQuery {
+  filter: QueryCommon
+  accountId: number
+  sortBy: PostSortableField
 }

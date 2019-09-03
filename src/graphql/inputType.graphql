@@ -1,12 +1,21 @@
-input ItemQuery {
+input QueryCommon {
   start: Int = 0
   first: Int = 50
   sort: SortDirection = DESC
-  sortBy: SortableField = score
+}
+
+input ItemQuery {
+  filter: QueryCommon
+  sortBy: ItemSortableField = score
 }
 
 input UserQuery {
   id: Int!
+}
+
+input CommunityPostQuery {
+  filter: QueryCommon
+  sortBy: PostSortableField = time
 }
 
 input UserInfoInput {

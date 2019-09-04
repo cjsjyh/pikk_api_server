@@ -230,15 +230,6 @@ module.exports = {
     }
   }
 }
-
-function ValidateFollowType(followType: string): Boolean {
-  return ["Item", "RecommendPost", "Channel"].includes(followType)
-}
-
-function ValidateCommentType(commentType: string): Boolean {
-  return ["RecommendPost", "CommunityPost"].includes(commentType)
-}
-
 function ConvertToTableName(targetName: string): string {
   let tableName = ""
   switch (targetName) {

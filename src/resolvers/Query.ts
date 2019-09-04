@@ -17,6 +17,8 @@ module.exports = {
       throw new Error("[Error] Failed Connecting to DB")
     }
 
+    console.log(arg)
+
     let sortSql: string
     sortSql = " ORDER BY " + arg.sortBy + " " + arg.filter.sort
     let limitSql: string

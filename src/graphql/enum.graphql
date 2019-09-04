@@ -42,3 +42,9 @@ enum PostType {
   RECOMMEND
   COMMUNITY
 }
+
+enum FollowType {
+  ITEM
+  CHANNEL
+  RECOMMENDPOST
+}

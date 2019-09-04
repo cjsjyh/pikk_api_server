@@ -3,7 +3,6 @@
 const { pool } = require("../database/connectionPool")
 import * as CustomType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
-import { PostType } from "./type/enum"
 
 module.exports = {
   createUser: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
@@ -191,6 +190,7 @@ module.exports = {
     */
     try {
       console.log("before query")
+      console.log(arg)
       await client.query(`INSERT INTO ` + ConvertToTableName(arg.targetType) + `("FK_postId","FK_accountId","content") VALUES($1,$2,$3)`, [
         arg.targetId,
         arg.accountId,
@@ -215,7 +215,7 @@ module.exports = {
       throw new Error("[Error] Failed Connecting to DB")
     }
 
-    if (!ValidateFollowType(arg.targetType)) throw new Error("[Error] Invalid Type to Follow")
+    //if (!ValidateFollowType(arg.targetType)) throw new Error("[Error] Invalid Type to Follow")
 
     let query = "SELECT toggle" + arg.targetType + "Follow($1,$2)"
     try {
@@ -226,26 +226,26 @@ module.exports = {
     } catch (e) {
       client.release()
       console.log(e)
-      throw new Error("[Error] Failed to Insert into CHANNEL_FOLLOWER")
+      throw new Error("[Error] Failed to Insert into FOLLOWER")
     }
   }
 }
 
 function ValidateFollowType(followType: string): Boolean {
-  return ["Item", "RecommendPost", "Community"].includes(followType)
+  return ["Item", "RecommendPost", "Channel"].includes(followType)
 }
 
 function ValidateCommentType(commentType: string): Boolean {
   return ["RecommendPost", "CommunityPost"].includes(commentType)
 }
 
-function ConvertToTableName(targetName: PostType): string {
+function ConvertToTableName(targetName: string): string {
   let tableName = ""
-  switch (+targetName) {
-    case PostType.COMMUNITY:
+  switch (targetName) {
+    case "RECOMMEND":
       tableName = '"COMMUNITY_POST_COMMENT"'
       break
-    case PostType.RECOMMEND:
+    case "COMMUNITY":
       tableName = '"RECOMMEND_POST_COMMENT"'
       break
   }

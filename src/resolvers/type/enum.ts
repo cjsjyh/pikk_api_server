@@ -28,11 +28,6 @@ export enum RecommendPostType {
   OOTD
 }
 
-export enum PostType {
-  RECOMMEND,
-  COMMUNITY
-}
-
 export enum RecommendReason {
   DESIGN,
   PRICE

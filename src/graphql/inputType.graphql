@@ -38,7 +38,7 @@ input UserInfoInput {
 
 input FollowInfoInput {
   accountId: Int!
-  targetType: String!
+  targetType: FollowType!
   targetId: Int!
 }
 

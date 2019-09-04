@@ -65,7 +65,7 @@ export type itemReviewInfo = {
 export type CommentInfo = {
   accountId: number
   targetId: number
-  targetType: PostType
+  targetType: string
   content: string
 }
 

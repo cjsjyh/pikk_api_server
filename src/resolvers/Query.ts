@@ -5,6 +5,7 @@ import * as CustomType from "./type/ReturnType"
 import * as CustomEnum from "./type/enum"
 import { QueryResult } from "pg"
 import { GraphQLResolveInfo } from "graphql"
+import { resolve } from "dns"
 //import { ArgInfo } from "./QueryType"
 
 module.exports = {
@@ -16,8 +17,6 @@ module.exports = {
     } catch (e) {
       throw new Error("[Error] Failed Connecting to DB")
     }
-
-    console.log(arg)
 
     let sortSql: string
     sortSql = " ORDER BY " + arg.sortBy + " " + arg.filter.sort
@@ -51,8 +50,12 @@ module.exports = {
     try {
       postResult = await client.query('SELECT * FROM "COMMUNITY_POST"' + sortSql + limitSql)
 
-      let imgResult: CustomType.ImageInfo[][] = await SequentialPromise(postResult.rows, GetPostImage)
-      let userResult: CustomType.UserInfo[] = await SequentialPromise(postResult.rows, GetUserInfo)
+      let PromiseResult: any = await Promise.all([
+        SequentialPromiseValue(postResult.rows, GetCommunityPostImage),
+        SequentialPromiseValue(postResult.rows, GetUserInfo)
+      ])
+      let imgResult: CustomType.ImageInfo[][] = PromiseResult[0]
+      let userResult: CustomType.UserInfo[] = PromiseResult[1]
 
       postResult.rows.forEach((item: CustomType.PostInfo, index: number) => {
         item.accountId = item.FK_accountId
@@ -64,13 +67,12 @@ module.exports = {
         })
       })
 
-      console.log(postResult.rows)
       return postResult.rows
     } catch (e) {
       throw new Error("[Error] Failed to fetch user data from DB")
     }
   },
-
+  /*
   allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<Boolean> => {
     let arg: ArgType.RecommendPostQuery = args.recommendPostOption
     let client
@@ -80,9 +82,36 @@ module.exports = {
       throw new Error("[Error] Failed Connecting to DB")
     }
 
-    return true
-  },
+    let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filter.sort
+    let limitSql = " LIMIT " + arg.filter.first + " OFFSET " + arg.filter.start
 
+    let postResult, imgResult: QueryResult
+    try {
+      postResult = await client.query('SELECT * FROM "RECOMMEND_POST"' + sortSql + limitSql)
+
+      let PromiseResult: any = await Promise.all([
+        SequentialPromiseValue(postResult.rows, GetPostImage),
+        SequentialPromiseValue(postResult.rows, GetUserInfo)
+      ])
+      let imgResult: CustomType.ImageInfo[][] = PromiseResult[0]
+      let userResult: CustomType.UserInfo[] = PromiseResult[1]
+
+      postResult.rows.forEach((item: CustomType.PostInfo, index: number) => {
+        item.accountId = item.FK_accountId
+        item.name = userResult[index].name
+        item.profileImgUrl = userResult[index].profileImgUrl
+        item.imageUrl = new Array()
+        imgResult[index].forEach(image => {
+          item.imageUrl.push(image.imageUrl)
+        })
+      })
+
+      return postResult.rows
+    } catch (e) {
+      throw new Error("[Error] Failed to fetch user data from DB")
+    }
+  },
+*/
   getUser: async (parent: void, args: QueryArgInfo): Promise<[CustomType.UserInfo]> => {
     let arg: ArgType.UserQuery = args.userOption
     let client
@@ -106,7 +135,7 @@ module.exports = {
   }
 }
 
-function GetUserInfo(postInfo: CustomType.PostInfo, index: number): Promise<CustomType.UserInfo> {
+function GetUserInfo(postInfo: CustomType.PostInfo): Promise<CustomType.UserInfo> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -126,7 +155,7 @@ function GetUserInfo(postInfo: CustomType.PostInfo, index: number): Promise<Cust
   })
 }
 
-function GetPostImage(postInfo: CustomType.PostInfo): Promise<QueryResult> {
+function GetCommunityPostImage(postInfo: CustomType.PostInfo): Promise<QueryResult> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -138,6 +167,7 @@ function GetPostImage(postInfo: CustomType.PostInfo): Promise<QueryResult> {
     try {
       let queryResult = await client.query('SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=$1', [postInfo.id])
       client.release()
+      console.log(queryResult.rows)
       resolve(queryResult.rows)
     } catch (e) {
       client.release()
@@ -146,12 +176,47 @@ function GetPostImage(postInfo: CustomType.PostInfo): Promise<QueryResult> {
   })
 }
 
-async function SequentialPromise<T>(arr: T[], func: Function): Promise<Array<T>> {
+function GetRecommendPostReview<T>(sql: string, parameters: Array<T>): Promise<QueryResult> {
+  return new Promise(async (resolve, reject) => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      let queryResult = await client.query(sql, parameters)
+      client.release()
+      resolve(queryResult.rows)
+    } catch (e) {
+      client.release()
+      reject(e)
+    }
+  })
+}
+
+async function SequentialPromiseValue<T>(arr: T[], func: Function): Promise<Array<T>> {
   let resultArr = new Array<T>(arr.length)
   await Promise.all(
-    arr.map((item: T, index: number) => {
+    arr.map((item: any, index: number) => {
       return new Promise((resolve, reject) => {
         func(item, index).then((result: any) => {
+          resultArr[index] = result
+          resolve()
+        })
+      })
+    })
+  )
+  return resultArr
+}
+
+async function SequentialPromise<T>(arr: Promise<{}>[]): Promise<Array<T>> {
+  let resultArr = new Array<any>(arr.length)
+  await Promise.all(
+    arr.map((item: Promise<{}>, index: number) => {
+      return new Promise((resolve, reject) => {
+        item.then((result: any) => {
           resultArr[index] = result
           resolve()
         })

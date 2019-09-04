@@ -1,4 +1,4 @@
-import { RecommendPostType, StyleType, PostType, RecommendReason } from "./enum"
+import { RecommendPostType, StyleType, RecommendReason } from "./enum"
 
 //Return
 export type UserInfo = {

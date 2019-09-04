@@ -46,8 +46,8 @@ input ItemInfoInput {
   name: String!
   brand: String!
   originalPrice: Int!
-  currentPrice: Int
-  itemType: ItemType!
+  itemMinorType: ItemMinorType!
+  itemMajorType: ItemMajorType!
   itemImg: Upload
 }
 
@@ -70,10 +70,10 @@ input RecommendPostInfoInput {
 }
 
 input ItemReviewInfoInput {
-  itemId: Int!
+  #itemId: Int!
+  item: ItemInfoInput!
   recommendReason: RecommendReason!
   shortReview: String!
-  fullReview: String!
   score: Int!
   reviewImg: [Upload]
 }

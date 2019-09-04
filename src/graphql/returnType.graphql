@@ -4,8 +4,8 @@ type ItemInfo {
   name: String!
   brand: String!
   originalPrice: Int!
-  currentPrice: Int!
-  itemType: ItemType!
+  itemMinorType: ItemMinorType!
+  itemMajorType: itemMajorType!
   imageUrl: String!
 }
 

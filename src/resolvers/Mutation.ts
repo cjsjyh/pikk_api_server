@@ -82,17 +82,14 @@ module.exports = {
     if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
       //Upload Image and retrieve URL
     }
-    if (!Object.prototype.hasOwnProperty.call(arg, "currentPrice")) {
-      arg.currentPrice = arg.originalPrice
-    }
 
     try {
-      await client.query('INSERT INTO "ITEM"("name","brand","originalPrice","currentPrice","itemType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)', [
+      await client.query('INSERT INTO "ITEM"("name","brand","originalPrice","itemMajorType","itemMinorType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)', [
         arg.name,
         arg.brand,
         arg.originalPrice,
-        arg.currentPrice,
-        arg.itemType,
+        arg.itemMajorType,
+        arg.itemMinorType,
         imageUrl
       ])
       client.release()
@@ -261,8 +258,8 @@ function InsertItemReview(postId: number, itemReview: CustomType.itemReviewInfo)
 
     try {
       let insertResult = await client.query(
-        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendReason","shortReview","fullReview","score") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-        [itemReview.itemId, postId, itemReview.recommendReason, itemReview.shortReview, itemReview.fullReview, itemReview.score]
+        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendReason","shortReview","score") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+        [itemReview.itemId, postId, itemReview.recommendReason, itemReview.shortReview, itemReview.score]
       )
       client.release()
       let reviewId = insertResult.rows[0].id

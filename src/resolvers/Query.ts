@@ -72,7 +72,7 @@ module.exports = {
       throw new Error("[Error] Failed to fetch user data from DB")
     }
   },
-  /*
+
   allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<Boolean> => {
     let arg: ArgType.RecommendPostQuery = args.recommendPostOption
     let client
@@ -111,7 +111,7 @@ module.exports = {
       throw new Error("[Error] Failed to fetch user data from DB")
     }
   },
-*/
+
   getUser: async (parent: void, args: QueryArgInfo): Promise<[CustomType.UserInfo]> => {
     let arg: ArgType.UserQuery = args.userOption
     let client

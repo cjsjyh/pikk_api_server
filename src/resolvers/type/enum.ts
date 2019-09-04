@@ -3,9 +3,9 @@ export enum ItemSortableField {
   name,
   brand,
   originalPrice,
-  currentPrice,
   score,
-  itemType
+  itemMinorType,
+  itemMajorType
 }
 
 export enum PostSortableField {
@@ -19,8 +19,12 @@ export enum SortDirection {
   DESC
 }
 
-export enum ItemType {
+export enum ItemMinorType {
   TSHIRT
+}
+
+export enum ItemMajorType {
+  OUTER
 }
 
 export enum RecommendPostType {

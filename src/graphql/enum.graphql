@@ -8,9 +8,8 @@ enum ItemSortableField {
   name
   brand
   originalPrice
-  currentPrice
   score
-  itemType
+  itemMinorType
 }
 
 enum PostSortableField {
@@ -19,7 +18,11 @@ enum PostSortableField {
   viewCount
 }
 
-enum ItemType {
+enum ItemMajorType {
+  OUTER
+}
+
+enum ItemMinorType {
   TSHIRT
 }
 

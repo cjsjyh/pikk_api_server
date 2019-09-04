@@ -27,8 +27,8 @@ export type ItemInfo = {
   name: string
   brand: string
   originalPrice: number
-  currentPrice: number
-  itemType: string
+  itemMinorType: string
+  itemMajorType: string
   itemImg: File
 }
 
@@ -56,7 +56,6 @@ export type itemReviewInfo = {
   itemId: number
   recommendReason: RecommendReason
   shortReview: string
-  fullReview: string
   score: number
   reviewImg: File[]
   reviewImgUrl: string[]

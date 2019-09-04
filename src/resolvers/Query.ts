@@ -68,7 +68,19 @@ module.exports = {
       throw new Error("[Error] Failed to fetch user data from DB")
     }
   },
+  /*
+  allRecommendPosts: async (parent: void, args: ArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<Boolean> => {
+    let arg: CustomType.RecommendPostQuery = args.recommendPostOption
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
 
+    return true
+  },
+  */
   getUser: async (parent: void, args: ArgInfo): Promise<[CustomType.UserInfo]> => {
     let arg: CustomType.UserQuery = args.userOption
     let client

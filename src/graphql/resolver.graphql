@@ -4,7 +4,8 @@ type Query {
   allItems(itemOption: ItemQuery!): [ItemInfo!]
 
   allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
-  #CommunityPostInfo
+
+  #allRecommendPosts(recommendPostOption: RecommendPostQuery!): [Boolean!]
 
   getUser(userOption: UserQuery!): [UserInfo!]
 }

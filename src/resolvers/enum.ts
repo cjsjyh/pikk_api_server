@@ -1,8 +1,3 @@
-export enum ItemType {
-  TSHIRT,
-  BLUEJEANS
-}
-
 export enum ItemSortableField {
   id,
   name,
@@ -22,4 +17,23 @@ export enum PostSortableField {
 export enum SortDirection {
   ASC,
   DESC
+}
+
+export enum ItemType {
+  TSHIRT
+}
+
+export enum PostType {
+  RECOMMEND,
+  OOTD
+}
+
+export enum RecommendReason {
+  DESIGN,
+  PRICE
+}
+
+export enum StyleType {
+  MINIMALISM,
+  ETC
 }

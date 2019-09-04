@@ -21,5 +21,19 @@ enum PostSortableField {
 
 enum ItemType {
   TSHIRT
-  BLUEJEANS
+}
+
+enum PostType {
+  RECOMMEND
+  OOTD
+}
+
+enum RecommendReason {
+  DESIGN
+  PRICE
+}
+
+enum StyleType {
+  MINIMALISM
+  ETC
 }

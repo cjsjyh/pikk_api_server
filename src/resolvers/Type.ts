@@ -10,8 +10,10 @@ export type ArgInfo = {
   itemOption: ItemQuery
   userOption: UserQuery
   communityPostOption: CommunityPostQuery
+  recommendPostOption: RecommendPostQuery
 }
 
+//Return
 export type UserInfo = {
   username: string
   password: string
@@ -33,6 +35,7 @@ export type FollowInfo = {
   accountId: number
 }
 
+//Return
 export type ItemInfo = {
   name: string
   brand: string
@@ -42,6 +45,7 @@ export type ItemInfo = {
   itemImg: File
 }
 
+//Return
 export type PostInfo = {
   FK_accountId: number
   FK_channelId: number
@@ -53,8 +57,8 @@ export type PostInfo = {
   channelId: number
   title: string
   content: string
-  postTag: string
-  styleTag: string
+  postType: string
+  styleType: string
   img: File[]
   imageUrl: string[]
   review: itemReviewInfo[]
@@ -97,6 +101,12 @@ export type UserQuery = {
 }
 
 export interface CommunityPostQuery {
+  filter: QueryCommon
+  accountId: number
+  sortBy: PostSortableField
+}
+
+export interface RecommendPostQuery {
   filter: QueryCommon
   accountId: number
   sortBy: PostSortableField

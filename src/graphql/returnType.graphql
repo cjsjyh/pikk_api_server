@@ -1,3 +1,4 @@
+#Return
 type ItemInfo {
   id: Int!
   name: String!
@@ -8,6 +9,7 @@ type ItemInfo {
   imageUrl: String!
 }
 
+#Return
 type UserInfo {
   name: String!
   email: String!
@@ -19,12 +21,29 @@ type UserInfo {
   address: String
 }
 
+#Return
 type CommunityPostInfo {
   accountId: Int
   name: String!
   profileImgUrl: String
 
+  id: Int
   title: String!
+  content: String!
+  time: String!
+  imageUrl: [String]
+}
+
+#Return
+type RecommendPostInfo {
+  accountId: Int
+  name: String!
+  profileImgUrl: String
+
+  id: Int
+  title: String!
+  postType: 
+  styleType: 
   content: String!
   time: String!
   imageUrl: [String]

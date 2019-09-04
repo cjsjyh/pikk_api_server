@@ -19,10 +19,10 @@ module.exports = {
     //Make UserCredential
     let id
     try {
-      let qResult = await client.query(
-        'INSERT INTO "USER_CONFIDENTIAL"("username","password") VALUES ($1,$2) RETURNING *',
-        [arg.username, arg.password]
-      )
+      let qResult = await client.query('INSERT INTO "USER_CONFIDENTIAL"("username","password") VALUES ($1,$2) RETURNING *', [
+        arg.username,
+        arg.password
+      ])
       id = qResult.rows[0].id
     } catch (e) {
       client.release()
@@ -42,17 +42,7 @@ module.exports = {
     try {
       let qResult = await client.query(
         'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImg","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-        [
-          id,
-          arg.name,
-          arg.email,
-          arg.age,
-          arg.height,
-          arg.weight,
-          profileImgUrl,
-          arg.phoneNum,
-          arg.address
-        ]
+        [id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
       )
     } catch (e) {
       //Delete Inserted Row
@@ -97,10 +87,14 @@ module.exports = {
     }
 
     try {
-      await client.query(
-        'INSERT INTO "ITEM"("name","brand","originalPrice","currentPrice","itemType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)',
-        [arg.name, arg.brand, arg.originalPrice, arg.currentPrice, arg.itemType, imageUrl]
-      )
+      await client.query('INSERT INTO "ITEM"("name","brand","originalPrice","currentPrice","itemType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)', [
+        arg.name,
+        arg.brand,
+        arg.originalPrice,
+        arg.currentPrice,
+        arg.itemType,
+        imageUrl
+      ])
       client.release()
       return true
     } catch (e) {
@@ -122,10 +116,12 @@ module.exports = {
     }
 
     try {
-      await client.query(
-        'INSERT INTO "CHANNEL_POST"("FK_accountId","FK_channelId","title","content") VALUES ($1,$2,$3,$4)',
-        [arg.accountId, arg.channelId, arg.title, arg.content]
-      )
+      await client.query('INSERT INTO "CHANNEL_POST"("FK_accountId","FK_channelId","title","content") VALUES ($1,$2,$3,$4)', [
+        arg.accountId,
+        arg.channelId,
+        arg.title,
+        arg.content
+      ])
       client.release()
 
       return true
@@ -149,12 +145,11 @@ module.exports = {
     if (!ValidateCommentType(arg.targetType)) return false
 
     try {
-      await client.query(
-        `INSERT INTO ` +
-          ConvertToTableName(arg.targetType) +
-          `("FK_postId","FK_accountId","content") VALUES($1,$2,$3)`,
-        [arg.targetId, arg.accountId, arg.content]
-      )
+      await client.query(`INSERT INTO ` + ConvertToTableName(arg.targetType) + `("FK_postId","FK_accountId","content") VALUES($1,$2,$3)`, [
+        arg.targetId,
+        arg.accountId,
+        arg.content
+      ])
       client.release()
       return true
     } catch (e) {
@@ -183,7 +178,7 @@ module.exports = {
     try {
       let insertResult = await client.query(
         'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postTag","styleTag","imageUrl") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-        [arg.accountId, arg.title, arg.content, arg.postTag, arg.styleTag, imageUrl]
+        [arg.accountId, arg.title, arg.content, arg.postType, arg.styleType, imageUrl]
       )
       client.release()
       recommendPostId = insertResult.rows[0].id
@@ -195,9 +190,7 @@ module.exports = {
     }
 
     try {
-      let InsertResult = await Promise.all(
-        arg.review.map(item => InsertItemReview(recommendPostId, item))
-      )
+      let InsertResult = await Promise.all(arg.review.map(item => InsertItemReview(recommendPostId, item)))
       console.log(InsertResult)
       return true
     } catch (e) {
@@ -268,14 +261,7 @@ function InsertItemReview(postId: number, itemReview: CustomType.itemReviewInfo)
     try {
       let insertResult = await client.query(
         'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendationTag","shortReview","fullReview","score") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-        [
-          itemReview.itemId,
-          postId,
-          itemReview.recommendTag,
-          itemReview.shortReview,
-          itemReview.fullReview,
-          itemReview.score
-        ]
+        [itemReview.itemId, postId, itemReview.recommendTag, itemReview.shortReview, itemReview.fullReview, itemReview.score]
       )
       client.release()
       let reviewId = insertResult.rows[0].id

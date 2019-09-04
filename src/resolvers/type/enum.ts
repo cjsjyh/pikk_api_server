@@ -23,9 +23,14 @@ export enum ItemType {
   TSHIRT
 }
 
-export enum PostType {
+export enum RecommendPostType {
   RECOMMEND,
   OOTD
+}
+
+export enum PostType {
+  RECOMMEND,
+  COMMUNITY
 }
 
 export enum RecommendReason {

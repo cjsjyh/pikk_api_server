@@ -23,7 +23,7 @@ enum ItemType {
   TSHIRT
 }
 
-enum PostType {
+enum RecommendPostType {
   RECOMMEND
   OOTD
 }
@@ -36,4 +36,9 @@ enum RecommendReason {
 enum StyleType {
   MINIMALISM
   ETC
+}
+
+enum PostType {
+  RECOMMEND
+  COMMUNITY
 }

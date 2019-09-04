@@ -5,7 +5,7 @@ type Query {
 
   allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
 
-  #allRecommendPosts(recommendPostOption: RecommendPostQuery!): [Boolean!]
+  allRecommendPosts(recommendPostOption: RecommendPostQuery!): [Boolean!]
 
   getUser(userOption: UserQuery!): [UserInfo!]
 }

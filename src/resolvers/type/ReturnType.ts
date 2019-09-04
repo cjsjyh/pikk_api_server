@@ -1,17 +1,4 @@
-//For Type declaration
-import { SortDirection, ItemSortableField, PostSortableField } from "./enum"
-
-export type ArgInfo = {
-  userInfo: UserInfo
-  followInfo: FollowInfo
-  itemInfo: ItemInfo
-  postInfo: PostInfo
-  commentInfo: CommentInfo
-  itemOption: ItemQuery
-  userOption: UserQuery
-  communityPostOption: CommunityPostQuery
-  recommendPostOption: RecommendPostQuery
-}
+import { RecommendPostType, StyleType, PostType, RecommendReason } from "./enum"
 
 //Return
 export type UserInfo = {
@@ -49,16 +36,17 @@ export type ItemInfo = {
 export type PostInfo = {
   FK_accountId: number
   FK_channelId: number
+
   name: string
+  accountId: number
   profileImgUrl: string
 
   id: number
-  accountId: number
   channelId: number
   title: string
   content: string
-  postType: string
-  styleType: string
+  postType: RecommendPostType
+  styleType: StyleType
   img: File[]
   imageUrl: string[]
   review: itemReviewInfo[]
@@ -66,7 +54,7 @@ export type PostInfo = {
 
 export type itemReviewInfo = {
   itemId: number
-  recommendTag: string
+  recommendReason: RecommendReason
   shortReview: string
   fullReview: string
   score: number
@@ -77,37 +65,10 @@ export type itemReviewInfo = {
 export type CommentInfo = {
   accountId: number
   targetId: number
-  targetType: string
+  targetType: PostType
   content: string
 }
 
 export type ImageInfo = {
   imageUrl: string
-}
-
-type QueryCommon = {
-  start: number
-  first: number
-  sort: SortDirection
-}
-
-export interface ItemQuery {
-  filter: QueryCommon
-  sortBy: ItemSortableField
-}
-
-export type UserQuery = {
-  id: number
-}
-
-export interface CommunityPostQuery {
-  filter: QueryCommon
-  accountId: number
-  sortBy: PostSortableField
-}
-
-export interface RecommendPostQuery {
-  filter: QueryCommon
-  accountId: number
-  sortBy: PostSortableField
 }

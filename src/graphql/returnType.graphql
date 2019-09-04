@@ -42,8 +42,8 @@ type RecommendPostInfo {
 
   id: Int
   title: String!
-  postType: 
-  styleType: 
+  postType: PostType!
+  styleType: StyleType!
   content: String!
   time: String!
   imageUrl: [String]

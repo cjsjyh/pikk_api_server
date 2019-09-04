@@ -1,11 +1,12 @@
 //https://www.apollographql.com/docs/graphql-tools/resolvers/
 
 const { pool } = require("../database/connectionPool")
-import * as CustomType from "./Type"
-import { ArgInfo } from "./Type"
+import * as CustomType from "./type/ReturnType"
+import { MutationArgInfo } from "./type/ArgType"
+import { PostType } from "./type/enum"
 
 module.exports = {
-  createUser: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createUser: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
     let arg: CustomType.UserInfo = args.userInfo
     //Make Connection
     let client
@@ -41,7 +42,7 @@ module.exports = {
     //Make UserInfo
     try {
       let qResult = await client.query(
-        'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImg","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
+        'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
         [id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
       )
     } catch (e) {
@@ -65,7 +66,7 @@ module.exports = {
     }
   },
 
-  createItem: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createItem: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
     let arg: CustomType.ItemInfo = args.itemInfo
     let client
     try {
@@ -105,7 +106,7 @@ module.exports = {
     }
   },
 
-  createCommunityPost: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createCommunityPost: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
     let arg: CustomType.PostInfo = args.postInfo
     let client
     try {
@@ -116,7 +117,7 @@ module.exports = {
     }
 
     try {
-      await client.query('INSERT INTO "CHANNEL_POST"("FK_accountId","FK_channelId","title","content") VALUES ($1,$2,$3,$4)', [
+      await client.query('INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content") VALUES ($1,$2,$3,$4)', [
         arg.accountId,
         arg.channelId,
         arg.title,
@@ -127,39 +128,13 @@ module.exports = {
       return true
     } catch (e) {
       client.release()
-      console.log("[Error] Failed to Insert into CHANNEL_POST")
+      console.log("[Error] Failed to Insert into COMMUNITY_POST")
       console.log(e)
       return false
     }
   },
 
-  createComment: async (parent: void, args: ArgInfo): Promise<Boolean> => {
-    let arg: CustomType.CommentInfo = args.commentInfo
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
-
-    if (!ValidateCommentType(arg.targetType)) return false
-
-    try {
-      await client.query(`INSERT INTO ` + ConvertToTableName(arg.targetType) + `("FK_postId","FK_accountId","content") VALUES($1,$2,$3)`, [
-        arg.targetId,
-        arg.accountId,
-        arg.content
-      ])
-      client.release()
-      return true
-    } catch (e) {
-      client.release()
-      console.log(e)
-      return false
-    }
-  },
-
-  createRecommendPost: async (parent: void, args: ArgInfo): Promise<Boolean> => {
+  createRecommendPost: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
     let arg: CustomType.PostInfo = args.postInfo
     let client
     try {
@@ -177,7 +152,7 @@ module.exports = {
     let recommendPostId: number
     try {
       let insertResult = await client.query(
-        'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postTag","styleTag","imageUrl") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+        'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postType","styleType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
         [arg.accountId, arg.title, arg.content, arg.postType, arg.styleType, imageUrl]
       )
       client.release()
@@ -198,7 +173,40 @@ module.exports = {
     }
   },
 
-  FollowTarget: async (parent: void, args: ArgInfo): Promise<number> => {
+  createComment: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
+    let arg: CustomType.CommentInfo = args.commentInfo
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      console.log("[Error] Failed Connecting to DB")
+      return false
+    }
+
+    /*
+    if (!ValidateCommentType(arg.targetType)) {
+      console.log("[Error] Invalid PostType to leave Comment")
+      return false
+    }
+    */
+    try {
+      console.log("before query")
+      await client.query(`INSERT INTO ` + ConvertToTableName(arg.targetType) + `("FK_postId","FK_accountId","content") VALUES($1,$2,$3)`, [
+        arg.targetId,
+        arg.accountId,
+        arg.content
+      ])
+      console.log("after query")
+      client.release()
+      return true
+    } catch (e) {
+      client.release()
+      console.log(e)
+      return false
+    }
+  },
+
+  FollowTarget: async (parent: void, args: MutationArgInfo): Promise<number> => {
     let arg: CustomType.FollowInfo = args.followInfo
     let client
     try {
@@ -231,16 +239,18 @@ function ValidateCommentType(commentType: string): Boolean {
   return ["RecommendPost", "CommunityPost"].includes(commentType)
 }
 
-function ConvertToTableName(targetName: string): string {
+function ConvertToTableName(targetName: PostType): string {
   let tableName = ""
-  switch (targetName) {
-    case "CommunityPost":
-      tableName = '"CHANNEL_POST_COMMENT"'
+  switch (+targetName) {
+    case PostType.COMMUNITY:
+      tableName = '"COMMUNITY_POST_COMMENT"'
       break
-    case "RecommendPost":
+    case PostType.RECOMMEND:
       tableName = '"RECOMMEND_POST_COMMENT"'
       break
   }
+  console.log(targetName)
+  console.log(tableName)
   return tableName
 }
 
@@ -260,8 +270,8 @@ function InsertItemReview(postId: number, itemReview: CustomType.itemReviewInfo)
 
     try {
       let insertResult = await client.query(
-        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendationTag","shortReview","fullReview","score") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-        [itemReview.itemId, postId, itemReview.recommendTag, itemReview.shortReview, itemReview.fullReview, itemReview.score]
+        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendReason","shortReview","fullReview","score") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+        [itemReview.itemId, postId, itemReview.recommendReason, itemReview.shortReview, itemReview.fullReview, itemReview.score]
       )
       client.release()
       let reviewId = insertResult.rows[0].id

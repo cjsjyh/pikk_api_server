@@ -1,15 +1,15 @@
 const { pool } = require("../database/connectionPool")
-import * as CustomType from "./Type"
-import * as CustomEnum from "./enum"
-import { ArgInfo } from "./Type"
+import * as ArgType from "./type/ArgType"
+import { QueryArgInfo } from "./type/ArgType"
+import * as CustomType from "./type/ReturnType"
+import * as CustomEnum from "./type/enum"
 import { QueryResult } from "pg"
 import { GraphQLResolveInfo } from "graphql"
-import { resolve } from "dns"
 //import { ArgInfo } from "./QueryType"
 
 module.exports = {
-  allItems: async (parent: void, args: ArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.ItemInfo]> => {
-    let arg: CustomType.ItemQuery = args.itemOption
+  allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.ItemInfo]> => {
+    let arg: ArgType.ItemQuery = args.itemOption
     let client
     try {
       client = await pool.connect()
@@ -33,8 +33,8 @@ module.exports = {
     }
   },
 
-  allCommunityPosts: async (parent: void, args: ArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.PostInfo]> => {
-    let arg: CustomType.CommunityPostQuery = args.communityPostOption
+  allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.PostInfo]> => {
+    let arg: ArgType.CommunityPostQuery = args.communityPostOption
     let client
     try {
       client = await pool.connect()
@@ -68,9 +68,9 @@ module.exports = {
       throw new Error("[Error] Failed to fetch user data from DB")
     }
   },
-  /*
-  allRecommendPosts: async (parent: void, args: ArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<Boolean> => {
-    let arg: CustomType.RecommendPostQuery = args.recommendPostOption
+
+  allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<Boolean> => {
+    let arg: ArgType.RecommendPostQuery = args.recommendPostOption
     let client
     try {
       client = await pool.connect()
@@ -80,9 +80,9 @@ module.exports = {
 
     return true
   },
-  */
-  getUser: async (parent: void, args: ArgInfo): Promise<[CustomType.UserInfo]> => {
-    let arg: CustomType.UserQuery = args.userOption
+
+  getUser: async (parent: void, args: QueryArgInfo): Promise<[CustomType.UserInfo]> => {
+    let arg: ArgType.UserQuery = args.userOption
     let client
     try {
       client = await pool.connect()

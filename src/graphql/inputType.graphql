@@ -18,6 +18,11 @@ input CommunityPostQuery {
   sortBy: PostSortableField = time
 }
 
+input RecommendPostQuery {
+  filter: QueryCommon
+  sortBy: PostSortableField = time
+}
+
 input UserInfoInput {
   username: String!
   password: String!
@@ -58,15 +63,15 @@ input RecommendPostInfoInput {
   accountId: Int!
   title: String!
   content: String!
-  postTag: String!
-  styleTag: String!
+  postType: RecommendPostType!
+  styleType: StyleType!
   titleImg: Upload
   review: [ItemReviewInfoInput!]!
 }
 
 input ItemReviewInfoInput {
   itemId: Int!
-  recommendTag: String!
+  recommendReason: RecommendReason!
   shortReview: String!
   fullReview: String!
   score: Int!
@@ -76,6 +81,6 @@ input ItemReviewInfoInput {
 input CommentInfoInput {
   accountId: Int!
   targetId: Int!
-  targetType: String!
+  targetType: PostType!
   content: String!
 }

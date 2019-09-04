@@ -1,14 +1,42 @@
 import { SortDirection, ItemSortableField, PostSortableField } from "./enum"
-import { UserInfo, FollowInfo, ItemInfo, PostInfo, CommentInfo } from "./ReturnType"
+import { UserInfo, FollowInfo, ItemInfo, CommentInfo, itemReviewInfo } from "./ReturnType"
+
+import { RecommendPostType, StyleType, RecommendReason } from "./enum"
+
+//--------------
+//   Mutation
+//--------------
 
 export type MutationArgInfo = {
   userInfo: UserInfo
   followInfo: FollowInfo
   itemInfo: ItemInfo
-  postInfo: PostInfo
+  recommendPostInfo: RecommendPostInfoInput
+  communityPostInfo: CommunityPostInfoInput
   commentInfo: CommentInfo
 }
 
+export type CommunityPostInfoInput = {
+  accountId: number
+  channelId: number
+  title: string
+  content: string
+  img: File[]
+}
+
+export type RecommendPostInfoInput = {
+  accountId: number
+  title: string
+  content: string
+  postType: RecommendPostType
+  styleType: StyleType
+  titleImg: File
+  review: itemReviewInfo[]
+}
+
+//--------------
+//   Query
+//--------------
 export type QueryArgInfo = {
   itemOption: ItemQuery
   userOption: UserQuery

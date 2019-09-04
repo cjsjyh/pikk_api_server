@@ -33,6 +33,7 @@ export type ItemInfo = {
 }
 
 //Return
+/*
 export type PostInfo = {
   FK_accountId: number
   FK_channelId: number
@@ -50,6 +51,40 @@ export type PostInfo = {
   img: File[]
   imageUrl: string[]
   review: itemReviewInfo[]
+}
+*/
+export type RecommendPostInfo = {
+  //DB
+  FK_accountId: number
+  //USER
+  accountId: number
+  name: string
+  profileImgUrl: string
+  //POST
+  id: number
+  title: string
+  postType: RecommendPostType
+  styleType: StyleType
+  content: string
+  time: string
+  imageUrl: string[]
+}
+
+export type CommunityPostInfo = {
+  //DB
+  FK_accountId: number
+  FK_channelId: number
+  //User
+  accountId: number
+  name: string
+  profileImgUrl: string
+  //Post Info
+  id: number
+  channelId: number
+  title: string
+  content: string
+  time: string
+  imageUrl: string[]
 }
 
 export type itemReviewInfo = {

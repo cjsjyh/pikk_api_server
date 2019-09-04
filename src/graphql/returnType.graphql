@@ -5,7 +5,7 @@ type ItemInfo {
   brand: String!
   originalPrice: Int!
   itemMinorType: ItemMinorType!
-  itemMajorType: itemMajorType!
+  itemMajorType: ItemMajorType!
   imageUrl: String!
 }
 
@@ -28,6 +28,7 @@ type CommunityPostInfo {
   profileImgUrl: String
 
   id: Int
+  channelId: Int
   title: String!
   content: String!
   time: String!

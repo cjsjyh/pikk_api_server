@@ -1,12 +1,13 @@
 //https://www.apollographql.com/docs/graphql-tools/resolvers/
 
 const { pool } = require("../database/connectionPool")
-import * as CustomType from "./type/ReturnType"
+import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
+import * as ArgType from "./type/ArgType"
 
 module.exports = {
   createUser: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
-    let arg: CustomType.UserInfo = args.userInfo
+    let arg: ReturnType.UserInfo = args.userInfo
     //Make Connection
     let client
     try {
@@ -66,7 +67,7 @@ module.exports = {
   },
 
   createItem: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
-    let arg: CustomType.ItemInfo = args.itemInfo
+    let arg: ReturnType.ItemInfo = args.itemInfo
     let client
     try {
       client = await pool.connect()
@@ -103,7 +104,7 @@ module.exports = {
   },
 
   createCommunityPost: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
-    let arg: CustomType.PostInfo = args.postInfo
+    let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
     let client
     try {
       client = await pool.connect()
@@ -131,7 +132,7 @@ module.exports = {
   },
 
   createRecommendPost: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
-    let arg: CustomType.PostInfo = args.postInfo
+    let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
     let client
     try {
       client = await pool.connect()
@@ -170,7 +171,7 @@ module.exports = {
   },
 
   createComment: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
-    let arg: CustomType.CommentInfo = args.commentInfo
+    let arg: ReturnType.CommentInfo = args.commentInfo
     let client
     try {
       client = await pool.connect()
@@ -179,21 +180,12 @@ module.exports = {
       return false
     }
 
-    /*
-    if (!ValidateCommentType(arg.targetType)) {
-      console.log("[Error] Invalid PostType to leave Comment")
-      return false
-    }
-    */
     try {
-      console.log("before query")
-      console.log(arg)
       await client.query(`INSERT INTO ` + ConvertToTableName(arg.targetType) + `("FK_postId","FK_accountId","content") VALUES($1,$2,$3)`, [
         arg.targetId,
         arg.accountId,
         arg.content
       ])
-      console.log("after query")
       client.release()
       return true
     } catch (e) {
@@ -204,15 +196,13 @@ module.exports = {
   },
 
   FollowTarget: async (parent: void, args: MutationArgInfo): Promise<number> => {
-    let arg: CustomType.FollowInfo = args.followInfo
+    let arg: ReturnType.FollowInfo = args.followInfo
     let client
     try {
       client = await pool.connect()
     } catch (e) {
       throw new Error("[Error] Failed Connecting to DB")
     }
-
-    //if (!ValidateFollowType(arg.targetType)) throw new Error("[Error] Invalid Type to Follow")
 
     let query = "SELECT toggle" + arg.targetType + "Follow($1,$2)"
     try {
@@ -229,20 +219,13 @@ module.exports = {
 }
 function ConvertToTableName(targetName: string): string {
   let tableName = ""
-  switch (targetName) {
-    case "RECOMMEND":
-      tableName = '"COMMUNITY_POST_COMMENT"'
-      break
-    case "COMMUNITY":
-      tableName = '"RECOMMEND_POST_COMMENT"'
-      break
-  }
-  console.log(targetName)
-  console.log(tableName)
+  if (targetName == "RECOMMEND") tableName = '"RECOMMEND_POST_COMMENT"'
+  else if (targetName == "COMMUNITY") tableName = '"COMMUNITY_POST_COMMENT"'
+
   return tableName
 }
 
-function InsertItemReview(postId: number, itemReview: CustomType.itemReviewInfo): Promise<{}> {
+function InsertItemReview(postId: number, itemReview: ReturnType.itemReviewInfo): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -268,6 +251,44 @@ function InsertItemReview(postId: number, itemReview: CustomType.itemReviewInfo)
       client.release()
       console.log(e)
       reject(e)
+    }
+  })
+}
+
+function InsertItem(arg: ReturnType.ItemInfo): Promise<{}> {
+  return new Promise(async (resolve, reject) => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      console.log("[Error] Failed Connecting to DB")
+      return false
+    }
+
+    let imageUrl = null
+    //Temporary//
+    imageUrl = "testURL"
+    //---------//
+    if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
+      //Upload Image and retrieve URL
+    }
+
+    try {
+      await client.query('INSERT INTO "ITEM"("name","brand","originalPrice","itemMajorType","itemMinorType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)', [
+        arg.name,
+        arg.brand,
+        arg.originalPrice,
+        arg.itemMajorType,
+        arg.itemMinorType,
+        imageUrl
+      ])
+      client.release()
+      return true
+    } catch (e) {
+      client.release()
+      console.log("[Error] Failed to Insert into ITEM")
+      console.log(e)
+      return false
     }
   })
 }

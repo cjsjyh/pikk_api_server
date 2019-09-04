@@ -34,7 +34,7 @@ module.exports = {
     }
   },
 
-  allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.PostInfo]> => {
+  allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.CommunityPostInfo]> => {
     let arg: ArgType.CommunityPostQuery = args.communityPostOption
     let client
     try {
@@ -57,8 +57,9 @@ module.exports = {
       let imgResult: CustomType.ImageInfo[][] = PromiseResult[0]
       let userResult: CustomType.UserInfo[] = PromiseResult[1]
 
-      postResult.rows.forEach((item: CustomType.PostInfo, index: number) => {
+      postResult.rows.forEach((item: CustomType.CommunityPostInfo, index: number) => {
         item.accountId = item.FK_accountId
+        item.channelId = item.FK_channelId
         item.name = userResult[index].name
         item.profileImgUrl = userResult[index].profileImgUrl
         item.imageUrl = new Array()
@@ -90,13 +91,13 @@ module.exports = {
       postResult = await client.query('SELECT * FROM "RECOMMEND_POST"' + sortSql + limitSql)
 
       let PromiseResult: any = await Promise.all([
-        SequentialPromiseValue(postResult.rows, GetPostImage),
+        SequentialPromiseValue(postResult.rows, GetCommunityPostImage),
         SequentialPromiseValue(postResult.rows, GetUserInfo)
       ])
       let imgResult: CustomType.ImageInfo[][] = PromiseResult[0]
       let userResult: CustomType.UserInfo[] = PromiseResult[1]
 
-      postResult.rows.forEach((item: CustomType.PostInfo, index: number) => {
+      postResult.rows.forEach((item: CustomType.RecommendPostInfo, index: number) => {
         item.accountId = item.FK_accountId
         item.name = userResult[index].name
         item.profileImgUrl = userResult[index].profileImgUrl
@@ -135,7 +136,7 @@ module.exports = {
   }
 }
 
-function GetUserInfo(postInfo: CustomType.PostInfo): Promise<CustomType.UserInfo> {
+function GetUserInfo(postInfo: any): Promise<CustomType.UserInfo> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -155,7 +156,7 @@ function GetUserInfo(postInfo: CustomType.PostInfo): Promise<CustomType.UserInfo
   })
 }
 
-function GetCommunityPostImage(postInfo: CustomType.PostInfo): Promise<QueryResult> {
+function GetCommunityPostImage(postInfo: CustomType.CommunityPostInfo): Promise<QueryResult> {
   return new Promise(async (resolve, reject) => {
     let client
     try {

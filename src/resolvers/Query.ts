@@ -2,11 +2,8 @@ const { pool } = require("../database/connectionPool")
 import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
 import * as CustomType from "./type/ReturnType"
-import * as CustomEnum from "./type/enum"
 import { QueryResult } from "pg"
 import { GraphQLResolveInfo } from "graphql"
-import { resolve } from "dns"
-//import { ArgInfo } from "./QueryType"
 
 module.exports = {
   allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.ItemInfo]> => {

@@ -24,14 +24,14 @@ type Mutation {
   """
   Return > [true] : DB save successful [false] : DB save unsuccessful
   """
-  createCommunityPost(postInfo: CommunityPostInfoInput!): Boolean!
+  createCommunityPost(communityPostInfo: CommunityPostInfoInput!): Boolean!
 
   """
   postTag and styleTag have to be exactly the same as ENUM saved in DB(case Sensitive)
 
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
-  createRecommendPost(postInfo: RecommendPostInfoInput!): Boolean!
+  createRecommendPost(recommendPostInfo: RecommendPostInfoInput!): Boolean!
 
   """
   TargetType > ["CommunityPost"] ["RecommendPost"]

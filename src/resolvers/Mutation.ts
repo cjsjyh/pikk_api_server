@@ -25,42 +25,23 @@ module.exports = {
         arg.password
       ])
       id = qResult.rows[0].id
-    } catch (e) {
-      client.release()
-      console.log("[Error] Failed to Insert into USER_CONFIDENTIAL")
-      console.log(e)
-      return false
-    }
 
-    let profileImgUrl = null
-    console.log(arg)
+      let profileImgUrl = null
+      if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
+        //Upload Image and retrieve URL
+      }
 
-    if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
-      //Upload Image and retrieve URL
-    }
-
-    //Make UserInfo
-    try {
-      let qResult = await client.query(
+      qResult = await client.query(
         'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
         [id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
       )
-    } catch (e) {
-      //Delete Inserted Row
-      await client.query('DELETE FROM "USER_CONFIDENTIAL" WHERE id=$1', [id])
-      client.release()
-      console.log("[Error] Failed to Insert into User_Info")
-      console.log(e)
-      return false
-    }
 
-    try {
       await client.query('INSERT INTO "CHANNEL"("FK_accountId") VALUES ($1)', [id])
       client.release()
       return true
     } catch (e) {
       client.release()
-      console.log("[Error] Failed to Insert into Channel")
+      console.log("[Error] Failed to Insert into USER_CONFIDENTIAL")
       console.log(e)
       return false
     }
@@ -112,6 +93,10 @@ module.exports = {
       console.log("[Error] Failed Connecting to DB")
       return false
     }
+
+    console.log(args)
+    console.log("-----")
+    console.log(arg)
 
     try {
       await client.query('INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content") VALUES ($1,$2,$3,$4)', [

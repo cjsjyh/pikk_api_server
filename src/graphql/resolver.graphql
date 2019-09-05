@@ -2,10 +2,13 @@ scalar Upload
 
 type Query {
   allItems(itemOption: ItemQuery!): [ItemInfo!]
+  _allItemsMetadata: Int!
 
   allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
+  _allCommunityPostsMetadata: Int!
 
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [Boolean!]
+  _allRecommendPostsMetadata: Int!
 
   getUser(userOption: UserQuery!): [UserInfo!]
 }

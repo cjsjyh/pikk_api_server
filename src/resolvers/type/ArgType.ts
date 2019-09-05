@@ -46,7 +46,7 @@ export type ItemReviewInfoInput = {
 export type ItemReviewCardInfoInput = {
   title: string
   content: string
-  Img: File
+  img: File
 }
 
 export type ItemInfoInput = {

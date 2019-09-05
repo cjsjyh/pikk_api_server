@@ -150,6 +150,16 @@ module.exports = {
     try {
       let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItem)
       let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [recommendPostId])
+      console.log(ReviewResult)
+      await Promise.all(
+        arg.reviews.map((review, index) => {
+          return Promise.all(
+            review.cards.map(card => {
+              return InsertItemReviewCard(card, ReviewResult[index])
+            })
+          )
+        })
+      )
 
       return true
     } catch (e) {
@@ -225,7 +235,6 @@ function InsertItemReview(itemReview: ArgType.ItemReviewInfoInput, args: Array<n
     }
 
     try {
-      console.log(itemReview)
       let postId = args[0]
       let insertResult = await client.query(
         'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendReason","shortReview","score") VALUES ($1,$2,$3,$4,$5) RETURNING id',
@@ -281,7 +290,7 @@ function InsertItem(argReview: ArgType.ItemReviewInfoInput): Promise<{}> {
   })
 }
 
-function InsertItemReviewCard(arg: ArgType.ItemReviewCardInfoInput): Promise<{}> {
+function InsertItemReviewCard(arg: ArgType.ItemReviewCardInfoInput, reviewId: number): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -289,6 +298,30 @@ function InsertItemReviewCard(arg: ArgType.ItemReviewCardInfoInput): Promise<{}>
     } catch (e) {
       console.log("[Error] Failed Connecting to DB")
       return false
+    }
+    let imageUrl = null
+    //Temporary//
+    imageUrl = "testURL"
+    //---------//
+    if (Object.prototype.hasOwnProperty.call(arg, "img")) {
+      //Upload Image and retrieve URL
+    }
+
+    try {
+      let cardId = await client.query('INSERT INTO "ITEM_REVIEW_CARD"("FK_reviewId","title","content","imgUrl") VALUES ($1,$2,$3,$4) RETURNING id', [
+        reviewId,
+        arg.title,
+        arg.content,
+        imageUrl
+      ])
+      client.release()
+      console.log(`Inserted CardId: ${cardId.rows[0].id} for ReviewId: ${reviewId}`)
+      resolve(cardId.rows[0].id)
+    } catch (e) {
+      client.release()
+      console.log("[Error] Failed to Insert into ITEM_REVIEW_CARD")
+      console.log(e)
+      reject()
     }
   })
 }

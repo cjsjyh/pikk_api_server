@@ -72,7 +72,7 @@ input ItemReviewInfoInput {
 input ItemReviewCardInfoInput {
   title: String!
   content: String!
-  Img: Upload
+  img: Upload
 }
 
 input CommentInfoInput {

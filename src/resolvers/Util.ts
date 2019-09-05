@@ -1,4 +1,4 @@
-export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<Array<T>> {
+export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<Array<any>> {
   let resultArr = new Array<T>(arr.length)
   await Promise.all(
     arr.map((item: any, index: number) => {

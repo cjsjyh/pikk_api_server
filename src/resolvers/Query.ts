@@ -3,11 +3,11 @@ import { SequentialPromiseValue } from "./Util"
 import { GraphQLResolveInfo } from "graphql"
 import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
-import * as CustomType from "./type/ReturnType"
-import { QueryResult } from "pg"
+import * as ReturnType from "./type/ReturnType"
+import { QueryResult, Client } from "pg"
 
 module.exports = {
-  allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.ItemInfo]> => {
+  allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[ReturnType.ItemInfo]> => {
     let arg: ArgType.ItemQuery = args.itemOption
     let client
     try {
@@ -36,7 +36,7 @@ module.exports = {
     return GetMetaData("ITEM")
   },
 
-  allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.CommunityPostInfo]> => {
+  allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[ReturnType.CommunityPostInfo]> => {
     let arg: ArgType.CommunityPostQuery = args.communityPostOption
     let client
     try {
@@ -56,10 +56,10 @@ module.exports = {
         SequentialPromiseValue(postResult.rows, GetCommunityPostImage),
         SequentialPromiseValue(postResult.rows, GetUserInfo)
       ])
-      let imgResult: CustomType.ImageInfo[][] = PromiseResult[0]
-      let userResult: CustomType.UserInfo[] = PromiseResult[1]
+      let imgResult: ReturnType.ImageInfo[][] = PromiseResult[0]
+      let userResult: ReturnType.UserInfo[] = PromiseResult[1]
 
-      postResult.rows.forEach((item: CustomType.CommunityPostInfo, index: number) => {
+      postResult.rows.forEach((item: ReturnType.CommunityPostInfo, index: number) => {
         item.accountId = item.FK_accountId
         item.channelId = item.FK_channelId
         item.name = userResult[index].name
@@ -80,7 +80,7 @@ module.exports = {
     return GetMetaData("COMMUNITY_POST")
   },
 
-  allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<Boolean> => {
+  allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[ReturnType.RecommendPostInfo]> => {
     let arg: ArgType.RecommendPostQuery = args.recommendPostOption
     let client
     try {
@@ -95,27 +95,89 @@ module.exports = {
     let postResult, reviewResult, cardResult
     try {
       //postResult = await client.query('SELECT * FROM "RECOMMEND_POST"' + sortSql + limitSql)
-      console.log("POST============")
       let postSql = 'SELECT * FROM "RECOMMEND_POST"' + sortSql + limitSql
       postResult = await client.query(postSql)
       postResult = postResult.rows
-      console.log(postResult)
+      postResult.forEach((post: ReturnType.RecommendPostInfo) => {
+        post.accountId = post.FK_accountId
+        post.reviews = []
+      })
+      //console.log(postResult)
       //console.log(JSON.stringify(postResult, null, 4))
 
-      console.log("REVIEW============")
       let reviewSql = `WITH aaa AS (${postSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_postId") FROM "ITEM_REVIEW" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
       reviewResult = await client.query(reviewSql)
       reviewResult = reviewResult.rows
-      console.log(reviewResult)
-      //console.log(JSON.stringify(reviewResult, null, 4))
+      reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
+        review.itemId = review.FK_itemId
+        review.postId = review.FK_postId
+        review.cards = []
+      })
+      //console.log(reviewResult)
 
-      console.log("CARD============")
+      let reviewArray: ReturnType.ItemReviewInfo[][] = [[]]
+      let currentId = -1
+      reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
+        if (review.postId != currentId) {
+          if (currentId != -1) reviewArray.push([])
+          currentId = review.postId
+        }
+        reviewArray[reviewArray.length - 1].push(review)
+      })
+
       let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`
       cardResult = await client.query(cardSql)
       cardResult = cardResult.rows
-      console.log(cardResult)
+      cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
+        card.reviewId = card.FK_reviewId
+      })
+      //console.log(cardResult)
 
-      return reviewResult.rows
+      let cardArray: ReturnType.ItemReviewCardInfo[][] = [[]]
+      currentId = -1
+      cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
+        if (card.reviewId != currentId) {
+          if (currentId != -1) cardArray.push([])
+          currentId = card.reviewId
+        }
+        cardArray[cardArray.length - 1].push(card)
+      })
+      //console.log(cardArray)
+
+      let j = 0
+      for (let i = 0; i < cardArray.length; i++) {
+        for (; j < reviewResult.length; j++) {
+          if (cardArray[i][0].reviewId == reviewResult[j].id) {
+            reviewResult[j].cards = cardArray[i]
+            j++
+            break
+          }
+        }
+      }
+
+      let i
+      if (arg.filter.sort == "ASC") i = 0
+      else i = reviewArray.length - 1
+
+      j = 0
+      while (true) {
+        for (; j < postResult.length; j++) {
+          console.log(`Comapring: postid: ${postResult[j].id} review postid: ${reviewArray[i][0].postId}`)
+          if (reviewArray[i][0].postId == postResult[j].id) {
+            postResult[j].reviews = reviewArray[i]
+            j++
+            break
+          }
+        }
+        if (arg.filter.sort == "ASC") {
+          ++i
+          if (i >= reviewResult.length) break
+        } else {
+          --i
+          if (i < 0) break
+        }
+      }
+      return postResult
     } catch (e) {
       console.log(e)
       throw new Error("[Error] Failed to fetch user data from DB")
@@ -126,7 +188,7 @@ module.exports = {
     return GetMetaData("RECOMMEND_POST")
   },
 
-  getUser: async (parent: void, args: QueryArgInfo): Promise<[CustomType.UserInfo]> => {
+  getUser: async (parent: void, args: QueryArgInfo): Promise<[ReturnType.UserInfo]> => {
     let arg: ArgType.UserQuery = args.userOption
     let client
     try {
@@ -149,7 +211,7 @@ module.exports = {
   }
 }
 
-function GetUserInfo(postInfo: any): Promise<CustomType.UserInfo> {
+function GetUserInfo(postInfo: any): Promise<ReturnType.UserInfo> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -169,7 +231,7 @@ function GetUserInfo(postInfo: any): Promise<CustomType.UserInfo> {
   })
 }
 
-function GetCommunityPostImage(postInfo: CustomType.CommunityPostInfo): Promise<QueryResult> {
+function GetCommunityPostImage(postInfo: ReturnType.CommunityPostInfo): Promise<QueryResult> {
   return new Promise(async (resolve, reject) => {
     let client
     try {

@@ -72,7 +72,7 @@ export type QueryArgInfo = {
 type QueryCommon = {
   start: number
   first: number
-  sort: SortDirection
+  sort: string
 }
 
 export interface ItemQuery {

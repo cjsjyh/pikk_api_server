@@ -69,7 +69,13 @@ export type RecommendPostInfo = {
 }
 
 export type ItemReviewInfo = {
+  //DB
+  FK_itemId: number
+  FK_postId: number
+  //Review
+  id: number
   itemId: number
+  postId: number
   recommendReason: RecommendReason
   shortReview: string
   score: number
@@ -77,6 +83,11 @@ export type ItemReviewInfo = {
 }
 
 export type ItemReviewCardInfo = {
+  //DB
+  FK_reviewId: number
+  //Card
+  id: number
+  reviewId: number
   title: string
   content: string
   ImgUrl: string

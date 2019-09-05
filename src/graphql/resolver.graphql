@@ -7,7 +7,7 @@ type Query {
   allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
   _allCommunityPostsMetadata: Int!
 
-  allRecommendPosts(recommendPostOption: RecommendPostQuery!): [Boolean!]
+  allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata: Int!
 
   getUser(userOption: UserQuery!): [UserInfo!]

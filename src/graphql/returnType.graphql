@@ -53,7 +53,9 @@ type RecommendPostInfo {
 }
 
 type ItemReviewInfo {
+  id: Int!
   itemId: Int!
+  postId: Int!
   recommendReason: RecommendReason!
   shortReview: String!
   score: Int!
@@ -61,6 +63,8 @@ type ItemReviewInfo {
 }
 
 type ItemReviewCardInfo {
+  id: Int!
+  reviewId: Int!
   title: String!
   content: String!
   ImgUrl: String

@@ -7,6 +7,7 @@ type ItemInfo {
   itemMinorType: ItemMinorType!
   itemMajorType: ItemMajorType!
   imageUrl: String!
+  purchaseUrl: String!
 }
 
 #Return
@@ -43,9 +44,24 @@ type RecommendPostInfo {
 
   id: Int
   title: String!
-  postType: PostType!
+  titleImageUrl: String
+  time: String!
+  postType: RecommendPostType!
   styleType: StyleType!
   content: String!
-  time: String!
-  imageUrl: [String]
+  reviews: [ItemReviewInfo!]!
+}
+
+type ItemReviewInfo {
+  itemId: Int!
+  recommendReason: RecommendReason!
+  shortReview: String!
+  score: Int!
+  cards: [ItemReviewCardInfo!]!
+}
+
+type ItemReviewCardInfo {
+  title: String!
+  content: String!
+  ImgUrl: String
 }

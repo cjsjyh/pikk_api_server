@@ -30,44 +30,7 @@ export type ItemInfo = {
   itemMinorType: string
   itemMajorType: string
   itemImg: File
-}
-
-//Return
-/*
-export type PostInfo = {
-  FK_accountId: number
-  FK_channelId: number
-
-  name: string
-  accountId: number
-  profileImgUrl: string
-
-  id: number
-  channelId: number
-  title: string
-  content: string
-  postType: RecommendPostType
-  styleType: StyleType
-  img: File[]
-  imageUrl: string[]
-  review: itemReviewInfo[]
-}
-*/
-export type RecommendPostInfo = {
-  //DB
-  FK_accountId: number
-  //USER
-  accountId: number
-  name: string
-  profileImgUrl: string
-  //POST
-  id: number
-  title: string
-  postType: RecommendPostType
-  styleType: StyleType
-  content: string
-  time: string
-  imageUrl: string[]
+  purchaseUrl: string
 }
 
 export type CommunityPostInfo = {
@@ -87,13 +50,36 @@ export type CommunityPostInfo = {
   imageUrl: string[]
 }
 
-export type itemReviewInfo = {
+export type RecommendPostInfo = {
+  //DB
+  FK_accountId: number
+  //USER
+  accountId: number
+  name: string
+  profileImgUrl: string
+  //POST
+  id: number
+  title: string
+  titleImageUrl: string
+  time: string
+  postType: RecommendPostType
+  styleType: StyleType
+  content: string
+  reviews: ItemReviewInfo[]
+}
+
+export type ItemReviewInfo = {
   itemId: number
   recommendReason: RecommendReason
   shortReview: string
   score: number
-  reviewImg: File[]
-  reviewImgUrl: string[]
+  cards: ItemReviewCardInfo[]
+}
+
+export type ItemReviewCardInfo = {
+  title: string
+  content: string
+  ImgUrl: string
 }
 
 export type CommentInfo = {

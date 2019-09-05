@@ -1,6 +1,7 @@
 //https://www.apollographql.com/docs/graphql-tools/resolvers/
 
 const { pool } = require("../database/connectionPool")
+import { SequentialPromiseValue } from "./Util"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import * as ArgType from "./type/ArgType"
@@ -127,7 +128,7 @@ module.exports = {
     }
 
     let imageUrl = null
-    if (Object.prototype.hasOwnProperty.call(arg, "img")) {
+    if (Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
       //Upload Image and retrieve URL
     }
 
@@ -147,10 +148,13 @@ module.exports = {
     }
 
     try {
-      let InsertResult = await Promise.all(arg.review.map(item => InsertItemReview(recommendPostId, item)))
-      console.log(InsertResult)
+      let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItem)
+      let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [recommendPostId])
+
       return true
     } catch (e) {
+      console.log("[Error] Failed at Sequential Promise")
+      console.log(e)
       return false
     }
   },
@@ -202,6 +206,7 @@ module.exports = {
     }
   }
 }
+
 function ConvertToTableName(targetName: string): string {
   let tableName = ""
   if (targetName == "RECOMMEND") tableName = '"RECOMMEND_POST_COMMENT"'
@@ -210,7 +215,7 @@ function ConvertToTableName(targetName: string): string {
   return tableName
 }
 
-function InsertItemReview(postId: number, itemReview: ReturnType.itemReviewInfo): Promise<{}> {
+function InsertItemReview(itemReview: ArgType.ItemReviewInfoInput, args: Array<number>): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -219,18 +224,16 @@ function InsertItemReview(postId: number, itemReview: ReturnType.itemReviewInfo)
       reject(e)
     }
 
-    let imageUrl = null
-    if (Object.prototype.hasOwnProperty.call(itemReview, "reviewImg")) {
-      //Upload Image and retrieve URL
-    }
-
     try {
+      console.log(itemReview)
+      let postId = args[0]
       let insertResult = await client.query(
-        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendReason","shortReview","score") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendReason","shortReview","score") VALUES ($1,$2,$3,$4,$5) RETURNING id',
         [itemReview.itemId, postId, itemReview.recommendReason, itemReview.shortReview, itemReview.score]
       )
       client.release()
       let reviewId = insertResult.rows[0].id
+      console.log(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
       resolve(reviewId)
     } catch (e) {
       client.release()
@@ -240,7 +243,7 @@ function InsertItemReview(postId: number, itemReview: ReturnType.itemReviewInfo)
   })
 }
 
-function InsertItem(arg: ReturnType.ItemInfo): Promise<{}> {
+function InsertItem(argReview: ArgType.ItemReviewInfoInput): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -249,6 +252,8 @@ function InsertItem(arg: ReturnType.ItemInfo): Promise<{}> {
       console.log("[Error] Failed Connecting to DB")
       return false
     }
+
+    let arg = argReview.item
 
     let imageUrl = null
     //Temporary//
@@ -259,20 +264,30 @@ function InsertItem(arg: ReturnType.ItemInfo): Promise<{}> {
     }
 
     try {
-      await client.query('INSERT INTO "ITEM"("name","brand","originalPrice","itemMajorType","itemMinorType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6)', [
-        arg.name,
-        arg.brand,
-        arg.originalPrice,
-        arg.itemMajorType,
-        arg.itemMinorType,
-        imageUrl
-      ])
+      let itemId = await client.query(
+        'INSERT INTO "ITEM"("name","brand","originalPrice","itemMajorType","itemMinorType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+        [arg.name, arg.brand, arg.originalPrice, arg.itemMajorType, arg.itemMinorType, imageUrl]
+      )
       client.release()
-      return true
+      console.log(itemId.rows[0].id)
+      argReview.itemId = itemId.rows[0].id
+      resolve()
     } catch (e) {
       client.release()
       console.log("[Error] Failed to Insert into ITEM")
       console.log(e)
+      reject()
+    }
+  })
+}
+
+function InsertItemReviewCard(arg: ArgType.ItemReviewCardInfoInput): Promise<{}> {
+  return new Promise(async (resolve, reject) => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      console.log("[Error] Failed Connecting to DB")
       return false
     }
   })

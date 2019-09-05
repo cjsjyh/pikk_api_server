@@ -1,9 +1,10 @@
 const { pool } = require("../database/connectionPool")
+import { SequentialPromiseValue } from "./Util"
+import { GraphQLResolveInfo } from "graphql"
 import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
 import * as CustomType from "./type/ReturnType"
 import { QueryResult } from "pg"
-import { GraphQLResolveInfo } from "graphql"
 
 module.exports = {
   allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[CustomType.ItemInfo]> => {
@@ -98,10 +99,12 @@ module.exports = {
         item.accountId = item.FK_accountId
         item.name = userResult[index].name
         item.profileImgUrl = userResult[index].profileImgUrl
+        /*
         item.imageUrl = new Array()
         imgResult[index].forEach(image => {
           item.imageUrl.push(image.imageUrl)
         })
+        */
       })
 
       return postResult.rows
@@ -192,34 +195,4 @@ function GetRecommendPostReview<T>(sql: string, parameters: Array<T>): Promise<Q
       reject(e)
     }
   })
-}
-
-async function SequentialPromiseValue<T>(arr: T[], func: Function): Promise<Array<T>> {
-  let resultArr = new Array<T>(arr.length)
-  await Promise.all(
-    arr.map((item: any, index: number) => {
-      return new Promise((resolve, reject) => {
-        func(item, index).then((result: any) => {
-          resultArr[index] = result
-          resolve()
-        })
-      })
-    })
-  )
-  return resultArr
-}
-
-async function SequentialPromise<T>(arr: Promise<{}>[]): Promise<Array<T>> {
-  let resultArr = new Array<any>(arr.length)
-  await Promise.all(
-    arr.map((item: Promise<{}>, index: number) => {
-      return new Promise((resolve, reject) => {
-        item.then((result: any) => {
-          resultArr[index] = result
-          resolve()
-        })
-      })
-    })
-  )
-  return resultArr
 }

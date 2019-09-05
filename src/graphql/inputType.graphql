@@ -42,15 +42,6 @@ input FollowInfoInput {
   targetId: Int!
 }
 
-input ItemInfoInput {
-  name: String!
-  brand: String!
-  originalPrice: Int!
-  itemMinorType: ItemMinorType!
-  itemMajorType: ItemMajorType!
-  itemImg: Upload
-}
-
 input CommunityPostInfoInput {
   accountId: Int!
   channelId: Int!
@@ -66,16 +57,22 @@ input RecommendPostInfoInput {
   postType: RecommendPostType!
   styleType: StyleType!
   titleImg: Upload
-  review: [ItemReviewInfoInput!]!
+  reviews: [ItemReviewInfoInput!]!
 }
 
+#itemId: Int!
 input ItemReviewInfoInput {
-  #itemId: Int!
   item: ItemInfoInput!
   recommendReason: RecommendReason!
   shortReview: String!
   score: Int!
-  reviewImg: [Upload]
+  cards: [ItemReviewCardInfoInput!]!
+}
+
+input ItemReviewCardInfoInput {
+  title: String!
+  content: String!
+  Img: Upload
 }
 
 input CommentInfoInput {
@@ -83,4 +80,14 @@ input CommentInfoInput {
   targetId: Int!
   targetType: PostType!
   content: String!
+}
+
+input ItemInfoInput {
+  name: String!
+  brand: String!
+  originalPrice: Int!
+  itemMinorType: ItemMinorType!
+  itemMajorType: ItemMajorType!
+  purchaseUrl: String!
+  itemImg: Upload
 }

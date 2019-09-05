@@ -1,5 +1,5 @@
 import { SortDirection, ItemSortableField, PostSortableField } from "./enum"
-import { UserInfo, FollowInfo, ItemInfo, CommentInfo, itemReviewInfo } from "./ReturnType"
+import { UserInfo, FollowInfo, ItemInfo, CommentInfo } from "./ReturnType"
 
 import { RecommendPostType, StyleType, RecommendReason } from "./enum"
 
@@ -31,7 +31,32 @@ export type RecommendPostInfoInput = {
   postType: RecommendPostType
   styleType: StyleType
   titleImg: File
-  review: itemReviewInfo[]
+  reviews: ItemReviewInfoInput[]
+}
+
+export type ItemReviewInfoInput = {
+  itemId: number
+  item: ItemInfoInput
+  recommendReason: RecommendReason
+  shortReview: string
+  score: number
+  cards: ItemReviewCardInfoInput[]
+}
+
+export type ItemReviewCardInfoInput = {
+  title: string
+  content: string
+  Img: File
+}
+
+export type ItemInfoInput = {
+  name: string
+  brand: string
+  originalPrice: number
+  itemMinorType: string
+  itemMajorType: string
+  purchaseUrl: string
+  itemImg: File
 }
 
 //--------------

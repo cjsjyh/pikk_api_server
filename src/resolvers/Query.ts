@@ -82,8 +82,6 @@ module.exports = {
   },
 
   allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[ReturnType.RecommendPostInfo]> => {
-    var t0 = performance.now()
-
     let arg: ArgType.RecommendPostQuery = args.recommendPostOption
     let client
     try {
@@ -196,8 +194,6 @@ module.exports = {
         }
       }
 
-      var t1 = performance.now()
-      console.log("Time Elapsed: " + (t1 - t0) + "milliseconds")
       client.release()
       return postResult
     } catch (e) {

@@ -10,6 +10,7 @@ enum ItemSortableField {
   originalPrice
   score
   itemMinorType
+  itemMajorType
 }
 
 enum PostSortableField {
@@ -20,10 +21,73 @@ enum PostSortableField {
 
 enum ItemMajorType {
   OUTER
+  TOP
+  BOTTOM
+  SHOES
+  BAG
+  ACCESSORY
 }
+
+#union ItemMinorType = AccessoryType | BagType | ShoesType | BottomType | TopType | OuterType
 
 enum ItemMinorType {
   TSHIRT
+}
+
+enum OuterType {
+  COAT
+  LEATHER
+  TRENCH
+  LONGPADDING
+  JACKET
+  BLAZER
+  SHORTPADDING
+  MA1
+}
+
+enum TopType {
+  SHORTT
+  LONGT
+  HOOD
+  KNIT
+  CARDIGAN
+  SHIRT
+  SWEATSHIRT
+}
+
+enum BottomType {
+  DENIMPANTS
+  SHORTPANTS
+  COTTONPANTS
+  SLACKS
+  TRAININGPANTS
+}
+
+enum ShoesType {
+  CANVAS
+  LOAFERS
+  BOOTS
+  SANDLESLIPPER
+  RUNNINGSHOES
+  DRESSSHOES
+}
+
+enum BagType {
+  BACKPACK
+  WAISTBAG
+  CROSSBAG
+  CLUTCH
+  ECOBAG
+}
+
+enum AccessoryType {
+  WATCH
+  GLASSES
+  SUNGLASS
+  WALLET
+  BELT
+  HAT
+  ETC
 }
 
 enum RecommendPostType {

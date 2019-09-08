@@ -69,3 +69,11 @@ type ItemReviewCardInfo {
   content: String!
   ImgUrl: String
 }
+
+type CommentInfo {
+  id: Int!
+  postId: Int!
+  accountId: Int!
+  content: String!
+  time: String
+}

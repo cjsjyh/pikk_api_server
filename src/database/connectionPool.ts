@@ -1,4 +1,9 @@
 const { Pool } = require("pg")
+
+console.log(process.env.RDS_PORT)
+console.log(process.env.RDS_USERNAME)
+console.log(process.env.RDS_HOST)
+
 const pool = new Pool({
   user: process.env.RDS_USERNAME,
   host: process.env.RDS_HOST,

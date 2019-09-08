@@ -6,9 +6,15 @@ import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryResult } from "pg"
 import { performance } from "perf_hooks"
+import { BoardType } from "./type/enum"
 
 module.exports = {
-  allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[ReturnType.ItemInfo]> => {
+  allItems: async (
+    parent: void,
+    args: QueryArgInfo,
+    ctx: void,
+    info: GraphQLResolveInfo
+  ): Promise<[ReturnType.ItemInfo]> => {
     let arg: ArgType.ItemQuery = args.itemOption
     let client
     try {
@@ -37,7 +43,12 @@ module.exports = {
     return GetMetaData("ITEM")
   },
 
-  allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[ReturnType.CommunityPostInfo]> => {
+  allCommunityPosts: async (
+    parent: void,
+    args: QueryArgInfo,
+    ctx: void,
+    info: GraphQLResolveInfo
+  ): Promise<[ReturnType.CommunityPostInfo]> => {
     let arg: ArgType.CommunityPostQuery = args.communityPostOption
     let client
     try {
@@ -81,7 +92,12 @@ module.exports = {
     return GetMetaData("COMMUNITY_POST")
   },
 
-  allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<[ReturnType.RecommendPostInfo]> => {
+  allRecommendPosts: async (
+    parent: void,
+    args: QueryArgInfo,
+    ctx: void,
+    info: GraphQLResolveInfo
+  ): Promise<[ReturnType.RecommendPostInfo]> => {
     let arg: ArgType.RecommendPostQuery = args.recommendPostOption
     let client
     try {
@@ -159,7 +175,8 @@ module.exports = {
         //CHECK IF QUERY FOR CARD IS NEEDED
         let cardFlag = false
         let reviewIndex = extractRequest.indexOf("reviews")
-        if (Array.isArray(extractRequest[reviewIndex + 1])) if (extractRequest[reviewIndex + 1].includes("cards")) cardFlag = true
+        if (Array.isArray(extractRequest[reviewIndex + 1]))
+          if (extractRequest[reviewIndex + 1].includes("cards")) cardFlag = true
 
         if (cardFlag) {
           console.log("Querying for cards")
@@ -213,10 +230,24 @@ module.exports = {
     try {
       client = await pool.connect()
     } catch (e) {
+      console.log(e)
       throw new Error("[Error] Failed Connecting to DB")
     }
 
-    arg.filter.id
+    try {
+      let boardName = GetBoardName(arg.boardType)
+      console.log(boardName)
+      /*
+      let queryResult = await client.query(
+        'SELECT * FROM '
+      )
+      */
+      client.release()
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error] Failed to fetch comments")
+    }
 
     return true
   },
@@ -231,7 +262,9 @@ module.exports = {
     }
 
     try {
-      let queryResult = await client.query('SELECT * FROM "USER_INFO" WHERE "FK_accountId"=' + arg.id)
+      let queryResult = await client.query(
+        'SELECT * FROM "USER_INFO" WHERE "FK_accountId"=' + arg.id
+      )
       client.release()
 
       console.log(queryResult.rows)
@@ -254,7 +287,9 @@ function GetUserInfo(postInfo: any): Promise<ReturnType.UserInfo> {
     }
 
     try {
-      let queryResult = await client.query('SELECT * FROM "USER_INFO" where "FK_accountId"=$1', [postInfo.FK_accountId])
+      let queryResult = await client.query('SELECT * FROM "USER_INFO" where "FK_accountId"=$1', [
+        postInfo.FK_accountId
+      ])
       client.release()
       resolve(queryResult.rows[0])
     } catch (e) {
@@ -274,7 +309,10 @@ function GetCommunityPostImage(postInfo: ReturnType.CommunityPostInfo): Promise<
     }
 
     try {
-      let queryResult = await client.query('SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=$1', [postInfo.id])
+      let queryResult = await client.query(
+        'SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=$1',
+        [postInfo.id]
+      )
       client.release()
       console.log(queryResult.rows)
       resolve(queryResult.rows)
@@ -306,4 +344,12 @@ function SearchSelectionSet(selectionset: readonly SelectionNode[]): any {
     }
   })
   return result
+}
+
+function GetBoardName(name: BoardType): string {
+  let boardName = ""
+  if (String(name) == "COMMUNITY") boardName = "COMMUNITY_POST"
+  else if (String(name) == "RECOMMEND") boardName = "RECOMMEND_POST"
+
+  return boardName
 }

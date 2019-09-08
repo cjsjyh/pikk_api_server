@@ -14,8 +14,9 @@ input UserQuery {
 }
 
 input CommentQuery {
-  filter: QueryCommon!
+  filter: QueryCommon
   boardType: BoardType
+  postId: Int!
 }
 
 input CommunityPostQuery {

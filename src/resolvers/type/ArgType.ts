@@ -80,7 +80,6 @@ type QueryCommon = {
   start: number
   first: number
   sort: string
-  id: number
 }
 
 export interface ItemQuery {
@@ -95,6 +94,7 @@ export type UserQuery = {
 export type CommentQuery = {
   filter: QueryCommon
   boardType: BoardType
+  postId: number
 }
 
 export interface CommunityPostQuery {

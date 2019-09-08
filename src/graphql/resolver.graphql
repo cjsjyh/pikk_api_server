@@ -10,6 +10,8 @@ type Query {
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata: Int!
 
+  getComments(commentOption: CommentQuery!): [Boolean!]
+
   getUser(userOption: UserQuery!): [UserInfo!]
 }
 

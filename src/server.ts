@@ -24,7 +24,6 @@ const S3 = new AWS.S3({
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
 import * as fs from "fs"
-import { QueryResult, PoolClient } from "pg"
 
 //Create Express Server
 const app = express()
@@ -58,4 +57,6 @@ app.get("/UploadImage", async (req: express.Request, res: express.Response) => {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 3000 }, (): void => console.log(`GraphQL is now running on http://localhost:3000/graphql`))
+httpServer.listen({ port: 3000 }, (): void =>
+  console.log(`GraphQL is now running on http://localhost:3000/graphql`)
+)

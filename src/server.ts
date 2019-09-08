@@ -5,7 +5,7 @@ import { createServer } from "http"
 import compression from "compression"
 import cors from "cors"
 const path = require("path")
-require('dotenv').config()
+require("dotenv").config()
 
 //IMPORT GRAPHQL RELATED PACKAGES
 import depthLimit from "graphql-depth-limit"
@@ -34,23 +34,8 @@ app.use(compression())
 //Create Apollo Server
 const server = new ApolloServer({
   schema,
-  validationRules: [depthLimit(7)]
+  validationRules: [depthLimit(5)]
 })
-
-// var { pool } = require("./database/connectionPool")
-
-// pool.connect().then((client: PoolClient) => {
-//   client
-//     .query('SELECT * FROM "USER_CONFIDENTIAL"')
-//     .then((res: QueryResult) => {
-//       client.release()
-//       console.log(res)
-//     })
-//     .catch((err:Error) => {
-//       client.release()
-//       console.log(err.stack)
-//     })
-// })
 
 //Add graphql endpoint to Express
 server.applyMiddleware({ app, path: "/graphql" })
@@ -73,6 +58,4 @@ app.get("/UploadImage", async (req: express.Request, res: express.Response) => {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 3000 }, (): void =>
-  console.log(`GraphQL is now running on http://localhost:3000/graphql`)
-)
+httpServer.listen({ port: 3000 }, (): void => console.log(`GraphQL is now running on http://localhost:3000/graphql`))

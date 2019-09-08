@@ -93,13 +93,6 @@ export type ItemReviewCardInfo = {
   ImgUrl: string
 }
 
-export type CommentInfo = {
-  accountId: number
-  targetId: number
-  targetType: string
-  content: string
-}
-
 export type ImageInfo = {
   imageUrl: string
 }

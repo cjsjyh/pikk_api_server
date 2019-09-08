@@ -1,19 +1,25 @@
 import { SortDirection, ItemSortableField, PostSortableField } from "./enum"
-import { UserInfo, FollowInfo, ItemInfo, CommentInfo } from "./ReturnType"
+import { UserInfo, FollowInfo, ItemInfo } from "./ReturnType"
 
-import { RecommendPostType, StyleType, RecommendReason } from "./enum"
+import { RecommendPostType, StyleType, RecommendReason, BoardType } from "./enum"
 
 //--------------
 //   Mutation
 //--------------
-
 export type MutationArgInfo = {
   userInfo: UserInfo
   followInfo: FollowInfo
   itemInfo: ItemInfo
   recommendPostInfo: RecommendPostInfoInput
   communityPostInfo: CommunityPostInfoInput
-  commentInfo: CommentInfo
+  commentInfo: CommentInfoInput
+}
+
+export type CommentInfoInput = {
+  accountId: number
+  targetId: number
+  targetType: string
+  content: string
 }
 
 export type CommunityPostInfoInput = {
@@ -67,12 +73,14 @@ export type QueryArgInfo = {
   userOption: UserQuery
   communityPostOption: CommunityPostQuery
   recommendPostOption: RecommendPostQuery
+  commentOption: CommentQuery
 }
 
 type QueryCommon = {
   start: number
   first: number
   sort: string
+  id: number
 }
 
 export interface ItemQuery {
@@ -82,6 +90,11 @@ export interface ItemQuery {
 
 export type UserQuery = {
   id: number
+}
+
+export type CommentQuery = {
+  filter: QueryCommon
+  boardType: BoardType
 }
 
 export interface CommunityPostQuery {

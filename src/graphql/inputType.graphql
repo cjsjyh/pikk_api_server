@@ -13,6 +13,11 @@ input UserQuery {
   id: Int!
 }
 
+input CommentQuery {
+  filter: QueryCommon!
+  boardType: BoardType
+}
+
 input CommunityPostQuery {
   filter: QueryCommon
   sortBy: PostSortableField = time

@@ -207,6 +207,20 @@ module.exports = {
     return GetMetaData("RECOMMEND_POST")
   },
 
+  getComments: async (parent: void, args: QueryArgInfo): Promise<Boolean> => {
+    let arg: ArgType.CommentQuery = args.commentOption
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    arg.filter.id
+
+    return true
+  },
+
   getUser: async (parent: void, args: QueryArgInfo): Promise<[ReturnType.UserInfo]> => {
     let arg: ArgType.UserQuery = args.userOption
     let client

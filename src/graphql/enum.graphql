@@ -28,6 +28,11 @@ enum ItemMajorType {
   ACCESSORY
 }
 
+enum BoardType {
+  RECOMMEND
+  COMMUNITY
+}
+
 #union ItemMinorType = AccessoryType | BagType | ShoesType | BottomType | TopType | OuterType
 
 enum ItemMinorType {

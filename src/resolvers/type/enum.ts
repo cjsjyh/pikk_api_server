@@ -27,6 +27,11 @@ export enum ItemMajorType {
   OUTER
 }
 
+export enum BoardType {
+  RECOMMEND,
+  COMMUNITY
+}
+
 export enum RecommendPostType {
   RECOMMEND,
   OOTD

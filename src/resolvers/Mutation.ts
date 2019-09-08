@@ -170,7 +170,7 @@ module.exports = {
   },
 
   createComment: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
-    let arg: ReturnType.CommentInfo = args.commentInfo
+    let arg: ArgType.CommentInfoInput = args.commentInfo
     let client
     try {
       client = await pool.connect()

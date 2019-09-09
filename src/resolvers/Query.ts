@@ -184,6 +184,8 @@ module.exports = {
             card.reviewId = card.FK_reviewId
           })
 
+          if (cardResult.length == 0) return postResult
+
           let cardArray: ReturnType.ItemReviewCardInfo[][] = [[]]
           currentId = -1
           cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
@@ -211,8 +213,8 @@ module.exports = {
       client.release()
       return postResult
     } catch (e) {
-      console.log(e)
       client.release()
+      console.log(e)
       throw new Error("[Error] Failed to fetch user data from DB")
     }
   },

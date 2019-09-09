@@ -64,6 +64,7 @@ module.exports = {
         else if (Object.prototype.hasOwnProperty.call(arg.postFilter, "postId")) filterSql = ` where id=${arg.postFilter.postId}`
       }
 
+      console.log(arg)
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
       let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
 

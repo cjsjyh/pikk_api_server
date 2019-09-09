@@ -104,8 +104,7 @@ module.exports = {
     try {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
-        if (Object.prototype.hasOwnProperty.call(arg.postFilter, "accountId")) filterSql = ` where "FK_accountId"=${arg.postFilter.accountId}`
-        else if (Object.prototype.hasOwnProperty.call(arg.postFilter, "postId")) filterSql = ` where id=${arg.postFilter.postId}`
+        filterSql = GetFilterSql(arg.postFilter)
       }
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
@@ -355,4 +354,33 @@ function GetBoardName(name: BoardType): string {
   else if (String(name) == "RECOMMEND") boardName = "RECOMMEND_POST"
 
   return boardName
+}
+
+function GetFilterSql(filter: ArgType.PostQueryFilter): string {
+  let multipleQuery: Boolean = false
+  let filterSql: string = ""
+  if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
+    filterSql = ` where "FK_accountId"=${filter.accountId}`
+    multipleQuery = true
+  } else if (Object.prototype.hasOwnProperty.call(filter, "postId")) {
+    filterSql = ` where id=${filter.postId}`
+    multipleQuery = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "postType")) {
+    if (multipleQuery) filterSql += " and"
+    else filterSql += " where"
+    filterSql += ` "postType"='${filter.postType}'`
+    multipleQuery = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "styleType")) {
+    if (multipleQuery) filterSql += " and"
+    else filterSql += " where"
+    filterSql += ` "styleType"='${filter.styleType}'`
+    multipleQuery = true
+  }
+
+  console.log(filterSql)
+  return filterSql
 }

@@ -34,7 +34,8 @@ export enum BoardType {
 
 export enum RecommendPostType {
   RECOMMEND,
-  OOTD
+  LOOK,
+  SALE
 }
 
 export enum RecommendReason {

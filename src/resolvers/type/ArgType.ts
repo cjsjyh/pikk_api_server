@@ -97,9 +97,11 @@ export type CommentQuery = {
   postId: number
 }
 
-type PostQueryFilter = {
+export type PostQueryFilter = {
   accountId: number
   postId: number
+  postType: RecommendPostType
+  styleType: StyleType
 }
 
 export interface CommunityPostQuery {

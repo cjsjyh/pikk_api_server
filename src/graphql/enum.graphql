@@ -19,6 +19,11 @@ enum PostSortableField {
   viewCount
 }
 
+enum BoardType {
+  RECOMMEND
+  COMMUNITY
+}
+
 enum ItemMajorType {
   OUTER
   TOP
@@ -28,76 +33,10 @@ enum ItemMajorType {
   ACCESSORY
 }
 
-enum BoardType {
-  RECOMMEND
-  COMMUNITY
-}
-
-#union ItemMinorType = AccessoryType | BagType | ShoesType | BottomType | TopType | OuterType
-
-enum ItemMinorType {
-  TSHIRT
-}
-
-enum OuterType {
-  COAT
-  LEATHER
-  TRENCH
-  LONGPADDING
-  JACKET
-  BLAZER
-  SHORTPADDING
-  MA1
-}
-
-enum TopType {
-  SHORTT
-  LONGT
-  HOOD
-  KNIT
-  CARDIGAN
-  SHIRT
-  SWEATSHIRT
-}
-
-enum BottomType {
-  DENIMPANTS
-  SHORTPANTS
-  COTTONPANTS
-  SLACKS
-  TRAININGPANTS
-}
-
-enum ShoesType {
-  CANVAS
-  LOAFERS
-  BOOTS
-  SANDLESLIPPER
-  RUNNINGSHOES
-  DRESSSHOES
-}
-
-enum BagType {
-  BACKPACK
-  WAISTBAG
-  CROSSBAG
-  CLUTCH
-  ECOBAG
-}
-
-enum AccessoryType {
-  WATCH
-  GLASSES
-  SUNGLASS
-  WALLET
-  BELT
-  HAT
-  ETC
-}
-
 enum RecommendPostType {
   RECOMMEND
-  OOTD
+  LOOK
+  SALE
 }
 
 enum RecommendReason {
@@ -124,4 +63,45 @@ enum FollowType {
 enum ProviderType {
   FACEBOOK
   NAVER
+}
+
+enum ItemMinorType {
+  COAT
+  LEATHER
+  TRENCH
+  LONGPADDING
+  JACKET
+  BLAZER
+  SHORTPADDING
+  MA1
+  SHORTT
+  LONGT
+  HOOD
+  KNIT
+  CARDIGAN
+  SHIRT
+  SWEATSHIRT
+  DENIMPANTS
+  SHORTPANTS
+  COTTONPANTS
+  SLACKS
+  TRAININGPANTS
+  CANVAS
+  LOAFERS
+  BOOTS
+  SANDLESLIPPER
+  RUNNINGSHOES
+  DRESSSHOES
+  BACKPACK
+  WAISTBAG
+  CROSSBAG
+  CLUTCH
+  ECOBAG
+  WATCH
+  GLASSES
+  SUNGLASS
+  WALLET
+  BELT
+  HAT
+  ETC
 }

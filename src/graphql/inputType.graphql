@@ -26,6 +26,8 @@ input CommentQuery {
 input PostQueryFilter {
   accountId: Int
   postId: Int
+  postType: RecommendPostType
+  styleType: StyleType
 }
 
 input CommunityPostQuery {
@@ -76,7 +78,7 @@ input RecommendPostInfoInput {
   title: String!
   content: String!
   postType: RecommendPostType!
-  styleType: StyleType!
+  styleType: StyleType
   titleImg: Upload
   reviews: [ItemReviewInfoInput!]!
 }

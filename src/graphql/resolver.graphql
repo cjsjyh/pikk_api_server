@@ -12,14 +12,15 @@ type Query {
 
   getComments(commentOption: CommentQuery!): [CommentInfo!]
 
-  getUser(userOption: UserQuery!): [UserInfo!]
+  getUserInfo(userOption: UserQuery!): [UserInfo!]
 }
 
 type Mutation {
+  createUser(userAccountInfo: UserCredentialInput!): Boolean!
   """
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
-  createUser(userInfo: UserInfoInput!): Boolean!
+  createUserInfo(userInfo: UserInfoInput!): Boolean!
 
   """
   Return >  [true] : DB save successful  [false] : DB save unsuccessful

@@ -2,9 +2,6 @@ import { RecommendPostType, StyleType, RecommendReason } from "./enum"
 
 //Return
 export type UserInfo = {
-  providerType: string
-  providerId: number
-
   name: string
   email: string
   age: number
@@ -12,7 +9,6 @@ export type UserInfo = {
   weight: number
   profileImg: File
   profileImgUrl: string
-
   phoneNum: number
   address: string
 }
@@ -23,8 +19,15 @@ export type FollowInfo = {
   accountId: number
 }
 
+export type UserCredentialInfo = {
+  isNewUser: boolean
+  id: number
+  token: string
+}
+
 //Return
 export type ItemInfo = {
+  id: number
   name: string
   brand: string
   originalPrice: number
@@ -32,6 +35,8 @@ export type ItemInfo = {
   itemMajorType: string
   itemImg: File
   purchaseUrl: string
+
+  pickCount: number
 }
 
 export type CommunityPostInfo = {

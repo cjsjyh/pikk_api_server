@@ -1,5 +1,5 @@
-import { SortDirection, ItemSortableField, PostSortableField } from "./enum"
-import { UserInfo, FollowInfo, ItemInfo } from "./ReturnType"
+import { ItemSortableField, PostSortableField } from "./enum"
+import { FollowInfo, ItemInfo } from "./ReturnType"
 
 import { RecommendPostType, StyleType, RecommendReason, BoardType } from "./enum"
 
@@ -7,12 +7,31 @@ import { RecommendPostType, StyleType, RecommendReason, BoardType } from "./enum
 //   Mutation
 //--------------
 export type MutationArgInfo = {
-  userInfo: UserInfo
+  userAccountInfo: UserCredentialInput
+  userInfo: UserInfoInput
   followInfo: FollowInfo
   itemInfo: ItemInfo
   recommendPostInfo: RecommendPostInfoInput
   communityPostInfo: CommunityPostInfoInput
   commentInfo: CommentInfoInput
+}
+
+export type UserCredentialInput = {
+  providerType: string
+  providerId: number
+}
+
+export type UserInfoInput = {
+  id: number
+  name: string
+  email: string
+  age: number
+  height: number
+  weight: number
+  profileImg: File
+  profileImgUrl: string
+  phoneNum: number
+  address: string
 }
 
 export type CommentInfoInput = {

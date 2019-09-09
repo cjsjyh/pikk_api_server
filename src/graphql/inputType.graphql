@@ -46,9 +46,13 @@ input RecommendPostQuery {
 #       Mutation
 #----------------------------
 
-input UserInfoInput {
+input UserCredentialInput {
   providerType: ProviderType!
   providerId: Int!
+}
+
+input UserInfoInput {
+  id: Int!
   name: String!
   email: String!
   age: Int!

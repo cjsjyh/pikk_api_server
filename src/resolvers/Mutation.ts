@@ -1,14 +1,57 @@
 //https://www.apollographql.com/docs/graphql-tools/resolvers/
-
+var jwt = require("jsonwebtoken")
 const { pool } = require("../database/connectionPool")
+
 import { SequentialPromiseValue } from "./Util"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import * as ArgType from "./type/ArgType"
 
 module.exports = {
-  createUser: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
-    let arg: ReturnType.UserInfo = args.userInfo
+  createUser: async (parent: void, args: MutationArgInfo): Promise<ReturnType.UserCredentialInfo> => {
+    let arg: ArgType.UserCredentialInput = args.userAccountInfo
+    //Make Connection
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      console.log(e)
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    //Make UserCredential
+    try {
+      let userAccount: ReturnType.UserCredentialInfo
+      let qResult = await client.query(
+        `INSERT INTO "USER_CONFIDENTIAL" ("providerType", "providerId") VALUES ($1,$2) ON CONFLICT DO NOTHING RETURNING id`,
+        [arg.providerType, arg.providerId]
+      )
+      if (qResult.rows.length == 0) {
+        qResult = await client.query(
+          `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"=${arg.providerId}`
+        )
+        userAccount = qResult.rows[0]
+        userAccount.isNewUser = false
+        userAccount.token = jwt.sign({ id: userAccount.id }, "TESTTTT")
+      } else {
+        userAccount = qResult.rows[0]
+        userAccount.isNewUser = true
+        userAccount.token = jwt.sign({ id: userAccount.id }, "TESTTTT")
+      }
+      client.release()
+      console.log(userAccount)
+      var decoded = jwt.verify(userAccount.token, "TESTTTT")
+      console.log(decoded)
+      return userAccount
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error]")
+    }
+  },
+
+  createUserInfo: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
+    let arg: ArgType.UserInfoInput = args.userInfo
     //Make Connection
     let client
     try {
@@ -19,30 +62,23 @@ module.exports = {
     }
 
     //Make UserCredential
-    let id
     try {
-      let qResult = await client.query('INSERT INTO "USER_CONFIDENTIAL"("providerType","providerId") VALUES ($1,$2) RETURNING *', [
-        arg.providerType,
-        arg.providerId
-      ])
-      id = qResult.rows[0].id
-
       let profileImgUrl = null
       if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
         //Upload Image and retrieve URL
       }
 
-      qResult = await client.query(
+      let qResult = await client.query(
         'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-        [id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
+        [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
       )
 
-      await client.query('INSERT INTO "CHANNEL"("FK_accountId") VALUES ($1)', [id])
+      await client.query('INSERT INTO "CHANNEL"("FK_accountId") VALUES ($1)', [arg.id])
       client.release()
       return true
     } catch (e) {
       client.release()
-      console.log("[Error] Failed to Insert into USER_CONFIDENTIAL")
+      console.log("[Error] Failed to Insert into USER_INFO")
       console.log(e)
       return false
     }

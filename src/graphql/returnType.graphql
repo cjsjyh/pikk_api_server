@@ -8,6 +8,8 @@ type ItemInfo {
   itemMajorType: ItemMajorType!
   imageUrl: String!
   purchaseUrl: String!
+
+  pickCount: Int!
 }
 
 #Return
@@ -20,6 +22,12 @@ type UserInfo {
   profileImg: Upload
   phoneNum: String
   address: String
+}
+
+type UserCredentialInfo {
+  isNewUser: Boolean!
+  id: Int!
+  token: String!
 }
 
 #Return

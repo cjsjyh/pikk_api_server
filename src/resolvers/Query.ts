@@ -27,6 +27,9 @@ module.exports = {
       let queryResult = await client.query('SELECT * FROM "ITEM"' + sortSql + limitSql)
       client.release()
       let itemResult: ReturnType.ItemInfo[] = queryResult.rows
+
+      itemResult.forEach(item => {})
+
       return itemResult
     } catch (e) {
       client.release()
@@ -259,7 +262,7 @@ module.exports = {
     }
   },
 
-  getUser: async (parent: void, args: QueryArgInfo): Promise<[ReturnType.UserInfo]> => {
+  getUserInfo: async (parent: void, args: QueryArgInfo): Promise<[ReturnType.UserInfo]> => {
     let arg: ArgType.UserQuery = args.userOption
     let client
     try {

@@ -42,6 +42,8 @@ type RecommendPostInfo {
   name: String!
   profileImgUrl: String
 
+  pickCount: Int!
+
   id: Int
   title: String!
   titleImageUrl: String

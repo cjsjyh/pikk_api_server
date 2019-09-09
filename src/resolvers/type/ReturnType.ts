@@ -58,6 +58,8 @@ export type RecommendPostInfo = {
   accountId: number
   name: string
   profileImgUrl: string
+  //LOOK
+  pickCount: number
   //POST
   id: number
   title: string

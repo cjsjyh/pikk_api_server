@@ -4,7 +4,7 @@ import { GraphQLResolveInfo, SelectionNode } from "graphql"
 import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
-import { QueryResult } from "pg"
+import { QueryResult, Pool, PoolClient } from "pg"
 import { performance } from "perf_hooks"
 import { BoardType } from "./type/enum"
 
@@ -92,7 +92,7 @@ module.exports = {
 
   allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
     let arg: ArgType.RecommendPostQuery = args.recommendPostOption
-    let client
+    let client: PoolClient
     try {
       client = await pool.connect()
     } catch (e) {
@@ -113,15 +113,16 @@ module.exports = {
       let postSql = 'SELECT * FROM "RECOMMEND_POST"' + filterSql + sortSql + limitSql
       queryResult = await client.query(postSql)
       let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
-      postResult.forEach((post: ReturnType.RecommendPostInfo) => {
-        post.accountId = post.FK_accountId
-        post.reviews = []
-      })
-
       if (postResult.length == 0) {
         client.release()
         return []
       }
+      postResult.forEach(async (post: ReturnType.RecommendPostInfo) => {
+        post.accountId = post.FK_accountId
+        post.reviews = []
+        queryResult = await client.query(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
+        post.pickCount = queryResult.rows[0].count
+      })
 
       let extractRequest: string[] = []
       if (info.fieldNodes[0].selectionSet !== undefined) {
@@ -133,12 +134,10 @@ module.exports = {
         let reviewSql = `WITH aaa AS (${postSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_postId") FROM "ITEM_REVIEW" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
         queryResult = await client.query(reviewSql)
         let reviewResult: ReturnType.ItemReviewInfo[] = queryResult.rows
-
         if (reviewResult.length == 0) {
           client.release()
           return postResult
         }
-
         reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
           review.itemId = review.FK_itemId
           review.postId = review.FK_postId
@@ -187,14 +186,13 @@ module.exports = {
           let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`
           queryResult = await client.query(cardSql)
           let cardResult: ReturnType.ItemReviewCardInfo[] = queryResult.rows
-          cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
-            card.reviewId = card.FK_reviewId
-          })
-
           if (cardResult.length == 0) {
             client.release()
             return postResult
           }
+          cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
+            card.reviewId = card.FK_reviewId
+          })
 
           let cardArray: ReturnType.ItemReviewCardInfo[][] = [[]]
           currentId = -1
@@ -273,8 +271,6 @@ module.exports = {
     try {
       let queryResult = await client.query('SELECT * FROM "USER_INFO" WHERE "FK_accountId"=' + arg.id)
       client.release()
-
-      console.log(queryResult.rows)
       return queryResult.rows
     } catch (e) {
       client.release()

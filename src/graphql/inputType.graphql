@@ -1,3 +1,7 @@
+#----------------------------
+#       Query
+#----------------------------
+
 input QueryCommon {
   start: Int = 0
   first: Int = 50
@@ -29,9 +33,13 @@ input RecommendPostQuery {
   sortBy: PostSortableField = time
 }
 
+#----------------------------
+#       Mutation
+#----------------------------
+
 input UserInfoInput {
-  username: String!
-  password: String!
+  providerType: ProviderType!
+  providerId: Int!
   name: String!
   email: String!
   age: Int!
@@ -94,6 +102,6 @@ input ItemInfoInput {
   originalPrice: Int!
   itemMinorType: ItemMinorType!
   itemMajorType: ItemMajorType!
-  purchaseUrl: String!
+  purchaseUrl: String
   itemImg: Upload
 }

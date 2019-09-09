@@ -120,3 +120,8 @@ enum FollowType {
   CHANNEL
   RECOMMENDPOST
 }
+
+enum ProviderType {
+  FACEBOOK
+  NAVER
+}

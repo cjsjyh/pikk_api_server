@@ -21,9 +21,9 @@ module.exports = {
     //Make UserCredential
     let id
     try {
-      let qResult = await client.query('INSERT INTO "USER_CONFIDENTIAL"("username","password") VALUES ($1,$2) RETURNING *', [
-        arg.username,
-        arg.password
+      let qResult = await client.query('INSERT INTO "USER_CONFIDENTIAL"("providerType","providerId") VALUES ($1,$2) RETURNING *', [
+        arg.providerType,
+        arg.providerId
       ])
       id = qResult.rows[0].id
 

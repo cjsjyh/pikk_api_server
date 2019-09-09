@@ -2,8 +2,9 @@ import { RecommendPostType, StyleType, RecommendReason } from "./enum"
 
 //Return
 export type UserInfo = {
-  username: string
-  password: string
+  providerType: string
+  providerId: number
+
   name: string
   email: string
   age: number

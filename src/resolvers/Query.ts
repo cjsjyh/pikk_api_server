@@ -119,6 +119,11 @@ module.exports = {
         post.reviews = []
       })
 
+      if (postResult.length == 0) {
+        client.release()
+        return []
+      }
+
       let extractRequest: string[] = []
       if (info.fieldNodes[0].selectionSet !== undefined) {
         let requestedDataArray = info.fieldNodes[0].selectionSet.selections
@@ -130,7 +135,10 @@ module.exports = {
         queryResult = await client.query(reviewSql)
         let reviewResult: ReturnType.ItemReviewInfo[] = queryResult.rows
 
-        if (reviewResult.length == 0) return postResult
+        if (reviewResult.length == 0) {
+          client.release()
+          return postResult
+        }
 
         reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
           review.itemId = review.FK_itemId
@@ -184,7 +192,10 @@ module.exports = {
             card.reviewId = card.FK_reviewId
           })
 
-          if (cardResult.length == 0) return postResult
+          if (cardResult.length == 0) {
+            client.release()
+            return postResult
+          }
 
           let cardArray: ReturnType.ItemReviewCardInfo[][] = [[]]
           currentId = -1

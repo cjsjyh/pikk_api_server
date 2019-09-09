@@ -24,7 +24,13 @@ module.exports = {
     limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
 
     try {
-      let queryResult = await client.query('SELECT * FROM "ITEM"' + sortSql + limitSql)
+      let filterSql: string = ""
+      if (Object.prototype.hasOwnProperty.call(arg, "itemFilter")) {
+        filterSql = GetItemFilterSql(arg.itemFilter)
+      }
+
+      console.log('SELECT * FROM "ITEM"' + filterSql + sortSql + limitSql)
+      let queryResult = await client.query('SELECT * FROM "ITEM"' + filterSql + sortSql + limitSql)
       client.release()
       let itemResult: ReturnType.ItemInfo[] = queryResult.rows
 
@@ -107,7 +113,7 @@ module.exports = {
     try {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
-        filterSql = GetFilterSql(arg.postFilter)
+        filterSql = GetRecommendPostFilterSql(arg.postFilter)
       }
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
@@ -355,7 +361,7 @@ function GetBoardName(name: BoardType): string {
   return boardName
 }
 
-function GetFilterSql(filter: ArgType.PostQueryFilter): string {
+function GetRecommendPostFilterSql(filter: ArgType.PostQueryFilter): string {
   let multipleQuery: Boolean = false
   let filterSql: string = ""
   if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
@@ -380,6 +386,25 @@ function GetFilterSql(filter: ArgType.PostQueryFilter): string {
     multipleQuery = true
   }
 
+  console.log(filterSql)
+  return filterSql
+}
+
+function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
+  let multipleQuery: Boolean = false
+  let filterSql: string = ""
+
+  if (Object.prototype.hasOwnProperty.call(filter, "itemMajorType")) {
+    filterSql = ` where "itemMajorType"='${filter.itemMajorType}'`
+    multipleQuery = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "itemMinorType")) {
+    if (multipleQuery) filterSql += " and"
+    else filterSql += " where"
+    filterSql += ` "itemMinorType"='${filter.itemMinorType}'`
+    multipleQuery = true
+  }
   console.log(filterSql)
   return filterSql
 }

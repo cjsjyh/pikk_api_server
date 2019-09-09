@@ -39,9 +39,7 @@ module.exports = {
         userAccount.token = jwt.sign({ id: userAccount.id }, "TESTTTT")
       }
       client.release()
-      console.log(userAccount)
-      var decoded = jwt.verify(userAccount.token, "TESTTTT")
-      console.log(decoded)
+      //var decoded = jwt.verify(userAccount.token, "TESTTTT")
       return userAccount
     } catch (e) {
       client.release()

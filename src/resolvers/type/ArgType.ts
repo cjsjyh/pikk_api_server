@@ -1,4 +1,4 @@
-import { ItemSortableField, PostSortableField } from "./enum"
+import { ItemSortableField, PostSortableField, ItemMajorType, ItemMinorType } from "./enum"
 import { FollowInfo, ItemInfo } from "./ReturnType"
 
 import { RecommendPostType, StyleType, RecommendReason, BoardType } from "./enum"
@@ -101,8 +101,14 @@ type QueryCommon = {
   sort: string
 }
 
+export type ItemQueryFilter = {
+  itemMajorType: ItemMajorType
+  itemMinorType: ItemMinorType
+}
+
 export interface ItemQuery {
   filterCommon: QueryCommon
+  itemFilter: ItemQueryFilter
   sortBy: ItemSortableField
 }
 

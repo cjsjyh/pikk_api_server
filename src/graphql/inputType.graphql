@@ -8,8 +8,14 @@ input QueryCommon {
   sort: SortDirection = DESC
 }
 
+input ItemQueryFilter {
+  itemMajorType: ItemMajorType
+  itemMinorType: ItemMinorType
+}
+
 input ItemQuery {
   filterCommon: QueryCommon
+  itemFilter: ItemQueryFilter
   sortBy: ItemSortableField = score
 }
 

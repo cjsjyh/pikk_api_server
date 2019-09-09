@@ -9,7 +9,7 @@ input QueryCommon {
 }
 
 input ItemQuery {
-  filter: QueryCommon
+  filterCommon: QueryCommon
   sortBy: ItemSortableField = score
 }
 
@@ -18,18 +18,25 @@ input UserQuery {
 }
 
 input CommentQuery {
-  filter: QueryCommon
+  filterCommon: QueryCommon
   boardType: BoardType!
   postId: Int!
 }
 
+input PostQueryFilter {
+  accountId: Int
+  postId: Int
+}
+
 input CommunityPostQuery {
-  filter: QueryCommon
+  filterCommon: QueryCommon
+  postFilter: PostQueryFilter
   sortBy: PostSortableField = time
 }
 
 input RecommendPostQuery {
-  filter: QueryCommon
+  filterCommon: QueryCommon!
+  postFilter: PostQueryFilter
   sortBy: PostSortableField = time
 }
 

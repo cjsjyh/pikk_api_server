@@ -83,7 +83,7 @@ type QueryCommon = {
 }
 
 export interface ItemQuery {
-  filter: QueryCommon
+  filterCommon: QueryCommon
   sortBy: ItemSortableField
 }
 
@@ -92,19 +92,24 @@ export type UserQuery = {
 }
 
 export type CommentQuery = {
-  filter: QueryCommon
+  filterCommon: QueryCommon
   boardType: BoardType
   postId: number
 }
 
-export interface CommunityPostQuery {
-  filter: QueryCommon
+type PostQueryFilter = {
   accountId: number
+  postId: number
+}
+
+export interface CommunityPostQuery {
+  filterCommon: QueryCommon
+  postFilter: PostQueryFilter
   sortBy: PostSortableField
 }
 
 export interface RecommendPostQuery {
-  filter: QueryCommon
-  accountId: number
+  filterCommon: QueryCommon
+  postFilter: PostQueryFilter
   sortBy: PostSortableField
 }

@@ -19,9 +19,9 @@ module.exports = {
     }
 
     let sortSql: string
-    sortSql = " ORDER BY " + arg.sortBy + " " + arg.filter.sort
+    sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
     let limitSql: string
-    limitSql = " LIMIT " + arg.filter.first + " OFFSET " + arg.filter.start
+    limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
 
     try {
       let queryResult = await client.query('SELECT * FROM "ITEM"' + sortSql + limitSql)
@@ -48,12 +48,17 @@ module.exports = {
       throw new Error("[Error] Failed Connecting to DB")
     }
 
-    let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filter.sort
-    let limitSql = " LIMIT " + arg.filter.first + " OFFSET " + arg.filter.start
-
-    let queryResult, imgResult: QueryResult
     try {
-      queryResult = await client.query('SELECT * FROM "COMMUNITY_POST"' + sortSql + limitSql)
+      let filterSql: string = ""
+      if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
+        if (Object.prototype.hasOwnProperty.call(arg.postFilter, "accountId")) filterSql = ` where "FK_accountId"=${arg.postFilter.accountId}`
+        else if (Object.prototype.hasOwnProperty.call(arg.postFilter, "postId")) filterSql = ` where "FK_accountId"=${arg.postFilter.postId}`
+      }
+
+      let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
+      let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+
+      let queryResult = await client.query('SELECT * FROM "COMMUNITY_POST"' + filterSql + sortSql + limitSql)
 
       let PromiseResult: any = await Promise.all([
         SequentialPromiseValue(queryResult.rows, GetCommunityPostImage),
@@ -76,7 +81,8 @@ module.exports = {
 
       return postResult
     } catch (e) {
-      throw new Error("[Error] Failed to fetch user data from DB")
+      console.log(e)
+      throw new Error("[Error] Failed to fetch community post from DB")
     }
   },
 
@@ -94,18 +100,24 @@ module.exports = {
       throw new Error("[Error] Failed Connecting to DB")
     }
 
-    let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filter.sort
-    let limitSql = " LIMIT " + arg.filter.first + " OFFSET " + arg.filter.start
-
-    let extractRequest: string[] = []
-    if (info.fieldNodes[0].selectionSet !== undefined) {
-      let requestedDataArray = info.fieldNodes[0].selectionSet.selections
-      extractRequest = SearchSelectionSet(requestedDataArray)
-    }
-
     let queryResult: QueryResult
     try {
-      let postSql = 'SELECT * FROM "RECOMMEND_POST"' + sortSql + limitSql
+      let filterSql: string = ""
+      if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
+        if (Object.prototype.hasOwnProperty.call(arg.postFilter, "accountId")) filterSql = ` where "FK_accountId"=${arg.postFilter.accountId}`
+        else if (Object.prototype.hasOwnProperty.call(arg.postFilter, "postId")) filterSql = ` where "FK_accountId"=${arg.postFilter.postId}`
+      }
+
+      let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
+      let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+
+      let extractRequest: string[] = []
+      if (info.fieldNodes[0].selectionSet !== undefined) {
+        let requestedDataArray = info.fieldNodes[0].selectionSet.selections
+        extractRequest = SearchSelectionSet(requestedDataArray)
+      }
+
+      let postSql = 'SELECT * FROM "RECOMMEND_POST"' + filterSql + sortSql + limitSql
       queryResult = await client.query(postSql)
       let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
       postResult.forEach((post: ReturnType.RecommendPostInfo) => {
@@ -136,7 +148,7 @@ module.exports = {
 
         //Add review to Post
         let i
-        if (arg.filter.sort == "ASC") i = 0
+        if (arg.filterCommon.sort == "ASC") i = 0
         else i = reviewArray.length - 1
 
         let j = 0
@@ -148,7 +160,7 @@ module.exports = {
               break
             }
           }
-          if (arg.filter.sort == "ASC") {
+          if (arg.filterCommon.sort == "ASC") {
             ++i
             if (i >= reviewResult.length) break
           } else {

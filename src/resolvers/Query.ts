@@ -52,7 +52,7 @@ module.exports = {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
         if (Object.prototype.hasOwnProperty.call(arg.postFilter, "accountId")) filterSql = ` where "FK_accountId"=${arg.postFilter.accountId}`
-        else if (Object.prototype.hasOwnProperty.call(arg.postFilter, "postId")) filterSql = ` where "FK_accountId"=${arg.postFilter.postId}`
+        else if (Object.prototype.hasOwnProperty.call(arg.postFilter, "postId")) filterSql = ` where id=${arg.postFilter.postId}`
       }
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
@@ -105,17 +105,11 @@ module.exports = {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
         if (Object.prototype.hasOwnProperty.call(arg.postFilter, "accountId")) filterSql = ` where "FK_accountId"=${arg.postFilter.accountId}`
-        else if (Object.prototype.hasOwnProperty.call(arg.postFilter, "postId")) filterSql = ` where "FK_accountId"=${arg.postFilter.postId}`
+        else if (Object.prototype.hasOwnProperty.call(arg.postFilter, "postId")) filterSql = ` where id=${arg.postFilter.postId}`
       }
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
       let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
-
-      let extractRequest: string[] = []
-      if (info.fieldNodes[0].selectionSet !== undefined) {
-        let requestedDataArray = info.fieldNodes[0].selectionSet.selections
-        extractRequest = SearchSelectionSet(requestedDataArray)
-      }
 
       let postSql = 'SELECT * FROM "RECOMMEND_POST"' + filterSql + sortSql + limitSql
       queryResult = await client.query(postSql)
@@ -125,11 +119,19 @@ module.exports = {
         post.reviews = []
       })
 
+      let extractRequest: string[] = []
+      if (info.fieldNodes[0].selectionSet !== undefined) {
+        let requestedDataArray = info.fieldNodes[0].selectionSet.selections
+        extractRequest = SearchSelectionSet(requestedDataArray)
+      }
       //CHECK IF QUERY FOR REVIEW IS NEEDED
       if (extractRequest.includes("reviews")) {
         let reviewSql = `WITH aaa AS (${postSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_postId") FROM "ITEM_REVIEW" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
         queryResult = await client.query(reviewSql)
         let reviewResult: ReturnType.ItemReviewInfo[] = queryResult.rows
+
+        if (reviewResult.length == 0) return postResult
+
         reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
           review.itemId = review.FK_itemId
           review.postId = review.FK_postId
@@ -175,7 +177,6 @@ module.exports = {
         if (Array.isArray(extractRequest[reviewIndex + 1])) if (extractRequest[reviewIndex + 1].includes("cards")) cardFlag = true
 
         if (cardFlag) {
-          console.log("Querying for cards")
           let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`
           queryResult = await client.query(cardSql)
           let cardResult: ReturnType.ItemReviewCardInfo[] = queryResult.rows

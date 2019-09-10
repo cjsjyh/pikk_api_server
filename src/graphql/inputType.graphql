@@ -32,19 +32,29 @@ input CommentQuery {
 input PostQueryFilter {
   accountId: Int
   postId: Int
-  postType: RecommendPostType
+}
+
+input CommunityPostQueryFilter {
+  filterCommon: PostQueryFilter
+  postType: CommunityPostType!
+  qnaType: QNAType
+}
+
+input RecommendPostQueryFilter {
+  filterCommon: PostQueryFilter
+  postType: RecommendPostType!
   styleType: StyleType
 }
 
 input CommunityPostQuery {
   filterCommon: QueryCommon!
-  postFilter: PostQueryFilter
+  postFilter: CommunityPostQueryFilter!
   sortBy: PostSortableField = time
 }
 
 input RecommendPostQuery {
   filterCommon: QueryCommon!
-  postFilter: PostQueryFilter
+  postFilter: RecommendPostQueryFilter!
   sortBy: PostSortableField = time
 }
 
@@ -80,6 +90,8 @@ input CommunityPostInfoInput {
   channelId: Int!
   title: String!
   content: String!
+  postType: CommunityPostType!
+  qnaType: QNAType
   img: [Upload]
 }
 

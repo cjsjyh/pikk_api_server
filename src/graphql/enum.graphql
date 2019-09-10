@@ -39,6 +39,11 @@ enum RecommendPostType {
   SALE
 }
 
+enum CommunityPostType {
+  QNA
+  CHANNEL_POST
+}
+
 enum RecommendReason {
   DESIGN
   PRICE

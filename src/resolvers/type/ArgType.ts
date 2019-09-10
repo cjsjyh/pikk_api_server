@@ -43,6 +43,8 @@ export type CommunityPostInfoInput = {
   channelId: number
   title: string
   content: string
+  postType: string
+  qnaType: string
   img: File[]
 }
 
@@ -122,18 +124,28 @@ export type CommentQuery = {
 export type PostQueryFilter = {
   accountId: number
   postId: number
+}
+
+export type CommunityPostQueryFilter = {
+  filterCommon: PostQueryFilter
+  postType: string
+  qnaType: string
+}
+
+export type RecommendPostQueryFilter = {
+  filterCommon: PostQueryFilter
   postType: string
   styleType: string
 }
 
 export interface CommunityPostQuery {
   filterCommon: QueryCommon
-  postFilter: PostQueryFilter
+  postFilter: CommunityPostQueryFilter
   sortBy: string
 }
 
 export interface RecommendPostQuery {
   filterCommon: QueryCommon
-  postFilter: PostQueryFilter
+  postFilter: RecommendPostQueryFilter
   sortBy: string
 }

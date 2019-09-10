@@ -4,7 +4,7 @@ import { GraphQLResolveInfo, SelectionNode } from "graphql"
 import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
-import { QueryResult, Pool, PoolClient } from "pg"
+import { QueryResult, PoolClient } from "pg"
 import { performance } from "perf_hooks"
 
 module.exports = {
@@ -59,8 +59,7 @@ module.exports = {
     try {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
-        if (Object.prototype.hasOwnProperty.call(arg.postFilter, "accountId")) filterSql = ` where "FK_accountId"=${arg.postFilter.accountId}`
-        else if (Object.prototype.hasOwnProperty.call(arg.postFilter, "postId")) filterSql = ` where id=${arg.postFilter.postId}`
+        filterSql = GetPostFilterSql(arg.postFilter)
       }
 
       console.log(arg)
@@ -113,7 +112,8 @@ module.exports = {
     try {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
-        filterSql = GetRecommendPostFilterSql(arg.postFilter)
+        console.log(arg)
+        filterSql = GetPostFilterSql(arg.postFilter)
       }
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
@@ -361,15 +361,19 @@ function GetBoardName(name: string): string {
   return boardName
 }
 
-function GetRecommendPostFilterSql(filter: ArgType.PostQueryFilter): string {
+//ArgType.RecommendPostQueryFilter
+function GetPostFilterSql(filter: any): string {
+  console.log(filter)
   let multipleQuery: Boolean = false
   let filterSql: string = ""
-  if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
-    filterSql = ` where "FK_accountId"=${filter.accountId}`
-    multipleQuery = true
-  } else if (Object.prototype.hasOwnProperty.call(filter, "postId")) {
-    filterSql = ` where id=${filter.postId}`
-    multipleQuery = true
+  if (Object.prototype.hasOwnProperty.call(filter, "filterCommon")) {
+    if (Object.prototype.hasOwnProperty.call(filter.filterCommon, "accountId")) {
+      filterSql = ` where "FK_accountId"=${filter.filterCommon.accountId}`
+      multipleQuery = true
+    } else if (Object.prototype.hasOwnProperty.call(filter.filterCommon, "postId")) {
+      filterSql = ` where id=${filter.filterCommon.postId}`
+      multipleQuery = true
+    }
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "postType")) {

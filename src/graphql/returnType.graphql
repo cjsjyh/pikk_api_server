@@ -42,6 +42,8 @@ type CommunityPostInfo {
   content: String!
   time: String!
   imageUrl: [String]
+  postType: String!
+  qnaType: String
 }
 
 #Return
@@ -56,10 +58,10 @@ type RecommendPostInfo {
   title: String!
   titleImageUrl: String
   time: String!
-  postType: RecommendPostType!
-  styleType: StyleType!
   content: String!
   reviews: [ItemReviewInfo!]!
+  postType: RecommendPostType!
+  styleType: StyleType!
 }
 
 type ItemReviewInfo {

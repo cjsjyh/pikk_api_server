@@ -134,12 +134,10 @@ module.exports = {
     console.log(arg)
 
     try {
-      await client.query('INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content") VALUES ($1,$2,$3,$4)', [
-        arg.accountId,
-        arg.channelId,
-        arg.title,
-        arg.content
-      ])
+      await client.query(
+        'INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content","postType","qnaType") VALUES ($1,$2,$3,$4,$5,$6)',
+        [arg.accountId, arg.channelId, arg.title, arg.content, arg.postType, arg.qnaType]
+      )
       client.release()
 
       return true

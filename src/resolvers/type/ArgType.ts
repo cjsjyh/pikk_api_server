@@ -1,7 +1,4 @@
-import { ItemSortableField, PostSortableField, ItemMajorType, ItemMinorType } from "./enum"
 import { FollowInfo, ItemInfo } from "./ReturnType"
-
-import { RecommendPostType, StyleType, RecommendReason, BoardType } from "./enum"
 
 //--------------
 //   Mutation
@@ -53,8 +50,8 @@ export type RecommendPostInfoInput = {
   accountId: number
   title: string
   content: string
-  postType: RecommendPostType
-  styleType: StyleType
+  postType: string
+  styleType: string
   titleImg: File
   reviews: ItemReviewInfoInput[]
 }
@@ -62,7 +59,7 @@ export type RecommendPostInfoInput = {
 export type ItemReviewInfoInput = {
   itemId: number
   item: ItemInfoInput
-  recommendReason: RecommendReason
+  recommendReason: string
   shortReview: string
   score: number
   cards: ItemReviewCardInfoInput[]
@@ -102,14 +99,14 @@ type QueryCommon = {
 }
 
 export type ItemQueryFilter = {
-  itemMajorType: ItemMajorType
-  itemMinorType: ItemMinorType
+  itemMajorType: string
+  itemMinorType: string
 }
 
 export interface ItemQuery {
   filterCommon: QueryCommon
   itemFilter: ItemQueryFilter
-  sortBy: ItemSortableField
+  sortBy: string
 }
 
 export type UserQuery = {
@@ -118,25 +115,25 @@ export type UserQuery = {
 
 export type CommentQuery = {
   filterCommon: QueryCommon
-  boardType: BoardType
+  boardType: string
   postId: number
 }
 
 export type PostQueryFilter = {
   accountId: number
   postId: number
-  postType: RecommendPostType
-  styleType: StyleType
+  postType: string
+  styleType: string
 }
 
 export interface CommunityPostQuery {
   filterCommon: QueryCommon
   postFilter: PostQueryFilter
-  sortBy: PostSortableField
+  sortBy: string
 }
 
 export interface RecommendPostQuery {
   filterCommon: QueryCommon
   postFilter: PostQueryFilter
-  sortBy: PostSortableField
+  sortBy: string
 }

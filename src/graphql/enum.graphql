@@ -42,11 +42,23 @@ enum RecommendPostType {
 enum RecommendReason {
   DESIGN
   PRICE
+  TEXTURE
+  INDIVIDUALITY
 }
 
 enum StyleType {
-  MINIMALISM
-  ETC
+  SIMPLEBASIC
+  MODERN
+  MINIMAL
+  CASUAL
+  STREET
+  AMEKAJI
+}
+
+enum QNAType {
+  SIZE
+  PRODUCT_INFO
+  PICK
 }
 
 enum PostType {

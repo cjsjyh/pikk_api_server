@@ -1,5 +1,3 @@
-import { RecommendPostType, StyleType, RecommendReason } from "./enum"
-
 //Return
 export type UserInfo = {
   name: string
@@ -70,8 +68,8 @@ export type RecommendPostInfo = {
   title: string
   titleImageUrl: string
   time: string
-  postType: RecommendPostType
-  styleType: StyleType
+  postType: string
+  styleType: string
   content: string
   reviews: ItemReviewInfo[]
 }
@@ -84,7 +82,7 @@ export type ItemReviewInfo = {
   id: number
   itemId: number
   postId: number
-  recommendReason: RecommendReason
+  recommendReason: string
   shortReview: string
   score: number
   cards: ItemReviewCardInfo[]

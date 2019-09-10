@@ -6,7 +6,6 @@ import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryResult, Pool, PoolClient } from "pg"
 import { performance } from "perf_hooks"
-import { BoardType } from "./type/enum"
 
 module.exports = {
   allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.ItemInfo[]> => {
@@ -354,10 +353,10 @@ function SearchSelectionSet(selectionset: readonly SelectionNode[]): any {
   return result
 }
 
-function GetBoardName(name: BoardType): string {
+function GetBoardName(name: string): string {
   let boardName = ""
-  if (String(name) == "COMMUNITY") boardName = "COMMUNITY_POST"
-  else if (String(name) == "RECOMMEND") boardName = "RECOMMEND_POST"
+  if (name == "COMMUNITY") boardName = "COMMUNITY_POST"
+  else if (name == "RECOMMEND") boardName = "RECOMMEND_POST"
 
   return boardName
 }

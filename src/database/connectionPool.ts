@@ -8,8 +8,8 @@ const pool = new Pool({
   port: process.env.RDS_PORT,
 
   max: 8,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000
+  idleTimeoutMillis: 5000,
+  connectionTimeoutMillis: 3000
 })
 
 module.exports = {

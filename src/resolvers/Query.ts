@@ -33,8 +33,6 @@ module.exports = {
       client.release()
       let itemResult: ReturnType.ItemInfo[] = queryResult.rows
 
-      itemResult.forEach(item => {})
-
       return itemResult
     } catch (e) {
       client.release()
@@ -100,6 +98,7 @@ module.exports = {
 
   allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
     let arg: ArgType.RecommendPostQuery = args.recommendPostOption
+    console.log(`Pool Client!: RemainingCount:${pool.totalCount} IdleCount: ${pool.idleCount} WaitCount: ${pool.waitingCount}`)
     let client: PoolClient
     try {
       client = await pool.connect()
@@ -107,12 +106,12 @@ module.exports = {
       console.log(e)
       throw new Error("[Error] Failed Connecting to DB")
     }
+    console.log(`Pool Client!: RemainingCount:${pool.totalCount} IdleCount: ${pool.idleCount} WaitCount: ${pool.waitingCount}`)
 
     let queryResult: QueryResult
     try {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
-        console.log(arg)
         filterSql = GetPostFilterSql(arg.postFilter)
       }
 
@@ -228,6 +227,7 @@ module.exports = {
       }
 
       client.release()
+      console.log(`Pool Client!: RemainingCount:${pool.totalCount} IdleCount: ${pool.idleCount} WaitCount: ${pool.waitingCount}`)
       return postResult
     } catch (e) {
       client.release()
@@ -390,7 +390,6 @@ function GetPostFilterSql(filter: any): string {
     multipleQuery = true
   }
 
-  console.log(filterSql)
   return filterSql
 }
 
@@ -409,6 +408,5 @@ function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
     filterSql += ` "itemMinorType"='${filter.itemMinorType}'`
     multipleQuery = true
   }
-  console.log(filterSql)
   return filterSql
 }

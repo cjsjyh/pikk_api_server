@@ -12,15 +12,6 @@ require("dotenv").config()
 import depthLimit from "graphql-depth-limit"
 import schema from "./schema"
 
-//IMPORT S3
-import * as AWS from "aws-sdk"
-//AWS.config.loadFromPath(path.join(__dirname, "/../config.json"))
-const S3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: "ap-northeast-2"
-})
-
 //-------------------------------
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------

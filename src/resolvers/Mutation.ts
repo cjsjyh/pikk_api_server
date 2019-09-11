@@ -2,12 +2,19 @@
 var jwt = require("jsonwebtoken")
 const { pool } = require("../database/connectionPool")
 
+//IMPORT S3
+import * as AWS from "aws-sdk"
+//AWS.config.loadFromPath(path.join(__dirname, "/../config.json"))
+const S3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: "ap-northeast-2"
+})
+
 import { SequentialPromiseValue } from "./Util"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import * as ArgType from "./type/ArgType"
-import { Context } from "apollo-server-core"
-import { json } from "body-parser"
 
 module.exports = {
   createUser: async (parent: void, args: MutationArgInfo, ctx: any): Promise<ReturnType.UserCredentialInfo> => {
@@ -159,6 +166,28 @@ module.exports = {
     let imageUrl = null
     if (Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
       //Upload Image and retrieve URL
+      const { stream, filename, mimetype, encoding } = await arg.titleImg
+
+      console.log(filename)
+      console.log(mimetype)
+      console.log(encoding)
+
+      /*
+      var param = {
+        Bucket: "fashiondogam-images",
+        Key: "image/" + "testimage.jpg",
+        ACL: "public-read",
+        Body: stream,
+        ContentType: "image/jpg"
+      }
+
+      S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+        if (err) {
+          console.log(err)
+        }
+        console.log(data)
+      })
+      */
     }
 
     let recommendPostId: number

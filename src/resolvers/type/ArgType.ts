@@ -1,5 +1,5 @@
 import { FollowInfo, ItemInfo } from "./ReturnType"
-
+import { GraphQLUpload } from "graphql-upload"
 //--------------
 //   Mutation
 //--------------
@@ -54,7 +54,7 @@ export type RecommendPostInfoInput = {
   content: string
   postType: string
   styleType: string
-  titleImg: File
+  titleImg: any
   reviews: ItemReviewInfoInput[]
 }
 

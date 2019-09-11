@@ -1,5 +1,5 @@
 const { pool } = require("../database/connectionPool")
-import { SequentialPromiseValue } from "./Util"
+import { SequentialPromiseValue, getFormatDate } from "./Util"
 import { GraphQLResolveInfo, SelectionNode } from "graphql"
 import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"

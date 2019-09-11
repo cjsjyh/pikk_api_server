@@ -11,7 +11,7 @@ const S3 = new AWS.S3({
   region: "ap-northeast-2"
 })
 
-import { SequentialPromiseValue } from "./Util"
+import { SequentialPromiseValue, getFormatDate } from "./Util"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import * as ArgType from "./type/ArgType"
@@ -166,7 +166,11 @@ module.exports = {
     }
 
     let imageUrl = null
-    if (Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
+    if (arg.titleType == "IMAGE") {
+      if (!Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
+        client.release()
+        throw new Error("[Error] title type IMAGE but no image sent!")
+      }
       //Upload Image and retrieve URL
       const { createReadStream, filename, mimetype, encoding } = await arg.titleImg
 
@@ -174,20 +178,21 @@ module.exports = {
       console.log(mimetype)
       console.log(encoding)
 
+      let date = getFormatDate(new Date())
+      console.log(date)
+
       var param = {
         Bucket: "fashiondogam-images",
-        Key: "image/" + filename,
+        Key: "image/" + date + filename,
         ACL: "public-read",
         Body: createReadStream(),
         ContentType: mimetype
       }
 
-      S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-        if (err) {
-          console.log(err)
-        }
-        console.log(data)
-      })
+      let imgData: any = await S3.upload(param)
+      console.log(imgData)
+      imageUrl = imgData.Locations
+      console.log(imageUrl)
     }
 
     let recommendPostId: number

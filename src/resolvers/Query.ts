@@ -29,7 +29,6 @@ module.exports = {
         filterSql = GetItemFilterSql(arg.itemFilter)
       }
 
-      console.log('SELECT * FROM "ITEM"' + filterSql + sortSql + limitSql)
       let queryResult = await client.query('SELECT * FROM "ITEM"' + filterSql + sortSql + limitSql)
       client.release()
       let itemResult: ReturnType.ItemInfo[] = queryResult.rows
@@ -442,12 +441,11 @@ module.exports = {
     try {
       let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
       let postSql =
-        `WITH bbb as (SELECT "FK_itemId" FROM "RECOMMEND_ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
+        `WITH bbb as (SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
       SELECT aaa.* from "ITEM" as aaa 
       INNER JOIN bbb on aaa.id = bbb."FK_itemId"` + limitSql
 
-      console.log(postSql + limitSql)
-      let queryResult = await client.query(postSql + limitSql)
+      let queryResult = await client.query(postSql)
       client.release()
       let itemResult: ReturnType.ItemInfo[] = queryResult.rows
 
@@ -492,7 +490,6 @@ function GetCommunityPostImage(postInfo: ReturnType.CommunityPostInfo): Promise<
     try {
       let queryResult = await client.query('SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=$1', [postInfo.id])
       client.release()
-      console.log(queryResult.rows)
       resolve(queryResult.rows)
     } catch (e) {
       client.release()
@@ -539,7 +536,6 @@ function GetBoardName(name: string): string {
 
 //ArgType.RecommendPostQueryFilter
 async function GetPostFilterSql(filter: any): Promise<string> {
-  console.log(filter)
   let multipleQuery: Boolean = false
   let filterSql: string = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterCommon")) {
@@ -577,13 +573,11 @@ async function GetPostFilterSql(filter: any): Promise<string> {
     try {
       let { rows } = await client.query(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       client.release()
-      console.log(rows)
       let postIdSql = ""
       rows.forEach((row, index) => {
         if (index != 0) postIdSql += ","
         postIdSql += row.FK_postId
       })
-      console.log(postIdSql)
       if (multipleQuery) filterSql += " and"
       else filterSql += " where"
       filterSql += ` id in (${postIdSql})`

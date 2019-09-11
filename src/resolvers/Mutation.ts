@@ -277,6 +277,46 @@ module.exports = {
       console.log(e)
       throw new Error("[Error] Failed to Insert into FOLLOWER")
     }
+  },
+
+  deleteRecommendPost: async (parent: void, args: any): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      console.log(`DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`)
+      console.log(args)
+      await client.query(`DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`)
+      client.release()
+      return true
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error] Delete Failed!")
+    }
+  },
+
+  deleteCommunityPost: async (parent: void, args: any): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      await client.query(`DELETE FROM "COMMUNITY_POST" WHERE id=${args.postId}`)
+      client.release()
+      return true
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error] Delete Failed!")
+    }
   }
 }
 

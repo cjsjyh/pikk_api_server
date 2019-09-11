@@ -54,6 +54,10 @@ type Mutation {
   Return > [-1] : Error [0] : Unfollowed [1] : Followed
   """
   FollowTarget(followInfo: FollowInfoInput!): Int!
+
+  deleteRecommendPost(postId: Int!): Boolean
+
+  deleteCommunityPost(postId: Int!): Boolean
 }
 
 type Subscription {

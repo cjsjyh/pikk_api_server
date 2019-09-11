@@ -129,10 +129,6 @@ module.exports = {
       return false
     }
 
-    console.log(args)
-    console.log("-----")
-    console.log(arg)
-
     try {
       await client.query(
         'INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content","postType","qnaType") VALUES ($1,$2,$3,$4,$5,$6)',
@@ -182,7 +178,6 @@ module.exports = {
     try {
       let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItem)
       let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [recommendPostId])
-      console.log(ReviewResult)
       await Promise.all(
         arg.reviews.map((review, index) => {
           return Promise.all(

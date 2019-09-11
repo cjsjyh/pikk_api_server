@@ -6,6 +6,7 @@ import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryResult, PoolClient } from "pg"
 import { performance } from "perf_hooks"
+import { Context } from "apollo-server-core"
 
 module.exports = {
   allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.ItemInfo[]> => {
@@ -17,12 +18,12 @@ module.exports = {
       throw new Error("[Error] Failed Connecting to DB")
     }
 
-    let sortSql: string
-    sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
-    let limitSql: string
-    limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
-
     try {
+      let sortSql: string
+      sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
+      let limitSql: string
+      limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "itemFilter")) {
         filterSql = GetItemFilterSql(arg.itemFilter)
@@ -60,11 +61,11 @@ module.exports = {
         filterSql = GetPostFilterSql(arg.postFilter)
       }
 
-      console.log(arg)
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
       let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
 
       let queryResult = await client.query('SELECT * FROM "COMMUNITY_POST"' + filterSql + sortSql + limitSql)
+      client.release()
 
       let PromiseResult: any = await Promise.all([
         SequentialPromiseValue(queryResult.rows, GetCommunityPostImage),
@@ -84,9 +85,9 @@ module.exports = {
           post.imageUrl.push(image.imageUrl)
         })
       })
-
       return postResult
     } catch (e) {
+      client.release()
       console.log(e)
       throw new Error("[Error] Failed to fetch community post from DB")
     }
@@ -96,9 +97,8 @@ module.exports = {
     return GetMetaData("COMMUNITY_POST")
   },
 
-  allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
+  allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: Context, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
     let arg: ArgType.RecommendPostQuery = args.recommendPostOption
-    console.log(`Pool Client!: RemainingCount:${pool.totalCount} IdleCount: ${pool.idleCount} WaitCount: ${pool.waitingCount}`)
     let client: PoolClient
     try {
       client = await pool.connect()
@@ -106,7 +106,6 @@ module.exports = {
       console.log(e)
       throw new Error("[Error] Failed Connecting to DB")
     }
-    console.log(`Pool Client!: RemainingCount:${pool.totalCount} IdleCount: ${pool.idleCount} WaitCount: ${pool.waitingCount}`)
 
     let queryResult: QueryResult
     try {
@@ -227,7 +226,6 @@ module.exports = {
       }
 
       client.release()
-      console.log(`Pool Client!: RemainingCount:${pool.totalCount} IdleCount: ${pool.idleCount} WaitCount: ${pool.waitingCount}`)
       return postResult
     } catch (e) {
       client.release()
@@ -338,8 +336,13 @@ async function GetMetaData(tableName: string): Promise<number> {
     throw new Error("[Error] Failed Connecting to DB")
   }
 
-  let countResult = await client.query(`SELECT COUNT(*) FROM "${tableName}"`)
-  return countResult.rows[0].count
+  try {
+    let countResult = await client.query(`SELECT COUNT(*) FROM "${tableName}"`)
+    return countResult.rows[0].count
+  } catch (e) {
+    client.release()
+    throw new Error("[Error] Failed to get MetaData!")
+  }
 }
 
 function SearchSelectionSet(selectionset: readonly SelectionNode[]): any {

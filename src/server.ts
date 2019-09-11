@@ -33,11 +33,19 @@ app.use(compression())
 //Create Apollo Server
 const server = new ApolloServer({
   schema,
+  context: ({ req }) => {
+    const token = req.headers
+    return token
+  },
   validationRules: [depthLimit(5)]
 })
 
 //Add graphql endpoint to Express
 server.applyMiddleware({ app, path: "/graphql" })
+
+app.get("/", (req: express.Request, res: express.Response) => {
+  res.send("TEST")
+})
 
 app.get("/UploadImage", async (req: express.Request, res: express.Response) => {
   var param = {
@@ -57,6 +65,4 @@ app.get("/UploadImage", async (req: express.Request, res: express.Response) => {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 3000 }, (): void =>
-  console.log(`GraphQL is now running on http://localhost:3000/graphql`)
-)
+httpServer.listen({ port: 3000 }, (): void => console.log(`GraphQL is now running on http://localhost:3000/graphql`))

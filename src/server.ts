@@ -5,6 +5,7 @@ import { createServer } from "http"
 import compression from "compression"
 import cors from "cors"
 const path = require("path")
+var jwt = require("jsonwebtoken")
 require("dotenv").config()
 
 //IMPORT GRAPHQL RELATED PACKAGES
@@ -34,11 +35,16 @@ app.use(compression())
 const server = new ApolloServer({
   schema,
   context: ({ req }) => {
-    const token = req.headers
-    //console.log(req)
-    //console.log("-----")
-    //console.log(token)
-    return token
+    if (process.env.MODE == "DEVELOPMENT") return { IsVerified: true }
+
+    const header: any = req.headers
+    if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid"))
+      return { IsVerified: false }
+    var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
+
+    let isVerified = false
+    if (decoded == header.authorizationuserid) isVerified = true
+    return { IsVerified: isVerified }
   },
   validationRules: [depthLimit(5)]
 })

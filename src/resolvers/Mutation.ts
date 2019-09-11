@@ -7,9 +7,10 @@ import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import * as ArgType from "./type/ArgType"
 import { Context } from "apollo-server-core"
+import { json } from "body-parser"
 
 module.exports = {
-  createUser: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<ReturnType.UserCredentialInfo> => {
+  createUser: async (parent: void, args: MutationArgInfo, ctx: any): Promise<ReturnType.UserCredentialInfo> => {
     let arg: ArgType.UserCredentialInput = args.userAccountInfo
     //Make Connection
     let client
@@ -33,11 +34,11 @@ module.exports = {
         )
         userAccount = qResult.rows[0]
         userAccount.isNewUser = false
-        userAccount.token = jwt.sign({ id: userAccount.id }, "TESTTTT")
+        userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
       } else {
         userAccount = qResult.rows[0]
         userAccount.isNewUser = true
-        userAccount.token = jwt.sign({ id: userAccount.id }, "TESTTTT")
+        userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
       }
       client.release()
       //var decoded = jwt.verify(userAccount.token, "TESTTTT")
@@ -49,7 +50,7 @@ module.exports = {
     }
   },
 
-  createUserInfo: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
+  createUserInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
     let arg: ArgType.UserInfoInput = args.userInfo
     //Make Connection
     let client
@@ -83,7 +84,8 @@ module.exports = {
     }
   },
 
-  createItem: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
+  createItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
     let arg: ReturnType.ItemInfo = args.itemInfo
     let client
     try {
@@ -92,8 +94,6 @@ module.exports = {
       console.log("[Error] Failed Connecting to DB")
       return false
     }
-
-    console.log(ctx)
 
     let imageUrl = null
     //Temporary//
@@ -122,7 +122,8 @@ module.exports = {
     }
   },
 
-  createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
+  createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
     let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
     let client
     try {
@@ -148,7 +149,8 @@ module.exports = {
     }
   },
 
-  createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
+  createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
     let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
     let client
     try {
@@ -199,7 +201,8 @@ module.exports = {
     }
   },
 
-  createComment: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
+  createComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
     let arg: ArgType.CommentInfoInput = args.commentInfo
     let client
     try {
@@ -224,7 +227,8 @@ module.exports = {
     }
   },
 
-  FollowTarget: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<number> => {
+  FollowTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<number> => {
+    if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
     let arg: ReturnType.FollowInfo = args.followInfo
     let client
     try {

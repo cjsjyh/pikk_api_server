@@ -16,6 +16,19 @@ type UserCredentialInfo {
   token: String!
 }
 
+type ChannelInfo {
+  #User
+  name: String!
+  profileImgUrl: String!
+  #Follow
+  pickkCount: Int!
+  #Channel
+  id: Int!
+  backgroundImgUrl: String
+  description: String
+  snsUrl: String
+}
+
 #Return
 type ItemInfo {
   id: Int!

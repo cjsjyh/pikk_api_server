@@ -455,6 +455,10 @@ module.exports = {
       console.log(e)
       throw new Error("[Error] Failed to fetch data from DB")
     }
+  },
+
+  getPickkChannel: async (parent: void, args: QueryArgInfo): Promise<Boolean> => {
+    return true
   }
 }
 

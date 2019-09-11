@@ -4,7 +4,7 @@
 
 input UserCredentialInput {
   providerType: ProviderType!
-  providerId: Int!
+  providerId: String!
 }
 
 input UserInfoInput {

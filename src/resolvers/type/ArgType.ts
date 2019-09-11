@@ -15,7 +15,7 @@ export type MutationArgInfo = {
 
 export type UserCredentialInput = {
   providerType: string
-  providerId: number
+  providerId: string
 }
 
 export type UserInfoInput = {

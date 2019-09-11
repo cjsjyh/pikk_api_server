@@ -11,16 +11,29 @@ export type UserInfo = {
   address: string
 }
 
-export type FollowInfo = {
-  targetType: string
-  targetId: number
-  accountId: number
-}
-
 export type UserCredentialInfo = {
   isNewUser: boolean
   id: number
   token: string
+}
+
+export type ChannelInfo = {
+  //User
+  name: string
+  profileImgUrl: string
+  //Follow
+  pickkCount: number
+  //Channel
+  id: number
+  backgroundImgUrl: string
+  description: string
+  snsUrl: string
+}
+
+export type FollowInfo = {
+  targetType: string
+  targetId: number
+  accountId: number
 }
 
 //Return

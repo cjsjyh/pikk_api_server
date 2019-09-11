@@ -6,9 +6,10 @@ import { SequentialPromiseValue } from "./Util"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import * as ArgType from "./type/ArgType"
+import { Context } from "apollo-server-core"
 
 module.exports = {
-  createUser: async (parent: void, args: MutationArgInfo): Promise<ReturnType.UserCredentialInfo> => {
+  createUser: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<ReturnType.UserCredentialInfo> => {
     let arg: ArgType.UserCredentialInput = args.userAccountInfo
     //Make Connection
     let client
@@ -48,7 +49,7 @@ module.exports = {
     }
   },
 
-  createUserInfo: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
+  createUserInfo: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
     let arg: ArgType.UserInfoInput = args.userInfo
     //Make Connection
     let client
@@ -82,7 +83,7 @@ module.exports = {
     }
   },
 
-  createItem: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
+  createItem: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
     let arg: ReturnType.ItemInfo = args.itemInfo
     let client
     try {
@@ -91,6 +92,8 @@ module.exports = {
       console.log("[Error] Failed Connecting to DB")
       return false
     }
+
+    console.log(ctx)
 
     let imageUrl = null
     //Temporary//
@@ -119,7 +122,7 @@ module.exports = {
     }
   },
 
-  createCommunityPost: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
+  createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
     let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
     let client
     try {
@@ -145,7 +148,7 @@ module.exports = {
     }
   },
 
-  createRecommendPost: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
+  createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
     let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
     let client
     try {
@@ -196,7 +199,7 @@ module.exports = {
     }
   },
 
-  createComment: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
+  createComment: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<Boolean> => {
     let arg: ArgType.CommentInfoInput = args.commentInfo
     let client
     try {
@@ -221,7 +224,7 @@ module.exports = {
     }
   },
 
-  FollowTarget: async (parent: void, args: MutationArgInfo): Promise<number> => {
+  FollowTarget: async (parent: void, args: MutationArgInfo, ctx: Context): Promise<number> => {
     let arg: ReturnType.FollowInfo = args.followInfo
     let client
     try {

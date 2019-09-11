@@ -35,6 +35,9 @@ const server = new ApolloServer({
   schema,
   context: ({ req }) => {
     const token = req.headers
+    //console.log(req)
+    //console.log("-----")
+    //console.log(token)
     return token
   },
   validationRules: [depthLimit(5)]

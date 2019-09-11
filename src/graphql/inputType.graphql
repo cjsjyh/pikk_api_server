@@ -49,9 +49,11 @@ input RecommendPostInfoInput {
 
 #itemId: Int!
 input ItemReviewInfoInput {
+  itemId: Int
   item: ItemInfoInput!
   recommendReason: RecommendReason!
   shortReview: String!
+  imgUrl: String!
   score: Int!
   cards: [ItemReviewCardInfoInput!]!
 }
@@ -97,7 +99,7 @@ input ItemQueryFilter {
 }
 
 input ItemQuery {
-  filterCommon: QueryCommon
+  filterCommon: QueryCommon!
   itemFilter: ItemQueryFilter
   sortBy: ItemSortableField = score
 }
@@ -107,7 +109,7 @@ input UserQuery {
 }
 
 input CommentQuery {
-  filterCommon: QueryCommon
+  filterCommon: QueryCommon!
   boardType: BoardType!
   postId: Int!
 }
@@ -121,6 +123,7 @@ input CommunityPostQueryFilter {
   filterCommon: PostQueryFilter
   postType: CommunityPostType!
   qnaType: QNAType
+  channelId: Int
 }
 
 input RecommendPostQueryFilter {

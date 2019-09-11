@@ -73,6 +73,30 @@ module.exports = {
       let profileImgUrl = null
       if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
         //Upload Image and retrieve URL
+        const { createReadStream, filename, mimetype, encoding } = await arg.profileImg
+
+        let date = getFormatDate(new Date())
+        let hour = getFormatHour(new Date())
+
+        var param = {
+          Bucket: "fashiondogam-images",
+          Key: "image/" + date + hour + filename,
+          ACL: "public-read",
+          Body: createReadStream(),
+          ContentType: mimetype
+        }
+
+        await new Promise((resolve, reject) => {
+          S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+            if (err) {
+              console.log(err)
+              reject(err)
+            }
+            console.log(data)
+            profileImgUrl = data.Location
+            resolve()
+          })
+        })
       }
 
       let qResult = await client.query(
@@ -104,11 +128,32 @@ module.exports = {
     }
 
     let imageUrl = null
-    //Temporary//
-    imageUrl = "testURL"
-    //---------//
     if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
       //Upload Image and retrieve URL
+      const { createReadStream, filename, mimetype, encoding } = await arg.itemImg
+
+      let date = getFormatDate(new Date())
+      let hour = getFormatHour(new Date())
+
+      var param = {
+        Bucket: "fashiondogam-images",
+        Key: "image/" + date + hour + filename,
+        ACL: "public-read",
+        Body: createReadStream(),
+        ContentType: mimetype
+      }
+
+      await new Promise((resolve, reject) => {
+        S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+          if (err) {
+            console.log(err)
+            reject(err)
+          }
+          console.log(data)
+          imageUrl = data.Location
+          resolve()
+        })
+      })
     }
 
     try {
@@ -139,6 +184,37 @@ module.exports = {
     }
 
     try {
+      /*
+      let profileImgUrl = null
+      if (Object.prototype.hasOwnProperty.call(arg, "img")) {
+        arg.img.forEach(async item => {
+          const { createReadStream, filename, mimetype, encoding } = await item
+
+          let date = getFormatDate(new Date())
+          let hour = getFormatHour(new Date())
+
+          var param = {
+            Bucket: "fashiondogam-images",
+            Key: "image/" + date + hour + filename,
+            ACL: "public-read",
+            Body: createReadStream(),
+            ContentType: mimetype
+          }
+
+          await new Promise((resolve, reject) => {
+            S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+              if (err) {
+                console.log(err)
+                reject(err)
+              }
+              console.log(data)
+              imageUrl = data.Location
+              resolve()
+            })
+          })
+        })
+      }
+      */
       await client.query(
         'INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content","postType","qnaType") VALUES ($1,$2,$3,$4,$5,$6)',
         [arg.accountId, arg.channelId, arg.title, arg.content, arg.postType, arg.qnaType]
@@ -174,14 +250,8 @@ module.exports = {
       //Upload Image and retrieve URL
       const { createReadStream, filename, mimetype, encoding } = await arg.titleImg
 
-      console.log(filename)
-      console.log(mimetype)
-      console.log(encoding)
-
       let date = getFormatDate(new Date())
       let hour = getFormatHour(new Date())
-      console.log(date)
-      console.log(hour)
 
       var param = {
         Bucket: "fashiondogam-images",
@@ -202,10 +272,6 @@ module.exports = {
           resolve()
         })
       })
-
-      //console.log(JSON.stringify(imgData, null, 4))
-      //imageUrl = imgData.Locations
-      //console.log(imageUrl)
     }
 
     let recommendPostId: number
@@ -354,10 +420,39 @@ function InsertItemReview(itemReview: ArgType.ItemReviewInfoInput, args: Array<n
     }
 
     try {
+      let imageUrl = null
+      if (Object.prototype.hasOwnProperty.call(itemReview, "img")) {
+        //Upload Image and retrieve URL
+        const { createReadStream, filename, mimetype, encoding } = await itemReview.img
+
+        let date = getFormatDate(new Date())
+        let hour = getFormatHour(new Date())
+
+        var param = {
+          Bucket: "fashiondogam-images",
+          Key: "image/" + date + hour + filename,
+          ACL: "public-read",
+          Body: createReadStream(),
+          ContentType: mimetype
+        }
+
+        await new Promise((resolve, reject) => {
+          S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+            if (err) {
+              console.log(err)
+              reject(err)
+            }
+            console.log(data)
+            imageUrl = data.Location
+            resolve()
+          })
+        })
+      }
+
       let postId = args[0]
       let insertResult = await client.query(
-        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendReason","shortReview","score") VALUES ($1,$2,$3,$4,$5) RETURNING id',
-        [itemReview.itemId, postId, itemReview.recommendReason, itemReview.shortReview, itemReview.score]
+        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendReason","shortReview","score", "imgUrl") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+        [itemReview.itemId, postId, itemReview.recommendReason, itemReview.shortReview, itemReview.score, imageUrl]
       )
       client.release()
       let reviewId = insertResult.rows[0].id
@@ -384,11 +479,32 @@ function InsertItem(argReview: ArgType.ItemReviewInfoInput): Promise<{}> {
     let arg = argReview.item
 
     let imageUrl = null
-    //Temporary//
-    imageUrl = "testURL"
-    //---------//
     if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
       //Upload Image and retrieve URL
+      const { createReadStream, filename, mimetype, encoding } = await arg.itemImg
+
+      let date = getFormatDate(new Date())
+      let hour = getFormatHour(new Date())
+
+      var param = {
+        Bucket: "fashiondogam-images",
+        Key: "image/" + date + hour + filename,
+        ACL: "public-read",
+        Body: createReadStream(),
+        ContentType: mimetype
+      }
+
+      await new Promise((resolve, reject) => {
+        S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+          if (err) {
+            console.log(err)
+            reject(err)
+          }
+          console.log(data)
+          imageUrl = data.Location
+          resolve()
+        })
+      })
     }
 
     try {
@@ -419,11 +535,31 @@ function InsertItemReviewCard(arg: ArgType.ItemReviewCardInfoInput, reviewId: nu
       return false
     }
     let imageUrl = null
-    //Temporary//
-    imageUrl = "testURL"
-    //---------//
     if (Object.prototype.hasOwnProperty.call(arg, "img")) {
-      //Upload Image and retrieve URL
+      const { createReadStream, filename, mimetype, encoding } = await arg.img
+
+      let date = getFormatDate(new Date())
+      let hour = getFormatHour(new Date())
+
+      var param = {
+        Bucket: "fashiondogam-images",
+        Key: "image/" + date + hour + filename,
+        ACL: "public-read",
+        Body: createReadStream(),
+        ContentType: mimetype
+      }
+
+      await new Promise((resolve, reject) => {
+        S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+          if (err) {
+            console.log(err)
+            reject(err)
+          }
+          console.log(data)
+          imageUrl = data.Location
+          resolve()
+        })
+      })
     }
 
     try {

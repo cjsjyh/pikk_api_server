@@ -5,7 +5,7 @@ export type UserInfo = {
   age: number
   height: number
   weight: number
-  profileImg: File
+  profileImg: any
   profileImgUrl: string
   phoneNum: number
   address: string
@@ -45,7 +45,7 @@ export type ItemInfo = {
   salePrice: number
   itemMinorType: string
   itemMajorType: string
-  itemImg: File
+  itemImg: any
   purchaseUrl: string
 
   pickCount: number
@@ -65,6 +65,7 @@ export type CommunityPostInfo = {
   title: string
   content: string
   time: string
+  viewcount: number
   imageUrl: string[]
   postType: string
   qnaType: string
@@ -87,6 +88,7 @@ export type RecommendPostInfo = {
   titleImageUrl: string
   titleYoutubeUrl: string
   time: string
+  viewcount: number
   content: string
   reviews: ItemReviewInfo[]
   postType: string

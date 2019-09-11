@@ -25,7 +25,7 @@ export type UserInfoInput = {
   age: number
   height: number
   weight: number
-  profileImg: File
+  profileImg: any
   profileImgUrl: string
   phoneNum: number
   address: string
@@ -45,7 +45,7 @@ export type CommunityPostInfoInput = {
   content: string
   postType: string
   qnaType: string
-  img: File[]
+  img: any[]
 }
 
 export type RecommendPostInfoInput = {
@@ -65,6 +65,7 @@ export type ItemReviewInfoInput = {
   item: ItemInfoInput
   recommendReason: string
   shortReview: string
+  img: any
   score: number
   cards: ItemReviewCardInfoInput[]
 }
@@ -72,7 +73,7 @@ export type ItemReviewInfoInput = {
 export type ItemReviewCardInfoInput = {
   title: string
   content: string
-  img: File
+  img: any
 }
 
 export type ItemInfoInput = {
@@ -83,7 +84,7 @@ export type ItemInfoInput = {
   itemMinorType: string
   itemMajorType: string
   purchaseUrl: string
-  itemImg: File
+  itemImg: any
 }
 
 //--------------
@@ -137,6 +138,7 @@ export type CommunityPostQueryFilter = {
   filterCommon: PostQueryFilter
   postType: string
   qnaType: string
+  channelId: number
 }
 
 export type RecommendPostQueryFilter = {

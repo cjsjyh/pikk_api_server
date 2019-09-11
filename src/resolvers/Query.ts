@@ -30,8 +30,13 @@ module.exports = {
       }
 
       let queryResult = await client.query('SELECT * FROM "ITEM"' + filterSql + sortSql + limitSql)
-      client.release()
       let itemResult: ReturnType.ItemInfo[] = queryResult.rows
+
+      itemResult.forEach(async (item: ReturnType.ItemInfo) => {
+        queryResult = await client.query(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" where "FK_itemId"=${item.id}`)
+        item.pickCount = queryResult.rows[0].count
+      })
+      client.release()
 
       return itemResult
     } catch (e) {
@@ -556,6 +561,13 @@ async function GetPostFilterSql(filter: any): Promise<string> {
     if (multipleQuery) filterSql += " and"
     else filterSql += " where"
     filterSql += ` "postType"='${filter.postType}'`
+    multipleQuery = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "channelId")) {
+    if (multipleQuery) filterSql += " and"
+    else filterSql += " where"
+    filterSql += ` "FK_channelId"='${filter.channelId}'`
     multipleQuery = true
   }
 

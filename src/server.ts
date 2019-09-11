@@ -31,8 +31,14 @@ const server = new ApolloServer({
     const header: any = req.headers
     if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid"))
       return { IsVerified: false }
-    var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
+    else if (header.authorizationtoken == undefined || header.authorizationuserid == undefined) return { IsVerified: false }
 
+    try {
+      var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
+    } catch (e) {
+      console.log(e)
+      return { IsVerified: false }
+    }
     let isVerified = false
     if (decoded == header.authorizationuserid) isVerified = true
     return { IsVerified: isVerified }
@@ -47,6 +53,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
+/*
 app.get("/UploadImage", async (req: express.Request, res: express.Response) => {
   var param = {
     Bucket: "fashiondogam-images",
@@ -63,6 +70,7 @@ app.get("/UploadImage", async (req: express.Request, res: express.Response) => {
     console.log(data)
   })
 })
+*/
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 3000 }, (): void => console.log(`GraphQL is now running on http://localhost:3000/graphql`))
+httpServer.listen({ port: 80 }, (): void => console.log(`GraphQL is now running on http://localhost:80/graphql`))

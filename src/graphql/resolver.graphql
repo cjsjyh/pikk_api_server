@@ -16,7 +16,7 @@ type Query {
 }
 
 type Mutation {
-  createUser(userAccountInfo: UserCredentialInput!): UserCredentialInput!
+  createUser(userAccountInfo: UserCredentialInput!): UserCredentialInfo!
   """
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """

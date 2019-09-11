@@ -11,7 +11,7 @@ const S3 = new AWS.S3({
   region: "ap-northeast-2"
 })
 
-import { SequentialPromiseValue, getFormatDate } from "./Util"
+import { SequentialPromiseValue, getFormatDate, getFormatHour } from "./Util"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import * as ArgType from "./type/ArgType"
@@ -179,20 +179,22 @@ module.exports = {
       console.log(encoding)
 
       let date = getFormatDate(new Date())
+      let hour = getFormatHour(new Date())
       console.log(date)
+      console.log(hour)
 
       var param = {
         Bucket: "fashiondogam-images",
-        Key: "image/" + date + filename,
+        Key: "image/" + date + hour + filename,
         ACL: "public-read",
         Body: createReadStream(),
         ContentType: mimetype
       }
 
       let imgData: any = await S3.upload(param)
-      console.log(imgData)
-      imageUrl = imgData.Locations
-      console.log(imageUrl)
+      console.log(JSON.stringify(imgData, null, 4))
+      //imageUrl = imgData.Locations
+      //console.log(imageUrl)
     }
 
     let recommendPostId: number

@@ -31,7 +31,7 @@ const server = new ApolloServer({
     const header: any = req.headers
     if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid"))
       return { IsVerified: false }
-    else if (header.authorizationtoken == undefined || header.authorizationuserid == undefined) return { IsVerified: false }
+    else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined") return { IsVerified: false }
 
     try {
       var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)

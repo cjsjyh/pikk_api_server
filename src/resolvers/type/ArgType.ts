@@ -54,7 +54,9 @@ export type RecommendPostInfoInput = {
   content: string
   postType: string
   styleType: string
+  titleType: string
   titleImg: any
+  titleYoutubeUrl: string
   reviews: ItemReviewInfoInput[]
 }
 

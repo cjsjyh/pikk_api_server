@@ -41,7 +41,9 @@ input RecommendPostInfoInput {
   content: String!
   postType: RecommendPostType!
   styleType: StyleType
+  titleType: RecommendTitleType!
   titleImg: Upload
+  titleYoutubeUrl: String
   reviews: [ItemReviewInfoInput!]!
 }
 

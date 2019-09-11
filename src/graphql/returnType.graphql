@@ -58,7 +58,9 @@ type RecommendPostInfo {
 
   id: Int
   title: String!
+  titleType: RecommendTitleType!
   titleImageUrl: String
+  titleYoutubeUrl: String
   time: String!
   content: String!
   reviews: [ItemReviewInfo!]!

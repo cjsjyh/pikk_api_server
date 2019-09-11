@@ -70,7 +70,9 @@ export type RecommendPostInfo = {
   //POST
   id: number
   title: string
+  titleType: string
   titleImageUrl: string
+  titleYoutubeUrl: string
   time: string
   content: string
   reviews: ItemReviewInfo[]

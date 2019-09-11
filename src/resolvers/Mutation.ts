@@ -48,7 +48,7 @@ module.exports = {
         userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
       }
       client.release()
-      //var decoded = jwt.verify(userAccount.token, "TESTTTT")
+      console.log(`User ${userAccount.id} Created`)
       return userAccount
     } catch (e) {
       client.release()
@@ -82,6 +82,7 @@ module.exports = {
 
       await client.query('INSERT INTO "CHANNEL"("FK_accountId") VALUES ($1)', [arg.id])
       client.release()
+      console.log(`User Info for User ${arg.id} created`)
       return true
     } catch (e) {
       client.release()
@@ -116,6 +117,7 @@ module.exports = {
         [arg.name, arg.brand, arg.originalPrice, arg.salePrice, arg.itemMajorType, arg.itemMinorType, imageUrl]
       )
       client.release()
+      console.log(`Item ${arg.name} created`)
       return true
     } catch (e) {
       client.release()
@@ -142,7 +144,7 @@ module.exports = {
         [arg.accountId, arg.channelId, arg.title, arg.content, arg.postType, arg.qnaType]
       )
       client.release()
-
+      console.log(`Community Post has been created`)
       return true
     } catch (e) {
       client.release()
@@ -193,8 +195,8 @@ module.exports = {
     let recommendPostId: number
     try {
       let insertResult = await client.query(
-        'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postType","styleType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-        [arg.accountId, arg.title, arg.content, arg.postType, arg.styleType, imageUrl]
+        'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',
+        [arg.accountId, arg.title, arg.content, arg.postType, arg.styleType, arg.titleType, arg.titleYoutubeUrl, imageUrl]
       )
       client.release()
       recommendPostId = insertResult.rows[0].id
@@ -217,7 +219,7 @@ module.exports = {
           )
         })
       )
-
+      console.log(`Recommend Post created`)
       return true
     } catch (e) {
       console.log("[Error] Failed at Sequential Promise")
@@ -244,6 +246,7 @@ module.exports = {
         arg.content
       ])
       client.release()
+      console.log(`Comment created`)
       return true
     } catch (e) {
       client.release()
@@ -267,6 +270,7 @@ module.exports = {
       let result = await client.query(query, [arg.accountId, arg.targetId])
       client.release()
       result = Object.values(result.rows[0])
+      console.log(`Followed ${arg.targetType}`)
       return result[0]
     } catch (e) {
       client.release()

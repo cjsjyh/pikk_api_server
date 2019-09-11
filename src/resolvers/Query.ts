@@ -411,5 +411,13 @@ function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
     filterSql += ` "itemMinorType"='${filter.itemMinorType}'`
     multipleQuery = true
   }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
+    if (multipleQuery) filterSql += " and"
+    else filterSql += " where"
+    filterSql += ` "id"='${filter.itemId}'`
+    multipleQuery = true
+  }
+
   return filterSql
 }

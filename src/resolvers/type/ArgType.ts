@@ -103,6 +103,7 @@ type QueryCommon = {
 export type ItemQueryFilter = {
   itemMajorType: string
   itemMinorType: string
+  itemId: number
 }
 
 export interface ItemQuery {

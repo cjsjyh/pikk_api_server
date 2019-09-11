@@ -198,6 +198,7 @@ module.exports = {
             reject(err)
           }
           console.log(data)
+          imageUrl = data.Location
           resolve()
         })
       })

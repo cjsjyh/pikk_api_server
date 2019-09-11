@@ -71,6 +71,7 @@ input ItemInfoInput {
   name: String!
   brand: String!
   originalPrice: Int!
+  salePrice: Int
   itemMinorType: ItemMinorType!
   itemMajorType: ItemMajorType!
   purchaseUrl: String

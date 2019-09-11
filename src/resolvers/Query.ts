@@ -6,7 +6,7 @@ import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryResult, PoolClient } from "pg"
 import { performance } from "perf_hooks"
-import { Context } from "apollo-server-core"
+const _ = require("lodash")
 
 module.exports = {
   allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.ItemInfo[]> => {
@@ -63,19 +63,31 @@ module.exports = {
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
       let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+      let querySql = 'SELECT * FROM "COMMUNITY_POST"' + filterSql + sortSql + limitSql
+      let commentSql = `WITH aaa AS (${querySql}) SELECT bbb."FK_postId" FROM "COMMUNITY_POST_COMMENT" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
 
-      let queryResult = await client.query('SELECT * FROM "COMMUNITY_POST"' + filterSql + sortSql + limitSql)
+      let queryResult = await client.query(querySql)
+      let postResult: ReturnType.CommunityPostInfo[] = queryResult.rows
+
+      queryResult = await client.query(commentSql)
+      let commentResult: ReturnType.CommentInfo[] = queryResult.rows
+      let commentResultGroup = _.countBy(commentResult, "FK_postId")
       client.release()
 
       let PromiseResult: any = await Promise.all([
-        SequentialPromiseValue(queryResult.rows, GetCommunityPostImage),
-        SequentialPromiseValue(queryResult.rows, GetUserInfo)
+        SequentialPromiseValue(postResult, GetCommunityPostImage),
+        SequentialPromiseValue(postResult, GetUserInfo)
       ])
       let imgResult: ReturnType.ImageInfo[][] = PromiseResult[0]
       let userResult: ReturnType.UserInfo[] = PromiseResult[1]
-      let postResult: ReturnType.CommunityPostInfo[] = queryResult.rows
 
       postResult.forEach((post: ReturnType.CommunityPostInfo, index: number) => {
+        if (Object.prototype.hasOwnProperty.call(commentResultGroup, String(post.id))) {
+          post.commentCount = commentResultGroup[String(post.id)]
+        } else {
+          post.commentCount = 0
+        }
+
         post.accountId = post.FK_accountId
         post.channelId = post.FK_channelId
         post.name = userResult[index].name
@@ -97,7 +109,7 @@ module.exports = {
     return GetMetaData("COMMUNITY_POST")
   },
 
-  allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: Context, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
+  allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
     let arg: ArgType.RecommendPostQuery = args.recommendPostOption
     let client: PoolClient
     try {
@@ -116,7 +128,6 @@ module.exports = {
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
       let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
-
       let postSql = 'SELECT * FROM "RECOMMEND_POST"' + filterSql + sortSql + limitSql
       queryResult = await client.query(postSql)
       let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows

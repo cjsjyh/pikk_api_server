@@ -77,6 +77,7 @@ export type ItemInfoInput = {
   name: string
   brand: string
   originalPrice: number
+  salePrice: number
   itemMinorType: string
   itemMajorType: string
   purchaseUrl: string

@@ -29,6 +29,7 @@ export type ItemInfo = {
   name: string
   brand: string
   originalPrice: number
+  salePrice: number
   itemMinorType: string
   itemMajorType: string
   itemImg: File
@@ -52,6 +53,9 @@ export type CommunityPostInfo = {
   content: string
   time: string
   imageUrl: string[]
+  postType: string
+  qnaType: string
+  commentCount: number
 }
 
 export type RecommendPostInfo = {
@@ -68,10 +72,11 @@ export type RecommendPostInfo = {
   title: string
   titleImageUrl: string
   time: string
-  postType: string
-  styleType: string
   content: string
   reviews: ItemReviewInfo[]
+  postType: string
+  styleType: string
+  commentCount: number
 }
 
 export type ItemReviewInfo = {

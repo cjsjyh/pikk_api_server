@@ -127,6 +127,7 @@ input RecommendPostQueryFilter {
   filterCommon: PostQueryFilter
   postType: RecommendPostType!
   styleType: StyleType
+  itemId: Int
 }
 
 input CommunityPostQuery {

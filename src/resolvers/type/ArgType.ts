@@ -140,6 +140,7 @@ export type RecommendPostQueryFilter = {
   filterCommon: PostQueryFilter
   postType: string
   styleType: string
+  itemId: number
 }
 
 export interface CommunityPostQuery {

@@ -58,7 +58,7 @@ module.exports = {
     try {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
-        filterSql = GetPostFilterSql(arg.postFilter)
+        filterSql = await GetPostFilterSql(arg.postFilter)
       }
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
@@ -123,7 +123,7 @@ module.exports = {
     try {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
-        filterSql = GetPostFilterSql(arg.postFilter)
+        filterSql = await GetPostFilterSql(arg.postFilter)
       }
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
@@ -376,7 +376,7 @@ function GetBoardName(name: string): string {
 }
 
 //ArgType.RecommendPostQueryFilter
-function GetPostFilterSql(filter: any): string {
+async function GetPostFilterSql(filter: any): Promise<string> {
   console.log(filter)
   let multipleQuery: Boolean = false
   let filterSql: string = ""
@@ -402,6 +402,34 @@ function GetPostFilterSql(filter: any): string {
     else filterSql += " where"
     filterSql += ` "styleType"='${filter.styleType}'`
     multipleQuery = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
+    let client: PoolClient
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      console.log(e)
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+    try {
+      let { rows } = await client.query(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
+      client.release()
+      console.log(rows)
+      let postIdSql = ""
+      rows.forEach((row, index) => {
+        if (index != 0) postIdSql += ","
+        postIdSql += row.FK_postId
+      })
+      console.log(postIdSql)
+      if (multipleQuery) filterSql += " and"
+      else filterSql += " where"
+      filterSql += ` id in (${postIdSql})`
+      multipleQuery = true
+    } catch (e) {
+      client.release()
+      throw new Error("[Error] Failed to fetch postId with itemId")
+    }
   }
 
   return filterSql

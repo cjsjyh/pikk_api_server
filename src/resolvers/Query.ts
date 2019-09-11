@@ -37,7 +37,7 @@ module.exports = {
         item.pickCount = queryResult.rows[0].count
       })
       client.release()
-
+      console.log(itemResult)
       return itemResult
     } catch (e) {
       client.release()
@@ -299,6 +299,21 @@ module.exports = {
       console.log(e)
       throw new Error("[Error] Failed to fetch data from DB")
     }
+  },
+
+  isDuplicateName: async (parent: void, args: any): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    let { rows } = await client.query(`SELECT * FROM "USER_INFO" WHERE name='${args.name}'`)
+    client.release()
+
+    if (rows.length != 0) return true
+    return false
   },
 
   getPickkRecommendPost: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {

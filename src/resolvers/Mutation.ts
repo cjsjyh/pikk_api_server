@@ -37,7 +37,7 @@ module.exports = {
       )
       if (qResult.rows.length == 0) {
         qResult = await client.query(
-          `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"="${arg.providerId}"`
+          `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"='${arg.providerId}'`
         )
         userAccount = qResult.rows[0]
         userAccount.isNewUser = false

@@ -141,3 +141,8 @@ input RecommendPostQuery {
   postFilter: RecommendPostQueryFilter!
   sortBy: PostSortableField = time
 }
+
+input PickkRecommendPostQuery {
+  filterCommon: QueryCommon!
+  userId: Int!
+}

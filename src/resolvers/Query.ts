@@ -295,6 +295,139 @@ module.exports = {
       console.log(e)
       throw new Error("[Error] Failed to fetch data from DB")
     }
+  },
+
+  getPickkRecommendPost: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
+    let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
+    let client: PoolClient
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      console.log(e)
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    let queryResult: QueryResult
+    try {
+      let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+      let postSql =
+        `WITH bbb as (SELECT "FK_postId" FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
+      SELECT aaa.* from "RECOMMEND_POST" as aaa 
+      INNER JOIN bbb on aaa.id = bbb."FK_postId"` + limitSql
+      queryResult = await client.query(postSql)
+      let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
+      if (postResult.length == 0) {
+        client.release()
+        return []
+      }
+      postResult.forEach(async (post: ReturnType.RecommendPostInfo) => {
+        post.accountId = post.FK_accountId
+        post.reviews = []
+        queryResult = await client.query(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
+        post.pickCount = queryResult.rows[0].count
+      })
+
+      let extractRequest: string[] = []
+      if (info.fieldNodes[0].selectionSet !== undefined) {
+        let requestedDataArray = info.fieldNodes[0].selectionSet.selections
+        extractRequest = SearchSelectionSet(requestedDataArray)
+      }
+      //CHECK IF QUERY FOR REVIEW IS NEEDED
+      if (extractRequest.includes("reviews")) {
+        let reviewSql = `WITH aaa AS (${postSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_postId") FROM "ITEM_REVIEW" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
+        queryResult = await client.query(reviewSql)
+        let reviewResult: ReturnType.ItemReviewInfo[] = queryResult.rows
+        if (reviewResult.length == 0) {
+          client.release()
+          return postResult
+        }
+        reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
+          review.itemId = review.FK_itemId
+          review.postId = review.FK_postId
+          review.cards = []
+        })
+
+        let reviewArray: ReturnType.ItemReviewInfo[][] = [[]]
+        let currentId = -1
+        reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
+          if (review.postId != currentId) {
+            if (currentId != -1) reviewArray.push([])
+            currentId = review.postId
+          }
+          reviewArray[reviewArray.length - 1].push(review)
+        })
+
+        //Add review to Post
+        let i
+        if (arg.filterCommon.sort == "ASC") i = 0
+        else i = reviewArray.length - 1
+
+        let j = 0
+        while (true) {
+          for (; j < postResult.length; j++) {
+            if (reviewArray[i][0].postId == postResult[j].id) {
+              postResult[j].reviews = reviewArray[i]
+              j++
+              break
+            }
+          }
+          if (arg.filterCommon.sort == "ASC") {
+            ++i
+            if (i >= reviewResult.length) break
+          } else {
+            --i
+            if (i < 0) break
+          }
+        }
+
+        //CHECK IF QUERY FOR CARD IS NEEDED
+        let cardFlag = false
+        let reviewIndex = extractRequest.indexOf("reviews")
+        if (Array.isArray(extractRequest[reviewIndex + 1])) if (extractRequest[reviewIndex + 1].includes("cards")) cardFlag = true
+
+        if (cardFlag) {
+          let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`
+          queryResult = await client.query(cardSql)
+          let cardResult: ReturnType.ItemReviewCardInfo[] = queryResult.rows
+          if (cardResult.length == 0) {
+            client.release()
+            return postResult
+          }
+          cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
+            card.reviewId = card.FK_reviewId
+          })
+
+          let cardArray: ReturnType.ItemReviewCardInfo[][] = [[]]
+          currentId = -1
+          cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
+            if (card.reviewId != currentId) {
+              if (currentId != -1) cardArray.push([])
+              currentId = card.reviewId
+            }
+            cardArray[cardArray.length - 1].push(card)
+          })
+
+          //Add card to review
+          j = 0
+          for (let i = 0; i < cardArray.length; i++) {
+            for (; j < reviewResult.length; j++) {
+              if (cardArray[i][0].reviewId == reviewResult[j].id) {
+                reviewResult[j].cards = cardArray[i]
+                j++
+                break
+              }
+            }
+          }
+        }
+      }
+
+      client.release()
+      return postResult
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error] Failed to fetch user data from DB")
+    }
   }
 }
 

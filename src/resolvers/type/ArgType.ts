@@ -94,6 +94,7 @@ export type QueryArgInfo = {
   userOption: UserQuery
   communityPostOption: CommunityPostQuery
   recommendPostOption: RecommendPostQuery
+  pickkRecommendPostOption: PickkRecommendPostQuery
   commentOption: CommentQuery
 }
 
@@ -143,6 +144,10 @@ export type RecommendPostQueryFilter = {
   itemId: number
 }
 
+export type PickkRecommendPostQueryFilter = {
+  postType: string
+}
+
 export interface CommunityPostQuery {
   filterCommon: QueryCommon
   postFilter: CommunityPostQueryFilter
@@ -153,4 +158,9 @@ export interface RecommendPostQuery {
   filterCommon: QueryCommon
   postFilter: RecommendPostQueryFilter
   sortBy: string
+}
+
+export interface PickkRecommendPostQuery {
+  filterCommon: QueryCommon
+  userId: number
 }

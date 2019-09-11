@@ -9,6 +9,7 @@ type Query {
 
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata: Int!
+  getPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
 
   getComments(commentOption: CommentQuery!): [CommentInfo!]
 

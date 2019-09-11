@@ -191,8 +191,18 @@ module.exports = {
         ContentType: mimetype
       }
 
-      let imgData: any = await S3.upload(param)
-      console.log(JSON.stringify(imgData, null, 4))
+      await new Promise((resolve, reject) => {
+        S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+          if (err) {
+            console.log(err)
+            reject(err)
+          }
+          console.log(data)
+          resolve()
+        })
+      })
+
+      //console.log(JSON.stringify(imgData, null, 4))
       //imageUrl = imgData.Locations
       //console.log(imageUrl)
     }

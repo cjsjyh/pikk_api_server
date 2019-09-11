@@ -91,10 +91,12 @@ export type ItemInfoInput = {
 //--------------
 export type QueryArgInfo = {
   itemOption: ItemQuery
+  pickkItemOption: PickkItemQuery
   userOption: UserQuery
   communityPostOption: CommunityPostQuery
   recommendPostOption: RecommendPostQuery
   pickkRecommendPostOption: PickkRecommendPostQuery
+  pickkChannelOption: PickkChannelQuery
   commentOption: CommentQuery
 }
 
@@ -144,10 +146,6 @@ export type RecommendPostQueryFilter = {
   itemId: number
 }
 
-export type PickkRecommendPostQueryFilter = {
-  postType: string
-}
-
 export interface CommunityPostQuery {
   filterCommon: QueryCommon
   postFilter: CommunityPostQueryFilter
@@ -161,6 +159,16 @@ export interface RecommendPostQuery {
 }
 
 export interface PickkRecommendPostQuery {
+  filterCommon: QueryCommon
+  userId: number
+}
+
+export interface PickkItemQuery {
+  filterCommon: QueryCommon
+  userId: number
+}
+
+export interface PickkChannelQuery {
   filterCommon: QueryCommon
   userId: number
 }

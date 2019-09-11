@@ -428,6 +428,35 @@ module.exports = {
       console.log(e)
       throw new Error("[Error] Failed to fetch user data from DB")
     }
+  },
+
+  getPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
+    let arg: ArgType.PickkItemQuery = args.pickkItemOption
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+      let postSql =
+        `WITH bbb as (SELECT "FK_itemId" FROM "RECOMMEND_ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
+      SELECT aaa.* from "ITEM" as aaa 
+      INNER JOIN bbb on aaa.id = bbb."FK_itemId"` + limitSql
+
+      console.log(postSql + limitSql)
+      let queryResult = await client.query(postSql + limitSql)
+      client.release()
+      let itemResult: ReturnType.ItemInfo[] = queryResult.rows
+
+      return itemResult
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error] Failed to fetch data from DB")
+    }
   }
 }
 

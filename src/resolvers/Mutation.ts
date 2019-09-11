@@ -168,19 +168,18 @@ module.exports = {
     let imageUrl = null
     if (Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
       //Upload Image and retrieve URL
-      const { stream, filename, mimetype, encoding } = await arg.titleImg
+      const { createReadStream, filename, mimetype, encoding } = await arg.titleImg
 
       console.log(filename)
       console.log(mimetype)
       console.log(encoding)
 
-      /*
       var param = {
         Bucket: "fashiondogam-images",
-        Key: "image/" + "testimage.jpg",
+        Key: "image/" + filename,
         ACL: "public-read",
-        Body: stream,
-        ContentType: "image/jpg"
+        Body: createReadStream(),
+        ContentType: mimetype
       }
 
       S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
@@ -189,7 +188,6 @@ module.exports = {
         }
         console.log(data)
       })
-      */
     }
 
     let recommendPostId: number

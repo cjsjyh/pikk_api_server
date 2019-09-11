@@ -3,6 +3,7 @@ scalar Upload
 type Query {
   allItems(itemOption: ItemQuery!): [ItemInfo!]
   _allItemsMetadata: Int!
+  getPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
 
   allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
   _allCommunityPostsMetadata: Int!

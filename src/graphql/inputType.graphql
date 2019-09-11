@@ -146,3 +146,13 @@ input PickkRecommendPostQuery {
   filterCommon: QueryCommon!
   userId: Int!
 }
+
+input PickkItemQuery {
+  filterCommon: QueryCommon!
+  userId: Int!
+}
+
+input PickkChannelQuery {
+  filterCommon: QueryCommon!
+  userId: Int!
+}

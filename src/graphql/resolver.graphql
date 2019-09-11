@@ -17,8 +17,6 @@ type Query {
   getComments(commentOption: CommentQuery!): [CommentInfo!]
 
   getUserInfo(userOption: UserQuery!): [UserInfo!]
-
-  isDuplicateName(name: String!): Boolean!
 }
 
 type Mutation {
@@ -60,6 +58,8 @@ type Mutation {
   Return > [-1] : Error [0] : Unfollowed [1] : Followed
   """
   FollowTarget(followInfo: FollowInfoInput!): Int!
+
+  isDuplicateName(name: String!): Boolean!
 
   deleteRecommendPost(postId: Int!): Boolean
 

@@ -360,6 +360,20 @@ module.exports = {
       throw new Error("[Error] Failed to Insert into FOLLOWER")
     }
   },
+  isDuplicateName: async (parent: void, args: any): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    let { rows } = await client.query(`SELECT * FROM "USER_INFO" WHERE name='${args.name}'`)
+    client.release()
+
+    if (rows.length != 0) return true
+    return false
+  },
 
   deleteRecommendPost: async (parent: void, args: any): Promise<Boolean> => {
     let client

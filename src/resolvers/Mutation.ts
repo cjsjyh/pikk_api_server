@@ -360,6 +360,72 @@ module.exports = {
       throw new Error("[Error] Failed to Insert into FOLLOWER")
     }
   },
+
+  isFollowingChannel: async (parent: void, args: any): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      let { row } = await client.query(
+        `SELECT "FK_accountId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${args.accountId} and "FK_channelId"=${args.channelId}`
+      )
+      client.release()
+      if (row.length == 0) return false
+      else return true
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error]")
+    }
+  },
+
+  isFollowingItem: async (parent: void, args: any): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      let { row } = await client.query(
+        `SELECT "FK_accountId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${args.accountId} and "FK_itemId"=${args.itemId}`
+      )
+      client.release()
+      if (row.length == 0) return false
+      else return true
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error]")
+    }
+  },
+  isFollowingRecommendPost: async (parent: void, args: any): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      let { row } = await client.query(
+        `SELECT "FK_accountId" FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_accountId"=${args.accountId} and "FK_postId"=${args.postId}`
+      )
+      client.release()
+      if (row.length == 0) return false
+      else return true
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error]")
+    }
+  },
+
   isDuplicateName: async (parent: void, args: any): Promise<Boolean> => {
     let client
     try {

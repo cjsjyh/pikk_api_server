@@ -59,6 +59,10 @@ type Mutation {
   """
   FollowTarget(followInfo: FollowInfoInput!): Int!
 
+  isFollowingChannel(accountId: Int!, channelId: Int!): Boolean!
+  isFollowingItem(accountId: Int!, itemId: Int!): Boolean!
+  isFollowingRecommendPost(accountId: Int!, postId: Int!): Boolean!
+
   isDuplicateName(name: String!): Boolean!
 
   deleteRecommendPost(postId: Int!): Boolean

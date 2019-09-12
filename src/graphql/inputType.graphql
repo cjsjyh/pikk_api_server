@@ -53,7 +53,7 @@ input ItemReviewInfoInput {
   item: ItemInfoInput!
   recommendReason: RecommendReason!
   shortReview: String!
-  imgUrl: String!
+  imgUrl: Upload
   score: Int!
   cards: [ItemReviewCardInfoInput!]!
 }

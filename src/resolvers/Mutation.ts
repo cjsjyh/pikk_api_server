@@ -382,7 +382,6 @@ module.exports = {
       throw new Error("[Error]")
     }
   },
-
   isFollowingItem: async (parent: void, args: any): Promise<Boolean> => {
     let client
     try {
@@ -423,6 +422,25 @@ module.exports = {
       client.release()
       console.log(e)
       throw new Error("[Error]")
+    }
+  },
+
+  IncrementViewCount: async (parent: void, args: any): Promise<Boolean> => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      let { row } = await client.query(`UPDATE "${args.postType}_POST" SET "viewCount" = "viewCount" + 1 WHERE id = ${args.postId}`)
+      client.release()
+      return true
+    } catch (e) {
+      client.release()
+      console.log(e)
+      return false
     }
   },
 

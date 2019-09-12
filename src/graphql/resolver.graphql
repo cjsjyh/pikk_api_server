@@ -59,6 +59,8 @@ type Mutation {
   """
   FollowTarget(followInfo: FollowInfoInput!): Int!
 
+  IncrementViewCount(postType: PostType!, postId: Int!): Boolean!
+
   isFollowingChannel(accountId: Int!, channelId: Int!): Boolean!
   isFollowingItem(accountId: Int!, itemId: Int!): Boolean!
   isFollowingRecommendPost(accountId: Int!, postId: Int!): Boolean!

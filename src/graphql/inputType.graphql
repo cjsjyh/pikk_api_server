@@ -28,6 +28,9 @@ input FollowInfoInput {
 
 input CommunityPostInfoInput {
   accountId: Int!
+  """
+  If belongs to a channel, insert UserId
+  """
   channelId: Int!
   title: String!
   content: String!

@@ -93,6 +93,7 @@ export type RecommendPostInfo = {
   reviews: ItemReviewInfo[]
   postType: string
   styleType: string
+  saleEndDate: string
   commentCount: number
 }
 

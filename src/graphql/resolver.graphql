@@ -12,7 +12,7 @@ type Query {
   _allRecommendPostsMetadata: Int!
   getPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
 
-  getPickkChannel(userId: Int!): Boolean!
+  getPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
 
   getComments(commentOption: CommentQuery!): [CommentInfo!]
 

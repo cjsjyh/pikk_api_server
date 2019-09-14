@@ -467,8 +467,32 @@ module.exports = {
     }
   },
 
-  getPickkChannel: async (parent: void, args: QueryArgInfo): Promise<Boolean> => {
-    return true
+  getPickkChannel: async (parent: void, args: QueryArgInfo): Promise<ReturnType.UserInfo[]> => {
+    let arg: ArgType.PickkChannelQuery = args.pickkChannelOption
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+      let postSql =
+        `WITH bbb as (SELECT "FK_channelId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
+      SELECT aaa.* from "USER_INFO" as aaa 
+      INNER JOIN bbb on aaa."FK_accountId" = bbb."FK_channelId"` + limitSql
+
+      let queryResult = await client.query(postSql)
+      client.release()
+      let channelResult: ReturnType.UserInfo[] = queryResult.rows
+
+      return channelResult
+    } catch (e) {
+      client.release()
+      console.log(e)
+      throw new Error("[Error] Failed to fetch data from DB")
+    }
   }
 }
 

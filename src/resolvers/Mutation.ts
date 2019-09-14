@@ -106,8 +106,6 @@ module.exports = {
         'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
         [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
       )
-
-      await client.query('INSERT INTO "CHANNEL"("FK_accountId") VALUES ($1)', [arg.id])
       client.release()
       console.log(`User Info for User ${arg.id} created`)
       return true

@@ -63,6 +63,7 @@ enum StyleType {
   CASUAL
   STREET
   AMEKAJI
+  NONE
 }
 
 enum QNAType {

@@ -1,3 +1,4 @@
+scalar Date
 #----------------------------
 #       Mutation
 #----------------------------
@@ -41,6 +42,7 @@ input RecommendPostInfoInput {
   content: String!
   postType: RecommendPostType!
   styleType: StyleType
+  saleEndDate: Date
   titleType: RecommendTitleType!
   titleImg: Upload
   titleYoutubeUrl: String

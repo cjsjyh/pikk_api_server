@@ -81,6 +81,7 @@ type RecommendPostInfo {
   reviews: [ItemReviewInfo!]!
   postType: RecommendPostType!
   styleType: StyleType!
+  saleEndDate: Date
   commentCount: Int!
 }
 

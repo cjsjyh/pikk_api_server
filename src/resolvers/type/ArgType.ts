@@ -54,6 +54,7 @@ export type RecommendPostInfoInput = {
   content: string
   postType: string
   styleType: string
+  saleEndDate: string
   titleType: string
   titleImg: any
   titleYoutubeUrl: string

@@ -136,8 +136,12 @@ module.exports = {
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
       let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
-      let postSql = 'SELECT * FROM "RECOMMEND_POST"' + filterSql + sortSql + limitSql
-      console.log(postSql)
+      let postSql =
+        'WITH aaa AS ( SELECT * FROM "RECOMMEND_POST"' +
+        filterSql +
+        sortSql +
+        limitSql +
+        ') SELECT aaa.*,bbb.name,bbb."profileImgUrl" FROM "USER_INFO" AS bbb INNER JOIN aaa ON aaa."FK_accountId" = bbb."FK_accountId"'
       queryResult = await client.query(postSql)
       let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
       if (postResult.length == 0) {

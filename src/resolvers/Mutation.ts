@@ -607,8 +607,8 @@ function InsertItem(argReview: ArgType.ItemReviewInfoInput): Promise<{}> {
 
     try {
       let itemId = await client.query(
-        'INSERT INTO "ITEM"("name","brand","originalPrice","salePrice","itemMajorType","itemMinorType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
-        [arg.name, arg.brand, arg.originalPrice, arg.salePrice, arg.itemMajorType, arg.itemMinorType, imageUrl]
+        'INSERT INTO "ITEM"("name","brand","originalPrice","salePrice","itemMajorType","itemMinorType","imageUrl","purchaseUrl") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',
+        [arg.name, arg.brand, arg.originalPrice, arg.salePrice, arg.itemMajorType, arg.itemMinorType, imageUrl, arg.purchaseUrl]
       )
       client.release()
       console.log(itemId.rows[0].id)

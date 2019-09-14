@@ -102,10 +102,18 @@ module.exports = {
         })
       }
 
-      let qResult = await client.query(
-        'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-        [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
-      )
+      let qResult
+      if (profileImgUrl != null) {
+        qResult = await client.query(
+          'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
+          [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
+        )
+      } else {
+        qResult = await client.query(
+          'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
+          [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, arg.phoneNum, arg.address]
+        )
+      }
       client.release()
       console.log(`User Info for User ${arg.id} created`)
       return true

@@ -38,8 +38,8 @@ type ItemInfo {
   salePrice: Int
   itemMinorType: ItemMinorType!
   itemMajorType: ItemMajorType!
-  imageUrl: String!
-  purchaseUrl: String!
+  imageUrl: String
+  purchaseUrl: String
 
   pickCount: Int!
 }

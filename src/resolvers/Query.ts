@@ -32,12 +32,19 @@ module.exports = {
       let queryResult = await client.query('SELECT * FROM "ITEM"' + filterSql + sortSql + limitSql)
       let itemResult: ReturnType.ItemInfo[] = queryResult.rows
 
+      await Promise.all(
+        itemResult.map(async (item: ReturnType.ItemInfo) => {
+          queryResult = await client.query(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" where "FK_itemId"=${item.id}`)
+          item.pickCount = queryResult.rows[0].count
+        })
+      )
+      /*
       itemResult.forEach(async (item: ReturnType.ItemInfo) => {
         queryResult = await client.query(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" where "FK_itemId"=${item.id}`)
         item.pickCount = queryResult.rows[0].count
       })
+      */
       client.release()
-      console.log(itemResult)
       return itemResult
     } catch (e) {
       client.release()
@@ -148,13 +155,22 @@ module.exports = {
         client.release()
         return []
       }
+      await Promise.all(
+        postResult.map(async (post: ReturnType.RecommendPostInfo) => {
+          post.accountId = post.FK_accountId
+          post.reviews = []
+          queryResult = await client.query(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
+          post.pickCount = queryResult.rows[0].count
+        })
+      )
+      /*
       postResult.forEach(async (post: ReturnType.RecommendPostInfo) => {
         post.accountId = post.FK_accountId
         post.reviews = []
         queryResult = await client.query(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
         post.pickCount = queryResult.rows[0].count
       })
-
+      */
       let extractRequest: string[] = []
       if (info.fieldNodes[0].selectionSet !== undefined) {
         let requestedDataArray = info.fieldNodes[0].selectionSet.selections

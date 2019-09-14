@@ -277,7 +277,7 @@ module.exports = {
     let recommendPostId: number
     try {
       let insertResult = await client.query(
-        'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","description","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',
+        'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","content","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',
         [arg.accountId, arg.title, arg.content, arg.postType, arg.styleType, arg.titleType, arg.titleYoutubeUrl, imageUrl]
       )
       client.release()

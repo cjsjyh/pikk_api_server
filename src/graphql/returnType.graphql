@@ -99,7 +99,7 @@ type ItemReviewCardInfo {
   reviewId: Int!
   title: String!
   content: String!
-  ImgUrl: String
+  imgUrl: String
 }
 
 type CommentInfo {

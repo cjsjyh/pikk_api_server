@@ -118,7 +118,7 @@ export type ItemReviewCardInfo = {
   reviewId: number
   title: string
   content: string
-  ImgUrl: string
+  imgUrl: string
 }
 
 export type ImageInfo = {

@@ -128,11 +128,16 @@ module.exports = {
       let filterSql: string = ""
       if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
         filterSql = await GetPostFilterSql(arg.postFilter)
+        if (filterSql == null) {
+          client.release()
+          return []
+        }
       }
 
       let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
       let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
       let postSql = 'SELECT * FROM "RECOMMEND_POST"' + filterSql + sortSql + limitSql
+      console.log(postSql)
       queryResult = await client.query(postSql)
       let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
       if (postResult.length == 0) {
@@ -589,6 +594,8 @@ async function GetPostFilterSql(filter: any): Promise<string> {
     try {
       let { rows } = await client.query(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       client.release()
+      if (rows.length == 0) return null
+
       let postIdSql = ""
       rows.forEach((row, index) => {
         if (index != 0) postIdSql += ","

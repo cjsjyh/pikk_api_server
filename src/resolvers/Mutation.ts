@@ -40,7 +40,10 @@ module.exports = {
           `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"='${arg.providerId}'`
         )
         userAccount = qResult.rows[0]
-        userAccount.isNewUser = false
+        qResult = await client.query(`SELECT id FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`)
+        //If user didn't insert user info yet
+        if (qResult.rows.length == 0) userAccount.isNewUser = true
+        else userAccount.isNewUser = false
         userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
       } else {
         userAccount = qResult.rows[0]

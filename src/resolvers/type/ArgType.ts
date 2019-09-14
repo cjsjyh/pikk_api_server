@@ -29,6 +29,7 @@ export type UserInfoInput = {
   profileImgUrl: string
   phoneNum: number
   address: string
+  rank: number
 }
 
 export type CommentInfoInput = {

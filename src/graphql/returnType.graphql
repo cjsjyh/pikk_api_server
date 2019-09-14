@@ -8,12 +8,17 @@ type UserInfo {
   profileImgUrl: String
   phoneNum: String
   address: String
+  rank: Int
 }
 
 type UserCredentialInfo {
   isNewUser: Boolean!
   id: Int!
   token: String!
+
+  name: String
+  profileImgUrl: String
+  rank: Int
 }
 
 type ChannelInfo {

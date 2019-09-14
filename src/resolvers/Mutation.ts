@@ -31,22 +31,27 @@ module.exports = {
     //Make UserCredential
     try {
       let userAccount: ReturnType.UserCredentialInfo
-      let qResult = await client.query(
+      let queryResult = await client.query(
         `INSERT INTO "USER_CONFIDENTIAL" ("providerType", "providerId") VALUES ($1,$2) ON CONFLICT DO NOTHING RETURNING id`,
         [arg.providerType, arg.providerId]
       )
-      if (qResult.rows.length == 0) {
-        qResult = await client.query(
+      if (queryResult.rows.length == 0) {
+        queryResult = await client.query(
           `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"='${arg.providerId}'`
         )
-        userAccount = qResult.rows[0]
-        qResult = await client.query(`SELECT id FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`)
+        userAccount = queryResult.rows[0]
+        queryResult = await client.query(`SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`)
         //If user didn't insert user info yet
-        if (qResult.rows.length == 0) userAccount.isNewUser = true
-        else userAccount.isNewUser = false
+        if (queryResult.rows.length == 0) userAccount.isNewUser = true
+        else {
+          userAccount.isNewUser = false
+          userAccount.name = queryResult.rows[0].name
+          userAccount.profileImgUrl = queryResult.rows[0].profileImgUrl
+          userAccount.rank = queryResult.rows[0].rank
+        }
         userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
       } else {
-        userAccount = qResult.rows[0]
+        userAccount = queryResult.rows[0]
         userAccount.isNewUser = true
         userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
       }

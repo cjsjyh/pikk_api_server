@@ -9,12 +9,17 @@ export type UserInfo = {
   profileImgUrl: string
   phoneNum: number
   address: string
+  rank: number
 }
 
 export type UserCredentialInfo = {
   isNewUser: boolean
   id: number
   token: string
+
+  name: string
+  profileImgUrl: string
+  rank: number
 }
 
 export type ChannelInfo = {

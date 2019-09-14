@@ -18,6 +18,7 @@ input UserInfoInput {
   profileImg: Upload
   phoneNum: String
   address: String
+  rank: Int
 }
 
 input FollowInfoInput {

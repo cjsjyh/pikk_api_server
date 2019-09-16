@@ -163,5 +163,6 @@ input PickkItemQuery {
 
 input PickkChannelQuery {
   filterCommon: QueryCommon!
-  userId: Int!
+  userId: Int
+  channelId: Int
 }

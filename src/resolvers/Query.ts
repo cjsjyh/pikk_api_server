@@ -155,6 +155,7 @@ module.exports = {
         client.release()
         return []
       }
+
       await Promise.all(
         postResult.map(async (post: ReturnType.RecommendPostInfo) => {
           post.accountId = post.FK_accountId
@@ -163,14 +164,7 @@ module.exports = {
           post.pickCount = queryResult.rows[0].count
         })
       )
-      /*
-      postResult.forEach(async (post: ReturnType.RecommendPostInfo) => {
-        post.accountId = post.FK_accountId
-        post.reviews = []
-        queryResult = await client.query(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
-        post.pickCount = queryResult.rows[0].count
-      })
-      */
+
       let extractRequest: string[] = []
       if (info.fieldNodes[0].selectionSet !== undefined) {
         let requestedDataArray = info.fieldNodes[0].selectionSet.selections
@@ -206,23 +200,12 @@ module.exports = {
         if (arg.filterCommon.sort == "ASC") i = 0
         else i = reviewArray.length - 1
 
-        let j = 0
-        while (true) {
-          for (; j < postResult.length; j++) {
-            if (reviewArray[i][0].postId == postResult[j].id) {
-              postResult[j].reviews = reviewArray[i]
-              j++
-              break
-            }
-          }
-          if (arg.filterCommon.sort == "ASC") {
-            ++i
-            if (i >= reviewResult.length) break
-          } else {
-            --i
-            if (i < 0) break
-          }
-        }
+        let groupedReviews = _.groupBy(reviewArray, "FK_postId").undefined
+        groupedReviews.forEach(review => {
+          postResult.forEach(post => {
+            if (post.id == review[0].FK_postId) post.reviews = review
+          })
+        })
 
         //CHECK IF QUERY FOR CARD IS NEEDED
         let cardFlag = false
@@ -252,16 +235,14 @@ module.exports = {
           })
 
           //Add card to review
-          j = 0
-          for (let i = 0; i < cardArray.length; i++) {
-            for (; j < reviewResult.length; j++) {
-              if (cardArray[i][0].reviewId == reviewResult[j].id) {
-                reviewResult[j].cards = cardArray[i]
-                j++
-                break
-              }
-            }
-          }
+          let groupedCards = _.groupBy(cardArray, "FK_reviewId").undefined
+          groupedCards.forEach(card => {
+            reviewArray.forEach(reviewsByPost => {
+              reviewsByPost.forEach(review => {
+                if (review.id == card[0].FK_reviewId) review.cards = card
+              })
+            })
+          })
         }
       }
 
@@ -487,7 +468,7 @@ module.exports = {
     }
   },
 
-  getPickkChannel: async (parent: void, args: QueryArgInfo): Promise<ReturnType.UserInfo[]> => {
+  getPickkChannel: async (parent: void, args: QueryArgInfo, ctx: any): Promise<ReturnType.UserInfo[]> => {
     let arg: ArgType.PickkChannelQuery = args.pickkChannelOption
     let client
     try {

@@ -175,4 +175,5 @@ export interface PickkItemQuery {
 export interface PickkChannelQuery {
   filterCommon: QueryCommon
   userId: number
+  channelId: number
 }

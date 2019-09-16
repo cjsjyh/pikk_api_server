@@ -1,5 +1,5 @@
 const { pool } = require("../database/connectionPool")
-import { SequentialPromiseValue, getFormatDate } from "./Util"
+import { SequentialPromiseValue, RunSingleSQL } from "./Util"
 import { GraphQLResolveInfo, SelectionNode } from "graphql"
 import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
@@ -419,27 +419,6 @@ async function GetReviewsAndCards(postResult: ReturnType.RecommendPostInfo[], in
     console.log(e)
     throw new Error("[Error] Failed to fetch user data from DB")
   }
-}
-
-function RunSingleSQL(sql: string): Promise<any> {
-  return new Promise(async (resolve, reject) => {
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
-
-    try {
-      let queryResult = await client.query(sql)
-      client.release()
-      resolve(queryResult.rows)
-    } catch (e) {
-      client.release()
-      console.log(e)
-      throw new Error("[Error] Failed to fetch data from DB")
-    }
-  })
 }
 
 function SearchSelectionSet(selectionset: readonly SelectionNode[]): any {

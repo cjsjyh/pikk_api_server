@@ -20,6 +20,7 @@ import * as fs from "fs"
 //Create Express Server
 const app = express()
 app.use("*", cors())
+app.use(require("express-status-monitor")())
 app.use(compression())
 
 //Create Apollo Server
@@ -52,25 +53,6 @@ server.applyMiddleware({ app, path: "/graphql" })
 app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
-
-/*
-app.get("/UploadImage", async (req: express.Request, res: express.Response) => {
-  var param = {
-    Bucket: "fashiondogam-images",
-    Key: "image/" + "testimage.jpg",
-    ACL: "public-read",
-    Body: fs.createReadStream(__dirname + "/../test.jpg"),
-    ContentType: "image/jpg"
-  }
-
-  S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-    if (err) {
-      console.log(err)
-    }
-    console.log(data)
-  })
-})
-*/
 
 const httpServer = createServer(app)
 httpServer.listen({ port: 80 }, (): void => console.log(`GraphQL is now running on http://localhost:80/graphql`))

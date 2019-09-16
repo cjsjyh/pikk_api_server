@@ -59,12 +59,9 @@ type Mutation {
   Return > [-1] : Error [0] : Unfollowed [1] : Followed
   """
   FollowTarget(followInfo: FollowInfoInput!): Int!
+  isFollowingTarget(followInfo: FollowInfoInput!): Boolean!
 
   IncrementViewCount(postType: PostType!, postId: Int!): Boolean!
-
-  isFollowingChannel(accountId: Int!, channelId: Int!): Boolean!
-  isFollowingItem(accountId: Int!, itemId: Int!): Boolean!
-  isFollowingRecommendPost(accountId: Int!, postId: Int!): Boolean!
 
   isDuplicateName(name: String!): Boolean!
 

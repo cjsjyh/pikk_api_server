@@ -11,7 +11,7 @@ const S3 = new AWS.S3({
   region: "ap-northeast-2"
 })
 
-import { SequentialPromiseValue, getFormatDate, getFormatHour } from "./Util"
+import { SequentialPromiseValue, getFormatDate, getFormatHour, RunSingleSQL } from "./Util"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import * as ArgType from "./type/ArgType"
@@ -61,7 +61,7 @@ module.exports = {
     } catch (e) {
       client.release()
       console.log(e)
-      throw new Error("[Error]")
+      throw new Error("[Error] Failed to create User")
     }
   },
 
@@ -234,7 +234,7 @@ module.exports = {
         [arg.accountId, arg.channelId, arg.title, arg.content, arg.postType, arg.qnaType]
       )
       client.release()
-      console.log(`Community Post has been created`)
+      console.log(`Community Post has been created by User ${arg.accountId}`)
       return true
     } catch (e) {
       client.release()
@@ -315,10 +315,10 @@ module.exports = {
           )
         })
       )
-      console.log(`Recommend Post created`)
+      console.log(`Recommend Post created by User${arg.accountId}`)
       return true
     } catch (e) {
-      console.log("[Error] Failed at Sequential Promise")
+      console.log("[Error] Failed to create RecommendPost")
       console.log(e)
       return false
     }
@@ -327,26 +327,18 @@ module.exports = {
   createComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
     if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
     let arg: ArgType.CommentInfoInput = args.commentInfo
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      console.log("[Error] Failed Connecting to DB")
-      return false
-    }
+
+    let querySql =
+      `INSERT INTO ` +
+      ConvertToTableName(arg.targetType) +
+      `("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${arg.accountId},'${arg.content}')`
 
     try {
-      await client.query(`INSERT INTO ` + ConvertToTableName(arg.targetType) + `("FK_postId","FK_accountId","content") VALUES($1,$2,$3)`, [
-        arg.targetId,
-        arg.accountId,
-        arg.content
-      ])
-      client.release()
-      console.log(`Comment created`)
+      let rows = await RunSingleSQL(querySql)
+      console.log(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
       return true
     } catch (e) {
-      client.release()
-      console.log(e)
+      console.log("[Error] Failed to create Comment")
       return false
     }
   },
@@ -354,162 +346,98 @@ module.exports = {
   FollowTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<number> => {
     if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
     let arg: ReturnType.FollowInfo = args.followInfo
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
 
-    let query = "SELECT toggle" + arg.targetType + "Follow($1,$2)"
     try {
-      let result = await client.query(query, [arg.accountId, arg.targetId])
-      client.release()
+      let query = `SELECT toggle" + arg.targetType + "Follow(${arg.accountId},${arg.targetId})`
+      let result = await RunSingleSQL(query)
       result = Object.values(result.rows[0])
-      console.log(`Followed ${arg.targetType}`)
+      console.log(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)
       return result[0]
     } catch (e) {
-      client.release()
+      console.log("[Error] Failed to Insert into FOLLOWER")
       console.log(e)
       throw new Error("[Error] Failed to Insert into FOLLOWER")
     }
   },
 
-  isFollowingChannel: async (parent: void, args: any): Promise<Boolean> => {
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
+  isFollowingTarget: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
+    let arg: ReturnType.FollowInfo = args.followInfo
+
+    let tableName
+    let variableName
+    if (arg.targetType == "ITEM") {
+      tableName = "ITEM"
+      variableName = "itemId"
+    } else if (arg.targetType == "RECOMMENDPOST") {
+      tableName = "RECOMMEND_POST"
+      variableName = "postId"
+    } else if (arg.targetType == "CHANNEL") {
+      tableName = "CHANNEL"
+      variableName = "channelId"
     }
 
     try {
-      let { row } = await client.query(
-        `SELECT "FK_accountId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${args.accountId} and "FK_channelId"=${args.channelId}`
-      )
-      client.release()
-      if (row.length == 0) return false
+      let query = `SELECT "FK_accountId" FROM "${tableName}_FOLLOWER" WHERE "FK_accountId"=${arg.accountId} and "FK_${variableName}"=${arg.targetId}`
+      let result = await RunSingleSQL(query)
+      if (result.length == 0) return false
       else return true
     } catch (e) {
-      client.release()
+      console.log("[Error] Failed to check following status")
       console.log(e)
-      throw new Error("[Error]")
-    }
-  },
-  isFollowingItem: async (parent: void, args: any): Promise<Boolean> => {
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
-
-    try {
-      let { row } = await client.query(
-        `SELECT "FK_accountId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${args.accountId} and "FK_itemId"=${args.itemId}`
-      )
-      client.release()
-      if (row.length == 0) return false
-      else return true
-    } catch (e) {
-      client.release()
-      console.log(e)
-      throw new Error("[Error]")
-    }
-  },
-  isFollowingRecommendPost: async (parent: void, args: any): Promise<Boolean> => {
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
-
-    try {
-      let { row } = await client.query(
-        `SELECT "FK_accountId" FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_accountId"=${args.accountId} and "FK_postId"=${args.postId}`
-      )
-      client.release()
-      if (row.length == 0) return false
-      else return true
-    } catch (e) {
-      client.release()
-      console.log(e)
-      throw new Error("[Error]")
+      throw new Error("[Error] Failed to check following status")
     }
   },
 
   IncrementViewCount: async (parent: void, args: any): Promise<Boolean> => {
-    let client
     try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
-
-    try {
-      let { row } = await client.query(`UPDATE "${args.postType}_POST" SET "viewCount" = "viewCount" + 1 WHERE id = ${args.postId}`)
-      client.release()
+      let query = `UPDATE "${args.postType}_POST" SET "viewCount" = "viewCount" + 1 WHERE id = ${args.postId}`
+      let result = await RunSingleSQL(query)
       return true
     } catch (e) {
-      client.release()
+      console.log(`[Error] Failed to increase view count for ${args.postType} ${args.postId}`)
       console.log(e)
       return false
     }
   },
 
   isDuplicateName: async (parent: void, args: any): Promise<Boolean> => {
-    let client
     try {
-      client = await pool.connect()
+      let query = `SELECT * FROM "USER_INFO" WHERE name='${args.name}'`
+      let result = await RunSingleSQL(query)
+      console.log(`Checked DuplicateName ${args.name}`)
+
+      if (result.length != 0) return true
+      return false
     } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
+      console.log(`[Error] Failed to check Duplicate for ${args.name}`)
+      console.log(e)
+      throw new Error(`[Error] Failed to check Duplicate for ${args.name}`)
     }
-
-    let { rows } = await client.query(`SELECT * FROM "USER_INFO" WHERE name='${args.name}'`)
-    client.release()
-
-    if (rows.length != 0) return true
-    return false
   },
 
   deleteRecommendPost: async (parent: void, args: any): Promise<Boolean> => {
-    let client
     try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
-
-    try {
+      let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`
+      let result = await RunSingleSQL(query)
       console.log(`DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`)
-      console.log(args)
-      await client.query(`DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`)
-      client.release()
       return true
     } catch (e) {
-      client.release()
+      console.log(`[Error] Delete RecommendPost id: ${args.postId} Failed!`)
       console.log(e)
-      throw new Error("[Error] Delete Failed!")
+      throw new Error(`[Error] Delete RecommendPost id: ${args.postId} Failed!`)
     }
   },
 
   deleteCommunityPost: async (parent: void, args: any): Promise<Boolean> => {
-    let client
     try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
-
-    try {
-      await client.query(`DELETE FROM "COMMUNITY_POST" WHERE id=${args.postId}`)
-      client.release()
+      let query = `DELETE FROM "COMMUNITY_POST" WHERE id=${args.postId}`
+      let result = await RunSingleSQL(query)
+      console.log(query)
       return true
     } catch (e) {
-      client.release()
+      console.log(`[Error] Delete CommunityPost id: ${args.postId} Failed!`)
       console.log(e)
-      throw new Error("[Error] Delete Failed!")
+      throw new Error(`[Error] Delete CommunityPost id: ${args.postId} Failed!`)
     }
   }
 }

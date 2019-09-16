@@ -1,3 +1,5 @@
+const { pool } = require("../database/connectionPool")
+
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<Array<any>> {
   let resultArr = new Array<T>(arr.length)
   await Promise.all(
@@ -37,6 +39,26 @@ export function getFormatHour(secs) {
   return hours + "" + minutes + "" + seconds
 }
 
+export function RunSingleSQL(sql: string): Promise<any> {
+  return new Promise(async (resolve, reject) => {
+    let client
+    try {
+      client = await pool.connect()
+    } catch (e) {
+      throw new Error("[Error] Failed Connecting to DB")
+    }
+
+    try {
+      let queryResult = await client.query(sql)
+      client.release()
+      resolve(queryResult.rows)
+    } catch (e) {
+      client.release()
+      console.log(e)
+      reject("Failed")
+    }
+  })
+}
 /*
 async function SequentialPromise<T>(arr: Promise<{}>[]): Promise<Array<T>> {
   let resultArr = new Array<any>(arr.length)

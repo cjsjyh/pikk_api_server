@@ -38,12 +38,7 @@ module.exports = {
           item.pickCount = queryResult.rows[0].count
         })
       )
-      /*
-      itemResult.forEach(async (item: ReturnType.ItemInfo) => {
-        queryResult = await client.query(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" where "FK_itemId"=${item.id}`)
-        item.pickCount = queryResult.rows[0].count
-      })
-      */
+
       client.release()
       return itemResult
     } catch (e) {
@@ -150,103 +145,15 @@ module.exports = {
         limitSql +
         ') SELECT aaa.*,bbb.name,bbb."profileImgUrl" FROM "USER_INFO" AS bbb INNER JOIN aaa ON aaa."FK_accountId" = bbb."FK_accountId"'
       queryResult = await client.query(postSql)
+      client.release()
+
       let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
       if (postResult.length == 0) {
         client.release()
         return []
       }
 
-      await Promise.all(
-        postResult.map(async (post: ReturnType.RecommendPostInfo) => {
-          post.accountId = post.FK_accountId
-          post.reviews = []
-          queryResult = await client.query(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
-          post.pickCount = queryResult.rows[0].count
-        })
-      )
-
-      let extractRequest: string[] = []
-      if (info.fieldNodes[0].selectionSet !== undefined) {
-        let requestedDataArray = info.fieldNodes[0].selectionSet.selections
-        extractRequest = SearchSelectionSet(requestedDataArray)
-      }
-      //CHECK IF QUERY FOR REVIEW IS NEEDED
-      if (extractRequest.includes("reviews")) {
-        let reviewSql = `WITH aaa AS (${postSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_postId") FROM "ITEM_REVIEW" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
-        queryResult = await client.query(reviewSql)
-        let reviewResult: ReturnType.ItemReviewInfo[] = queryResult.rows
-        if (reviewResult.length == 0) {
-          client.release()
-          return postResult
-        }
-        reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
-          review.itemId = review.FK_itemId
-          review.postId = review.FK_postId
-          review.cards = []
-        })
-
-        let reviewArray: ReturnType.ItemReviewInfo[][] = [[]]
-        let currentId = -1
-        reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
-          if (review.postId != currentId) {
-            if (currentId != -1) reviewArray.push([])
-            currentId = review.postId
-          }
-          reviewArray[reviewArray.length - 1].push(review)
-        })
-
-        //Add review to Post
-        let i
-        if (arg.filterCommon.sort == "ASC") i = 0
-        else i = reviewArray.length - 1
-
-        let groupedReviews = _.groupBy(reviewArray, "FK_postId").undefined
-        groupedReviews.forEach(review => {
-          postResult.forEach(post => {
-            if (post.id == review[0].FK_postId) post.reviews = review
-          })
-        })
-
-        //CHECK IF QUERY FOR CARD IS NEEDED
-        let cardFlag = false
-        let reviewIndex = extractRequest.indexOf("reviews")
-        if (Array.isArray(extractRequest[reviewIndex + 1])) if (extractRequest[reviewIndex + 1].includes("cards")) cardFlag = true
-
-        if (cardFlag) {
-          let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`
-          queryResult = await client.query(cardSql)
-          let cardResult: ReturnType.ItemReviewCardInfo[] = queryResult.rows
-          if (cardResult.length == 0) {
-            client.release()
-            return postResult
-          }
-          cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
-            card.reviewId = card.FK_reviewId
-          })
-
-          let cardArray: ReturnType.ItemReviewCardInfo[][] = [[]]
-          currentId = -1
-          cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
-            if (card.reviewId != currentId) {
-              if (currentId != -1) cardArray.push([])
-              currentId = card.reviewId
-            }
-            cardArray[cardArray.length - 1].push(card)
-          })
-
-          //Add card to review
-          let groupedCards = _.groupBy(cardArray, "FK_reviewId").undefined
-          groupedCards.forEach(card => {
-            reviewArray.forEach(reviewsByPost => {
-              reviewsByPost.forEach(review => {
-                if (review.id == card[0].FK_reviewId) review.cards = card
-              })
-            })
-          })
-        }
-      }
-
-      client.release()
+      await GetReviewsAndCards(postResult, info, postSql)
       return postResult
     } catch (e) {
       client.release()
@@ -307,7 +214,12 @@ module.exports = {
     }
   },
 
-  getPickkRecommendPost: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
+  getUserPickkRecommendPost: async (
+    parent: void,
+    args: QueryArgInfo,
+    ctx: any,
+    info: GraphQLResolveInfo
+  ): Promise<ReturnType.RecommendPostInfo[]> => {
     let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
     let client: PoolClient
     try {
@@ -325,113 +237,14 @@ module.exports = {
       SELECT aaa.* from "RECOMMEND_POST" as aaa 
       INNER JOIN bbb on aaa.id = bbb."FK_postId"` + limitSql
       queryResult = await client.query(postSql)
+      client.release()
+
       let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
       if (postResult.length == 0) {
-        client.release()
         return []
       }
-      postResult.forEach(async (post: ReturnType.RecommendPostInfo) => {
-        post.accountId = post.FK_accountId
-        post.reviews = []
-        queryResult = await client.query(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
-        post.pickCount = queryResult.rows[0].count
-      })
 
-      let extractRequest: string[] = []
-      if (info.fieldNodes[0].selectionSet !== undefined) {
-        let requestedDataArray = info.fieldNodes[0].selectionSet.selections
-        extractRequest = SearchSelectionSet(requestedDataArray)
-      }
-      //CHECK IF QUERY FOR REVIEW IS NEEDED
-      if (extractRequest.includes("reviews")) {
-        let reviewSql = `WITH aaa AS (${postSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_postId") FROM "ITEM_REVIEW" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
-        queryResult = await client.query(reviewSql)
-        let reviewResult: ReturnType.ItemReviewInfo[] = queryResult.rows
-        if (reviewResult.length == 0) {
-          client.release()
-          return postResult
-        }
-        reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
-          review.itemId = review.FK_itemId
-          review.postId = review.FK_postId
-          review.cards = []
-        })
-
-        let reviewArray: ReturnType.ItemReviewInfo[][] = [[]]
-        let currentId = -1
-        reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
-          if (review.postId != currentId) {
-            if (currentId != -1) reviewArray.push([])
-            currentId = review.postId
-          }
-          reviewArray[reviewArray.length - 1].push(review)
-        })
-
-        //Add review to Post
-        let i
-        if (arg.filterCommon.sort == "ASC") i = 0
-        else i = reviewArray.length - 1
-
-        let j = 0
-        while (true) {
-          for (; j < postResult.length; j++) {
-            if (reviewArray[i][0].postId == postResult[j].id) {
-              postResult[j].reviews = reviewArray[i]
-              j++
-              break
-            }
-          }
-          if (arg.filterCommon.sort == "ASC") {
-            ++i
-            if (i >= reviewResult.length) break
-          } else {
-            --i
-            if (i < 0) break
-          }
-        }
-
-        //CHECK IF QUERY FOR CARD IS NEEDED
-        let cardFlag = false
-        let reviewIndex = extractRequest.indexOf("reviews")
-        if (Array.isArray(extractRequest[reviewIndex + 1])) if (extractRequest[reviewIndex + 1].includes("cards")) cardFlag = true
-
-        if (cardFlag) {
-          let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`
-          queryResult = await client.query(cardSql)
-          let cardResult: ReturnType.ItemReviewCardInfo[] = queryResult.rows
-          if (cardResult.length == 0) {
-            client.release()
-            return postResult
-          }
-          cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
-            card.reviewId = card.FK_reviewId
-          })
-
-          let cardArray: ReturnType.ItemReviewCardInfo[][] = [[]]
-          currentId = -1
-          cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
-            if (card.reviewId != currentId) {
-              if (currentId != -1) cardArray.push([])
-              currentId = card.reviewId
-            }
-            cardArray[cardArray.length - 1].push(card)
-          })
-
-          //Add card to review
-          j = 0
-          for (let i = 0; i < cardArray.length; i++) {
-            for (; j < reviewResult.length; j++) {
-              if (cardArray[i][0].reviewId == reviewResult[j].id) {
-                reviewResult[j].cards = cardArray[i]
-                j++
-                break
-              }
-            }
-          }
-        }
-      }
-
-      client.release()
+      await GetReviewsAndCards(postResult, info, postSql)
       return postResult
     } catch (e) {
       client.release()
@@ -440,64 +253,39 @@ module.exports = {
     }
   },
 
-  getPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
+  getUserPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
     let arg: ArgType.PickkItemQuery = args.pickkItemOption
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
 
-    try {
-      let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
-      let postSql =
-        `WITH bbb as (SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
-      SELECT aaa.* from "ITEM" as aaa 
-      INNER JOIN bbb on aaa.id = bbb."FK_itemId"` + limitSql
+    let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+    let postSql =
+      `WITH bbb as (SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
+    SELECT aaa.* from "ITEM" as aaa 
+    INNER JOIN bbb on aaa.id = bbb."FK_itemId"` + limitSql
 
-      let queryResult = await client.query(postSql)
-      client.release()
-      let itemResult: ReturnType.ItemInfo[] = queryResult.rows
-
-      return itemResult
-    } catch (e) {
-      client.release()
-      console.log(e)
-      throw new Error("[Error] Failed to fetch data from DB")
-    }
+    let rows = await RunSingleSQL(postSql)
+    return rows
   },
 
-  getPickkChannel: async (parent: void, args: QueryArgInfo, ctx: any): Promise<ReturnType.UserInfo[]> => {
+  getUserPickkChannel: async (parent: void, args: QueryArgInfo): Promise<ReturnType.UserInfo[]> => {
     let arg: ArgType.PickkChannelQuery = args.pickkChannelOption
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
-    }
 
-    try {
-      let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
-      let postSql =
-        `WITH bbb as (SELECT "FK_channelId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
+    let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+    let postSql =
+      `WITH bbb as (SELECT "FK_channelId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
       SELECT aaa.* from "USER_INFO" as aaa 
       INNER JOIN bbb on aaa."FK_accountId" = bbb."FK_channelId"` + limitSql
 
-      let queryResult = await client.query(postSql)
-      client.release()
-      let channelResult: ReturnType.UserInfo[] = queryResult.rows
+    let rows = await RunSingleSQL(postSql)
+    return rows
+  },
 
-      return channelResult
-    } catch (e) {
-      client.release()
-      console.log(e)
-      throw new Error("[Error] Failed to fetch data from DB")
-    }
+  getChannelPickkCount: async (parent: void, args: any): Promise<number> => {
+    let rows = await RunSingleSQL(`SELECT COUNT(*) FROM "CHANNEL_FOLLOWER" WHERE "FK_channelId"=${args.channelId}`)
+    return rows[0].count
   }
 }
 
-function GetUserInfo(postInfo: any): Promise<ReturnType.UserInfo> {
+async function GetUserInfo(postInfo: any): Promise<ReturnType.UserInfo> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -517,7 +305,123 @@ function GetUserInfo(postInfo: any): Promise<ReturnType.UserInfo> {
   })
 }
 
-function GetCommunityPostImage(postInfo: ReturnType.CommunityPostInfo): Promise<QueryResult> {
+async function GetCommunityPostImage(postInfo: ReturnType.CommunityPostInfo): Promise<QueryResult> {
+  let rows = await RunSingleSQL(`SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=${postInfo.id}`)
+  return rows
+}
+
+async function GetMetaData(tableName: string): Promise<number> {
+  let rows = await RunSingleSQL(`SELECT COUNT(*) FROM "${tableName}"`)
+  return rows[0].count
+}
+
+async function GetReviewsAndCards(postResult: ReturnType.RecommendPostInfo[], info: GraphQLResolveInfo, postSql: string) {
+  let client: PoolClient
+  try {
+    client = await pool.connect()
+  } catch (e) {
+    console.log(e)
+    throw new Error("[Error] Failed Connecting to DB")
+  }
+
+  try {
+    let queryResult: QueryResult
+    await Promise.all(
+      postResult.map(async (post: ReturnType.RecommendPostInfo) => {
+        post.accountId = post.FK_accountId
+        post.reviews = []
+        queryResult = await client.query(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
+        post.pickCount = queryResult.rows[0].count
+      })
+    )
+
+    let extractRequest: string[] = []
+    if (info.fieldNodes[0].selectionSet !== undefined) {
+      let requestedDataArray = info.fieldNodes[0].selectionSet.selections
+      extractRequest = SearchSelectionSet(requestedDataArray)
+    }
+    //CHECK IF QUERY FOR REVIEW IS NEEDED
+    if (extractRequest.includes("reviews")) {
+      let reviewSql = `WITH aaa AS (${postSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_postId") FROM "ITEM_REVIEW" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
+      queryResult = await client.query(reviewSql)
+      let reviewResult: ReturnType.ItemReviewInfo[] = queryResult.rows
+      if (reviewResult.length == 0) {
+        client.release()
+        return postResult
+      }
+      reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
+        review.itemId = review.FK_itemId
+        review.postId = review.FK_postId
+        review.cards = []
+      })
+
+      let reviewArray: ReturnType.ItemReviewInfo[][] = [[]]
+      let currentId = -1
+      reviewResult.forEach((review: ReturnType.ItemReviewInfo) => {
+        if (review.postId != currentId) {
+          if (currentId != -1) reviewArray.push([])
+          currentId = review.postId
+        }
+        reviewArray[reviewArray.length - 1].push(review)
+      })
+
+      //Add review to Post
+      let groupedReviews = _.groupBy(reviewArray, "FK_postId").undefined
+      groupedReviews.forEach(review => {
+        postResult.forEach(post => {
+          if (post.id == review[0].FK_postId) post.reviews = review
+        })
+      })
+
+      //CHECK IF QUERY FOR CARD IS NEEDED
+      let cardFlag = false
+      let reviewIndex = extractRequest.indexOf("reviews")
+      if (Array.isArray(extractRequest[reviewIndex + 1])) if (extractRequest[reviewIndex + 1].includes("cards")) cardFlag = true
+
+      if (cardFlag) {
+        let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`
+        queryResult = await client.query(cardSql)
+        let cardResult: ReturnType.ItemReviewCardInfo[] = queryResult.rows
+        if (cardResult.length == 0) {
+          client.release()
+          return postResult
+        }
+        cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
+          card.reviewId = card.FK_reviewId
+        })
+
+        let cardArray: ReturnType.ItemReviewCardInfo[][] = [[]]
+        currentId = -1
+        cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
+          if (card.reviewId != currentId) {
+            if (currentId != -1) cardArray.push([])
+            currentId = card.reviewId
+          }
+          cardArray[cardArray.length - 1].push(card)
+        })
+
+        //Add card to review
+        let groupedCards = _.groupBy(cardArray, "FK_reviewId").undefined
+        groupedCards.forEach(card => {
+          reviewArray.forEach(reviewsByPost => {
+            reviewsByPost.forEach(review => {
+              if (review.id == card[0].FK_reviewId) review.cards = card
+            })
+          })
+        })
+      }
+    }
+    console.log(postResult)
+
+    client.release()
+  } catch (e) {
+    client.release()
+    console.log(e)
+    throw new Error("[Error] Failed to fetch user data from DB")
+  }
+}
+
+function RunSingleSQL(sql: string): Promise<any> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -527,31 +431,15 @@ function GetCommunityPostImage(postInfo: ReturnType.CommunityPostInfo): Promise<
     }
 
     try {
-      let queryResult = await client.query('SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=$1', [postInfo.id])
+      let queryResult = await client.query(sql)
       client.release()
       resolve(queryResult.rows)
     } catch (e) {
       client.release()
-      reject(e)
+      console.log(e)
+      throw new Error("[Error] Failed to fetch data from DB")
     }
   })
-}
-
-async function GetMetaData(tableName: string): Promise<number> {
-  let client
-  try {
-    client = await pool.connect()
-  } catch (e) {
-    throw new Error("[Error] Failed Connecting to DB")
-  }
-
-  try {
-    let countResult = await client.query(`SELECT COUNT(*) FROM "${tableName}"`)
-    return countResult.rows[0].count
-  } catch (e) {
-    client.release()
-    throw new Error("[Error] Failed to get MetaData!")
-  }
 }
 
 function SearchSelectionSet(selectionset: readonly SelectionNode[]): any {

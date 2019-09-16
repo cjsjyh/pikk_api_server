@@ -3,16 +3,17 @@ scalar Upload
 type Query {
   allItems(itemOption: ItemQuery!): [ItemInfo!]
   _allItemsMetadata: Int!
-  getPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
+  getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
 
   allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
   _allCommunityPostsMetadata: Int!
 
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata: Int!
-  getPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
+  getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
 
-  getPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
+  getUserPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
+  getChannelPickkCount(channelId: Int!): Int!
 
   getComments(commentOption: CommentQuery!): [CommentInfo!]
 

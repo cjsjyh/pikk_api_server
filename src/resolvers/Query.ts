@@ -76,9 +76,9 @@ module.exports = {
       let postResult: ReturnType.CommunityPostInfo[] = queryResult.rows
 
       queryResult = await client.query(commentSql)
+      client.release()
       let commentResult: ReturnType.CommentInfo[] = queryResult.rows
       let commentResultGroup = _.countBy(commentResult, "FK_postId")
-      client.release()
 
       let PromiseResult: any = await Promise.all([
         SequentialPromiseValue(postResult, GetCommunityPostImage),
@@ -149,7 +149,6 @@ module.exports = {
 
       let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
       if (postResult.length == 0) {
-        client.release()
         return []
       }
 
@@ -381,9 +380,10 @@ async function GetReviewsAndCards(postResult: ReturnType.RecommendPostInfo[], in
       if (cardFlag) {
         let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`
         queryResult = await client.query(cardSql)
+        client.release()
+
         let cardResult: ReturnType.ItemReviewCardInfo[] = queryResult.rows
         if (cardResult.length == 0) {
-          client.release()
           return postResult
         }
         cardResult.forEach((card: ReturnType.ItemReviewCardInfo) => {
@@ -411,9 +411,6 @@ async function GetReviewsAndCards(postResult: ReturnType.RecommendPostInfo[], in
         })
       }
     }
-    console.log(postResult)
-
-    client.release()
   } catch (e) {
     client.release()
     console.log(e)

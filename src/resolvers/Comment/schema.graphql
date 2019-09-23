@@ -8,3 +8,34 @@ type Mutation {
   """
   createComment(commentInfo: CommentInfoInput!): Boolean!
 }
+
+#--------------
+#   INPUT
+#--------------
+
+# Query
+input CommentQuery {
+  filterCommon: QueryCommon!
+  boardType: BoardType!
+  postId: Int!
+}
+
+# Mutation
+input CommentInfoInput {
+  accountId: Int!
+  targetId: Int!
+  targetType: PostType!
+  content: String!
+}
+
+#---------------
+#   Return
+#---------------
+
+type CommentInfo {
+  id: Int!
+  postId: Int!
+  accountId: Int!
+  content: String!
+  time: String
+}

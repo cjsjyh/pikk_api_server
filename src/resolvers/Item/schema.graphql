@@ -10,3 +10,55 @@ type Mutation {
   """
   createItem(itemInfo: ItemInfoInput!): Boolean!
 }
+
+#--------------
+#   INPUT
+#--------------
+
+# Query
+input ItemQueryFilter {
+  itemMajorType: ItemMajorType
+  itemMinorType: ItemMinorType
+  itemId: Int
+}
+
+input ItemQuery {
+  filterCommon: QueryCommon!
+  itemFilter: ItemQueryFilter
+  sortBy: ItemSortableField = score
+}
+
+# Mutation
+input ItemInfoInput {
+  name: String!
+  brand: String!
+  originalPrice: Int!
+  salePrice: Int
+  itemMinorType: ItemMinorType!
+  itemMajorType: ItemMajorType!
+  purchaseUrl: String
+  itemImg: Upload
+}
+
+input PickkItemQuery {
+  filterCommon: QueryCommon!
+  userId: Int!
+}
+
+#---------------
+#   Return
+#---------------
+#Return
+type ItemInfo {
+  id: Int!
+  name: String!
+  brand: String!
+  originalPrice: Int!
+  salePrice: Int
+  itemMinorType: ItemMinorType!
+  itemMajorType: ItemMajorType!
+  imageUrl: String
+  purchaseUrl: String
+
+  pickCount: Int!
+}

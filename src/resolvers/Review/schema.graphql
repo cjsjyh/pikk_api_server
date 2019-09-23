@@ -1,0 +1,43 @@
+#--------------
+#   INPUT
+#--------------
+
+# Query
+
+# Mutation
+input ItemReviewInfoInput {
+  itemId: Int
+  item: ItemInfoInput!
+  recommendReason: RecommendReason!
+  shortReview: String!
+  imgUrl: Upload
+  score: Int!
+  cards: [ItemReviewCardInfoInput!]!
+}
+
+input ItemReviewCardInfoInput {
+  title: String!
+  content: String!
+  img: Upload
+}
+
+#---------------
+#   Return
+#---------------
+type ItemReviewInfo {
+  id: Int!
+  itemId: Int!
+  postId: Int!
+  recommendReason: RecommendReason!
+  shortReview: String!
+  score: Int!
+  cards: [ItemReviewCardInfo!]!
+}
+
+type ItemReviewCardInfo {
+  id: Int!
+  reviewId: Int!
+  title: String!
+  content: String!
+  imgUrl: String
+}

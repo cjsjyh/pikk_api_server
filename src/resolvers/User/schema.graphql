@@ -2,6 +2,7 @@ type Query {
   getUserPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
   getChannelPickkCount(channelId: Int!): Int!
   getUserInfo(userOption: UserQuery!): [UserInfo!]
+  getChannelInfo(channelOption: ChannelQuery!): [ChannelInfo!]
 }
 
 type Mutation {
@@ -12,4 +13,81 @@ type Mutation {
   createUserInfo(userInfo: UserInfoInput!): Boolean!
 
   isDuplicateName(name: String!): Boolean!
+}
+
+#--------------
+#   INPUT
+#--------------
+
+# Query
+
+input UserQuery {
+  id: Int!
+}
+
+input ChannelQuery {
+  id: Int!
+}
+
+input PickkChannelQuery {
+  filterCommon: QueryCommon!
+  userId: Int
+}
+
+# Mutation
+input UserCredentialInput {
+  providerType: ProviderType!
+  providerId: String!
+}
+
+input UserInfoInput {
+  id: Int!
+  name: String!
+  email: String!
+  age: Int!
+  height: Int!
+  weight: Int!
+  profileImg: Upload
+  phoneNum: String
+  address: String
+  rank: Int
+}
+
+#---------------
+#   Return
+#---------------
+#Return
+type UserInfo {
+  name: String!
+  email: String!
+  age: Int!
+  height: Int!
+  weight: Int!
+  profileImgUrl: String
+  phoneNum: String
+  address: String
+  rank: Int
+}
+
+type UserCredentialInfo {
+  isNewUser: Boolean!
+  id: Int!
+  token: String!
+
+  name: String
+  profileImgUrl: String
+  rank: Int
+}
+
+type ChannelInfo {
+  #User
+  name: String!
+  profileImgUrl: String!
+  #Follow
+  pickkCount: Int!
+  #Channel
+  id: Int!
+  backgroundImgUrl: String
+  description: String
+  snsUrl: String
 }

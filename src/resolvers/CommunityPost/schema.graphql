@@ -11,3 +11,58 @@ type Mutation {
 
   deleteCommunityPost(postId: Int!): Boolean
 }
+
+#--------------
+#   INPUT
+#--------------
+
+# Query
+
+input CommunityPostQueryFilter {
+  filterCommon: PostQueryFilter
+  postType: CommunityPostType!
+  qnaType: QNAType
+  channelId: Int
+}
+
+input CommunityPostQuery {
+  filterCommon: QueryCommon!
+  postFilter: CommunityPostQueryFilter!
+  sortBy: PostSortableField = time
+}
+
+# Mutation
+
+input CommunityPostInfoInput {
+  accountId: Int!
+  """
+  If belongs to a channel, insert UserId
+  """
+  channelId: Int!
+  title: String!
+  content: String!
+  postType: CommunityPostType!
+  qnaType: QNAType
+  img: [Upload]
+}
+
+#---------------
+#   Return
+#---------------
+
+type CommunityPostInfo {
+  accountId: Int
+  name: String!
+  profileImgUrl: String
+
+  id: Int
+  channelId: Int
+  title: String!
+  content: String!
+  time: String!
+  viewCount: Int!
+  imageUrl: [String]
+  postType: String!
+  qnaType: String
+  commentCount: Int!
+}

@@ -2,7 +2,6 @@ type Query {
   getUserPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
   getChannelPickkCount(channelId: Int!): Int!
   getUserInfo(userOption: UserQuery!): [UserInfo!]
-  getChannelInfo(channelOption: ChannelQuery!): [ChannelInfo!]
 }
 
 type Mutation {
@@ -58,6 +57,7 @@ input UserInfoInput {
 #---------------
 #Return
 type UserInfo {
+  id: Int!
   name: String!
   email: String!
   age: Int!
@@ -67,6 +67,10 @@ type UserInfo {
   phoneNum: String
   address: String
   rank: Int
+  #Channel
+  channel_titleImgUrl: String
+  channel_description: String
+  channel_snsUrl: String
 }
 
 type UserCredentialInfo {
@@ -77,17 +81,4 @@ type UserCredentialInfo {
   name: String
   profileImgUrl: String
   rank: Int
-}
-
-type ChannelInfo {
-  #User
-  name: String!
-  profileImgUrl: String!
-  #Follow
-  pickkCount: Int!
-  #Channel
-  id: Int!
-  backgroundImgUrl: String
-  description: String
-  snsUrl: String
 }

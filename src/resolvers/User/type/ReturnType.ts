@@ -1,4 +1,5 @@
 export type UserInfo = {
+  id: number
   name: string
   email: string
   age: number
@@ -9,6 +10,10 @@ export type UserInfo = {
   phoneNum: number
   address: string
   rank: number
+  //Channel
+  channel_titleImgUrl: string
+  channel_description: string
+  channel_snsUrl: string
 }
 
 export type UserCredentialInfo = {
@@ -19,17 +24,4 @@ export type UserCredentialInfo = {
   name: string
   profileImgUrl: string
   rank: number
-}
-
-export type ChannelInfo = {
-  //User
-  name: string
-  profileImgUrl: string
-  //Follow
-  pickkCount: number
-  //Channel
-  id: number
-  backgroundImgUrl: string
-  description: string
-  snsUrl: string
 }

@@ -26,6 +26,7 @@ export type UserInfoInput = {
 //Query
 export type QueryArgInfo = {
   userOption: UserQuery
+  channelOption: ChannelQuery
   pickkChannelOption: PickkChannelQuery
 }
 
@@ -36,6 +37,10 @@ type QueryCommon = {
 }
 
 export type UserQuery = {
+  id: number
+}
+
+export type ChannelQuery = {
   id: number
 }
 

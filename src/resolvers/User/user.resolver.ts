@@ -142,21 +142,14 @@ module.exports = {
   Query: {
     getUserInfo: async (parent: void, args: QueryArgInfo): Promise<[ReturnType.UserInfo]> => {
       let arg: ArgType.UserQuery = args.userOption
-      let client
       try {
-        client = await pool.connect()
+        let result = await RunSingleSQL('SELECT * FROM "USER_INFO" WHERE "FK_accountId"=' + arg.id)
+        console.log(`Retrieve UserInfo for ${arg.id}`)
+        return result
       } catch (e) {
-        throw new Error("[Error] Failed Connecting to DB")
-      }
-
-      try {
-        let queryResult = await client.query('SELECT * FROM "USER_INFO" WHERE "FK_accountId"=' + arg.id)
-        client.release()
-        return queryResult.rows
-      } catch (e) {
-        client.release()
+        console.log("[Error] Failed to fetch UserInfo from DB")
         console.log(e)
-        throw new Error("[Error] Failed to fetch data from DB")
+        throw new Error("[Error] Failed to fetch UserInfo from DB")
       }
     },
 

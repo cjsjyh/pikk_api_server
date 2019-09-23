@@ -1,0 +1,12 @@
+type Query {
+  allItems(itemOption: ItemQuery!): [ItemInfo!]
+  _allItemsMetadata: Int!
+  getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
+}
+
+type Mutation {
+  """
+  Return >  [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  createItem(itemInfo: ItemInfoInput!): Boolean!
+}

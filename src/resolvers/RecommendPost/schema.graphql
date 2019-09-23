@@ -1,0 +1,14 @@
+type Query {
+  allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
+  _allRecommendPostsMetadata: Int!
+  getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
+}
+
+type Mutation {
+  """
+  Return > [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  createRecommendPost(recommendPostInfo: RecommendPostInfoInput!): Boolean!
+
+  deleteRecommendPost(postId: Int!): Boolean
+}

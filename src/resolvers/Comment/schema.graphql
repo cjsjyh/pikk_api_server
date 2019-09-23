@@ -1,0 +1,10 @@
+type Query {
+  getComments(commentOption: CommentQuery!): [CommentInfo!]
+}
+
+type Mutation {
+  """
+  Return > [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  createComment(commentInfo: CommentInfoInput!): Boolean!
+}

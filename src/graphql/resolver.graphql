@@ -1,60 +1,8 @@
 scalar Upload
 
-type Query {
-  allItems(itemOption: ItemQuery!): [ItemInfo!]
-  _allItemsMetadata: Int!
-  getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
-
-  allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
-  _allCommunityPostsMetadata: Int!
-
-  allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
-  _allRecommendPostsMetadata: Int!
-  getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
-
-  getUserPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
-  getChannelPickkCount(channelId: Int!): Int!
-
-  getComments(commentOption: CommentQuery!): [CommentInfo!]
-
-  getUserInfo(userOption: UserQuery!): [UserInfo!]
-}
-
 type Mutation {
-  createUser(userAccountInfo: UserCredentialInput!): UserCredentialInfo!
-  """
-  Return > [true] : DB save successful  [false] : DB save unsuccessful
-  """
-  createUserInfo(userInfo: UserInfoInput!): Boolean!
-
-  """
-  Return >  [true] : DB save successful  [false] : DB save unsuccessful
-  """
-  createItem(itemInfo: ItemInfoInput!): Boolean!
-
-  """
-  Return > [true] : DB save successful [false] : DB save unsuccessful
-  """
-  createCommunityPost(communityPostInfo: CommunityPostInfoInput!): Boolean!
-
-  """
-  postTag and styleTag have to be exactly the same as ENUM saved in DB(case Sensitive)
-
-  Return > [true] : DB save successful  [false] : DB save unsuccessful
-  """
-  createRecommendPost(recommendPostInfo: RecommendPostInfoInput!): Boolean!
-
-  """
-  TargetType > ["CommunityPost"] ["RecommendPost"]
-
-  Return > [true] : DB save successful  [false] : DB save unsuccessful
-  """
-  createComment(commentInfo: CommentInfoInput!): Boolean!
-
   """
   Toggles Account's Follow status on Channel
-
-  TargetType > ["CommunityPost"] ["RecommendPost"] ["Channel"] ["ITEM"]
 
   Return > [-1] : Error [0] : Unfollowed [1] : Followed
   """
@@ -62,14 +10,4 @@ type Mutation {
   isFollowingTarget(followInfo: FollowInfoInput!): Boolean!
 
   IncrementViewCount(postType: PostType!, postId: Int!): Boolean!
-
-  isDuplicateName(name: String!): Boolean!
-
-  deleteRecommendPost(postId: Int!): Boolean
-
-  deleteCommunityPost(postId: Int!): Boolean
-}
-
-type Subscription {
-  helloWorld: String!
 }

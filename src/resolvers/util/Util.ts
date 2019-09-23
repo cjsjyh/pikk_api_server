@@ -1,4 +1,6 @@
-const { pool } = require("../database/connectionPool")
+import { SelectionNode } from "graphql"
+
+const { pool } = require("../../database/connectionPool")
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<Array<any>> {
   let resultArr = new Array<T>(arr.length)
@@ -59,6 +61,23 @@ export function RunSingleSQL(sql: string): Promise<any> {
     }
   })
 }
+
+export async function GetMetaData(tableName: string): Promise<number> {
+  let rows = await RunSingleSQL(`SELECT COUNT(*) FROM "${tableName}"`)
+  return rows[0].count
+}
+
+export function SearchSelectionSet(selectionset: readonly SelectionNode[]): any {
+  let result: string[] = []
+  selectionset.forEach((element: any) => {
+    result.push(element.name.value)
+    if (element.selectionSet !== undefined) {
+      result.push(SearchSelectionSet(element.selectionSet.selections))
+    }
+  })
+  return result
+}
+
 /*
 async function SequentialPromise<T>(arr: Promise<{}>[]): Promise<Array<T>> {
   let resultArr = new Array<any>(arr.length)

@@ -1,0 +1,15 @@
+type Query {
+  getUserPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
+  getChannelPickkCount(channelId: Int!): Int!
+  getUserInfo(userOption: UserQuery!): [UserInfo!]
+}
+
+type Mutation {
+  createUser(userAccountInfo: UserCredentialInput!): UserCredentialInfo!
+  """
+  Return > [true] : DB save successful  [false] : DB save unsuccessful
+  """
+  createUserInfo(userInfo: UserInfoInput!): Boolean!
+
+  isDuplicateName(name: String!): Boolean!
+}

@@ -1,0 +1,13 @@
+type Query {
+  allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
+  _allCommunityPostsMetadata: Int!
+}
+
+type Mutation {
+  """
+  Return > [true] : DB save successful [false] : DB save unsuccessful
+  """
+  createCommunityPost(communityPostInfo: CommunityPostInfoInput!): Boolean!
+
+  deleteCommunityPost(postId: Int!): Boolean
+}

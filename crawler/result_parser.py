@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 def similarity(s, t, ratio_calc = False):
     """ levenshtein_ratio_and_distance:
         Calculates levenshtein distance between two strings.
@@ -44,42 +45,100 @@ def similarity(s, t, ratio_calc = False):
         # This is the minimum number of edits needed to convert string a to string b
         return "The strings are {} edits away".format(distance[row][col])
 
-def main():
-  fileList = open("test_list.txt","r")
-  lineCount = 0
+def final_parse():
+  colorFile = open("color_list.txt","r")
+  colorList = []
+  while True:
+    line = colorFile.readline()
+    if not line: break
+    colorList.append(line.split('\n')[0].lower())
+
+  fileList = open("crawllist_result.txt","r")
+  outputFile = open("output_list.txt","w")
+  itemCount = 0
+
+  itemId = 0
+
   lineFromDash = 0
-  lineCompareSource = ""
-  lineCompareNow = ""
+
+  item1 = []
+  item2 = []
+
   while True:
     line = fileList.readline()
     if not line: break
+    '''
+    print("---Current---")
+    print(item1)
+    print(item2)
+    print("-------------")
 
+    print(line)
+    '''
     if(line[0] == '-'):
       lineFromDash = 0
+      itemCount += 1
+      print(itemCount)
+
+      if (len(item1) != 0):
+        #가격이 같으면
+        if(item1[2] == item2[2]):
+          #이름이 80%이상 일치하면
+          if(similarity(item1[1],item2[1],ratio_calc=True) > 0.8):
+            print('Similiar!: %d' %itemId)
+          #이름이 일치하지 않으면
+          else:
+            itemId += 1
+        #가격이 다르면 무조건 다름
+        else:
+          print("Not Similiar!: %d" %itemId)
+          itemId += 1
+      
+      item2.append(str(itemId))
+      item1.clear()
+      item1 = copy.deepcopy(item2)
+      item2.clear()
+
+      for (index,itemline) in enumerate(item1):
+        if(index == 1):
+          i=0
+          flag = False
+          for i in reversed(range(len(itemline)-1)):
+            if(flag):
+              flag = False
+              continue
+
+            if(itemline[i] == ')'):
+              if(i-1 >= 0 and itemline[i-1] != '('):
+                break
+              else:
+                flag = True
+            elif(itemline[i] == ']'):
+              if(i-1 >= 0 and itemline[i-1] != '['):
+                break
+              else:
+                flag = True
+            elif(itemline[i] != ' ' and itemline[i] != '-' and itemline[i] != ':'):
+              break
+          itemline = itemline[:i+1] + '\n'
+        outputFile.write(itemline)
+      outputFile.write('\n---------\n')
+
+    # ------가 아니면
     else:
       lineFromDash += 1
+      #item 이름 줄이면
       if(lineFromDash == 2):
-        if(lineCompareSource == ""):
-          lineCompareSource = line
-        else:
-          lineCompareNow = line
-          #Compare
-          similarityRatio = similarity(lineCompareSource, lineCompareNow)
-          print("\n%s\n%s\n%f\n" %(lineCompareSource,lineCompareNow,similarityRatio(lineCompareSource,lineCompareNow,ratio_calc = True)))
-
-    
-    lineCount += 1
-
+        #색상 제거하기
+        for color in colorList:
+          line = line.replace(color,'')
+      item2.append(line)
   fileList.close()
 
-  Str1 = "Apple Inc."
-  Str2 = "apple Inc"
-  Distance = similarity(Str1,Str2)
-  print(Distance)
-  Ratio = similarity(Str1,Str2,ratio_calc = True)
-  print(Ratio)
+def main():
+  final_parse()
 
-
+    
 
 
 if __name__ == '__main__':

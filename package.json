@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node 'dist/server.js'",
-    "build": "tsc -p . && ncp src/graphql dist/graphql",
+    "build": "tsc -p . && copyfiles src/**/*.graphql dist/graphql",
     "start:dev": "npm run build:dev",
     "build:dev": "nodemon 'src/server.ts' --exec 'ts-node' src/server.ts -e ts,graphql",
     "test": "echo \"Error: no test specified\" && exit 1"

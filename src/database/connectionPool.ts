@@ -4,7 +4,7 @@ var pool
 if (process.env.MODE == "DEVELOPMENT") {
   pool = new Pool({
     user: process.env.RDS_USERNAME,
-    host: process.env.RDS_HOST,
+    host: process.env.DBEC2_HOST,
     database: "postgres_development",
     password: process.env.RDS_PASSWORD,
     port: process.env.RDS_PORT,
@@ -16,7 +16,7 @@ if (process.env.MODE == "DEVELOPMENT") {
 } else {
   pool = new Pool({
     user: process.env.RDS_USERNAME,
-    host: process.env.RDS_HOST,
+    host: process.env.DBEC2_HOST,
     database: "postgres",
     password: process.env.RDS_PASSWORD,
     port: process.env.RDS_PORT,

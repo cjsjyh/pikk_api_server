@@ -53,7 +53,8 @@ def final_parse():
     if not line: break
     colorList.append(line.split('\n')[0].lower())
 
-  fileList = open("crawllist_result.txt","r")
+  filename = input("Filename: ")
+  fileList = open(filename,"r")
   outputFile = open("output_list.txt","w")
   itemCount = 0
 
@@ -67,14 +68,7 @@ def final_parse():
   while True:
     line = fileList.readline()
     if not line: break
-    '''
-    print("---Current---")
-    print(item1)
-    print(item2)
-    print("-------------")
 
-    print(line)
-    '''
     if(line[0] == '-'):
       lineFromDash = 0
       itemCount += 1
@@ -82,16 +76,22 @@ def final_parse():
 
       if (len(item1) != 0):
         #가격이 같으면
-        if(item1[2] == item2[2]):
+        item1removed = item1[1]
+        item2removed = item2[1]
+        for color in colorList:
+          item1removed = item1removed.replace(color,'')
+          item2removed = item2removed.replace(color,'')
+
+        #가격이 같을때
+        if(item1[3] == item2[3]):
           #이름이 80%이상 일치하면
-          if(similarity(item1[1],item2[1],ratio_calc=True) > 0.8):
+          if(similarity(item1removed,item2removed,ratio_calc=True) > 0.8):
             print('Similiar!: %d' %itemId)
           #이름이 일치하지 않으면
           else:
             itemId += 1
         #가격이 다르면 무조건 다름
         else:
-          print("Not Similiar!: %d" %itemId)
           itemId += 1
       
       item2.append(str(itemId))
@@ -99,7 +99,10 @@ def final_parse():
       item1 = copy.deepcopy(item2)
       item2.clear()
 
+      # Remove trailing () [] - :
+      
       for (index,itemline) in enumerate(item1):
+        '''
         if(index == 1):
           i=0
           flag = False
@@ -121,19 +124,15 @@ def final_parse():
             elif(itemline[i] != ' ' and itemline[i] != '-' and itemline[i] != ':'):
               break
           itemline = itemline[:i+1] + '\n'
+        '''
         outputFile.write(itemline)
       outputFile.write('\n---------\n')
 
     # ------가 아니면
     else:
-      lineFromDash += 1
-      #item 이름 줄이면
-      if(lineFromDash == 2):
-        #색상 제거하기
-        for color in colorList:
-          line = line.replace(color,'')
       item2.append(line)
   fileList.close()
+  print("[ Result ] Total Item Count: %d Distinct Item Count: %d" %(itemCount,itemId))
 
 def main():
   final_parse()

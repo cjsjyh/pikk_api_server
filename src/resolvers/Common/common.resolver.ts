@@ -27,7 +27,7 @@ module.exports = {
       let tableName
       let variableName
       if (arg.targetType == "ITEM") {
-        tableName = "ITEM"
+        tableName = "ITEM_VARIATION"
         variableName = "itemId"
       } else if (arg.targetType == "RECOMMENDPOST") {
         tableName = "RECOMMEND_POST"

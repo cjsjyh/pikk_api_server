@@ -30,14 +30,36 @@ input ItemQuery {
 
 # Mutation
 input ItemInfoInput {
-  name: String!
+  """
+  If you want to add a variation to the group, only insert variationInfo.
+
+  If you want to add a new group, Insert both groupInfo and variationInfo except groupId in variationInfo.
+  """
+  createItemLevel: CreateItemLevel!
+  groupInfo: GroupInfo
+  variationInfo: VariationInfo!
+}
+
+input GroupInfo {
   brand: String!
+  isNewBrand: Boolean!
   originalPrice: Int!
-  salePrice: Int
   itemMinorType: ItemMinorType!
   itemMajorType: ItemMajorType!
-  purchaseUrl: String
-  itemImg: Upload
+  sourceWebsite: string!
+}
+
+input VariationInfo {
+  groupId: Int!
+  name: String!
+  salePrice: Int
+  itemImg: Upload!
+  purchaseUrl: String!
+}
+
+enum CreateItemLevel {
+  GROUP
+  VARIATION
 }
 
 input PickkItemQuery {

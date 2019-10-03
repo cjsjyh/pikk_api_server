@@ -1,18 +1,28 @@
-import { ItemInfo } from "./ReturnType"
-
 export type MutationArgInfo = {
-  itemInfo: ItemInfo
+  itemInfoInput: ItemInfoInput
 }
 
 export type ItemInfoInput = {
-  name: string
+  createItemLevel: string
+  groupInfo: GroupInfo
+  variationInfo: VariationInfo
+}
+
+type GroupInfo = {
   brand: string
+  isNewBrand: boolean
   originalPrice: number
-  salePrice: number
   itemMinorType: string
   itemMajorType: string
+  sourceWebsite: string
+}
+
+type VariationInfo = {
+  groupId: number
+  name: string
+  salePrice: number
+  imageUrl: string
   purchaseUrl: string
-  itemImg: any
 }
 
 //-------------------------------

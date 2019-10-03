@@ -32,7 +32,22 @@ module.exports = {
           filterSql = GetItemFilterSql(arg.itemFilter)
         }
 
-        let queryResult = await client.query('SELECT * FROM "ITEM"' + filterSql + sortSql + limitSql)
+        let querySql = `
+        WITH bbb as (SELECT 
+          "ITEM_VARIATION".*, 
+          "ITEM_GROUP"."itemMinorType",  
+          "ITEM_GROUP"."itemMajorType",
+          "ITEM_GROUP"."originalPrice",
+          "ITEM_GROUP"."FK_brandId"
+          FROM "ITEM_VARIATION" INNER JOIN "ITEM_GROUP" ON "ITEM_VARIATION"."FK_itemGroupId" = "ITEM_GROUP".id
+        ) SELECT 
+          bbb.*, 
+          "BRAND."nameKor", 
+          "BRAND"."nameEng" 
+          FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
+        `
+
+        let queryResult = await client.query(querySql + filterSql + sortSql + limitSql)
         let itemResult: ReturnType.ItemInfo[] = queryResult.rows
 
         await Promise.all(
@@ -52,7 +67,7 @@ module.exports = {
     },
 
     _allItemsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
-      return GetMetaData("ITEM")
+      return GetMetaData("ITEM_VARIATION")
     },
 
     getUserPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
@@ -60,9 +75,23 @@ module.exports = {
 
       let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
       let postSql =
-        `WITH bbb as (SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
-    SELECT aaa.* from "ITEM" as aaa 
-    INNER JOIN bbb on aaa.id = bbb."FK_itemId"` + limitSql
+        `WITH 
+        bbb as (SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}),
+        ccc as (SELECT aaa.* from "ITEM_VARIATION" as aaa INNER JOIN bbb on aaa.id = bbb."FK_itemId"` +
+        limitSql +
+        `), ` +
+        `ddd as (SELECT ccc.*, 
+          "ITEM_GROUP"."itemMinorType",  
+          "ITEM_GROUP"."itemMajorType",
+          "ITEM_GROUP"."originalPrice",
+          "ITEM_GROUP"."FK_brandId"
+        FROM "ITEM_GROUP" INNER JOIN ccc ON ccc."FK_itemGroupId" = "ITEM_GROUP".id) 
+        SELECT
+            ddd.*,
+            "BRAND"."nameKor",
+            "BRAND"."nameEng"
+            FROM "BRAND" INNER JOIN ddd on "BRAND".id = ddd."FK_brandId"
+        `
 
       let rows = await RunSingleSQL(postSql)
       return rows
@@ -71,19 +100,12 @@ module.exports = {
   Mutation: {
     createItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
-      let arg: ReturnType.ItemInfo = args.itemInfo
-      let client
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        console.log("[Error] Failed Connecting to DB")
-        return false
-      }
+      let arg: ArgType.ItemInfoInput = args.itemInfoInput
 
       let imageUrl = null
       if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
         //Upload Image and retrieve URL
-        const { createReadStream, filename, mimetype, encoding } = await arg.itemImg
+        const { createReadStream, filename, mimetype, encoding } = await arg.variationInfo.itemImg
 
         let date = getFormatDate(new Date())
         let hour = getFormatHour(new Date())
@@ -110,16 +132,37 @@ module.exports = {
       }
 
       try {
-        await client.query(
-          'INSERT INTO "ITEM"("name","brand","originalPrice","salePrice","itemMajorType","itemMinorType","imageUrl") VALUES ($1,$2,$3,$4,$5,$6,$7)',
-          [arg.name, arg.brand, arg.originalPrice, arg.salePrice, arg.itemMajorType, arg.itemMinorType, imageUrl]
-        )
-        client.release()
-        console.log(`Item ${arg.name} created`)
+        let queryResult
+        let groupId
+        if (arg.createItemLevel == "GROUP") {
+          let brandId
+          if (arg.groupInfo.isNewBrand == true) {
+            queryResult = RunSingleSQL(`INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`)
+            brandId = queryResult.id
+          } else {
+            queryResult = RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"=${arg.groupInfo.brand} OR "nameKor"=${arg.groupInfo.brand}`)
+            brandId = queryResult.id
+          }
+
+          queryResult = RunSingleSQL(`
+            INSERT INTO "ITEM_GROUP" ("itemMinorType","itemMajorType","originalPrice","sourceWebsite","FK_brandId") 
+            VALUES ('
+            ${arg.groupInfo.itemMinorType}','${arg.groupInfo.itemMajorType}',
+            ${arg.groupInfo.originalPrice},'${arg.groupInfo.sourceWebsite}',${brandId})
+            RETURNING id`)
+          groupId = queryResult.id
+        } else {
+          queryResult = RunSingleSQL(`SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`)
+          groupId = queryResult.id
+        }
+
+        queryResult = RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
+          VALUES('${arg.variationInfo.name}','${arg.variationInfo.imageUrl}','${arg.variationInfo.purchaseUrl}','${arg.variationInfo.salePrice}','${groupId}')`)
+
+        console.log(`Item ${arg.variationInfo.name} created`)
         return true
       } catch (e) {
-        client.release()
-        console.log("[Error] Failed to Insert into ITEM")
+        console.log("[Error] Failed to Insert into ITEM_VARIATION")
         console.log(e)
         return false
       }

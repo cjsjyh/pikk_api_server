@@ -102,40 +102,12 @@ module.exports = {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.ItemInfoInput = args.itemInfoInput
 
-      let imageUrl = null
-      if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
-        //Upload Image and retrieve URL
-        const { createReadStream, filename, mimetype, encoding } = await arg.variationInfo.itemImg
-
-        let date = getFormatDate(new Date())
-        let hour = getFormatHour(new Date())
-
-        var param = {
-          Bucket: "fashiondogam-images",
-          Key: "image/" + date + hour + filename,
-          ACL: "public-read",
-          Body: createReadStream(),
-          ContentType: mimetype
-        }
-
-        await new Promise((resolve, reject) => {
-          S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-            if (err) {
-              console.log(err)
-              reject(err)
-            }
-            console.log(data)
-            imageUrl = data.Location
-            resolve()
-          })
-        })
-      }
-
       try {
         let queryResult
         let groupId
         if (arg.createItemLevel == "GROUP") {
           let brandId
+          //Find Brand Id for the group
           if (arg.groupInfo.isNewBrand == true) {
             queryResult = RunSingleSQL(`INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`)
             brandId = queryResult.id
@@ -144,6 +116,7 @@ module.exports = {
             brandId = queryResult.id
           }
 
+          //Create new Group and save Id
           queryResult = RunSingleSQL(`
             INSERT INTO "ITEM_GROUP" ("itemMinorType","itemMajorType","originalPrice","sourceWebsite","FK_brandId") 
             VALUES ('
@@ -152,10 +125,12 @@ module.exports = {
             RETURNING id`)
           groupId = queryResult.id
         } else {
+          //Find Group Id of this Item
           queryResult = RunSingleSQL(`SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`)
           groupId = queryResult.id
         }
 
+        //Insert Variation
         queryResult = RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
           VALUES('${arg.variationInfo.name}','${arg.variationInfo.imageUrl}','${arg.variationInfo.purchaseUrl}','${arg.variationInfo.salePrice}','${groupId}')`)
 
@@ -195,3 +170,34 @@ function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
 
   return filterSql
 }
+
+/*
+      let imageUrl = null
+      if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
+        //Upload Image and retrieve URL
+        const { createReadStream, filename, mimetype, encoding } = await arg.variationInfo.itemImg
+
+        let date = getFormatDate(new Date())
+        let hour = getFormatHour(new Date())
+
+        var param = {
+          Bucket: "fashiondogam-images",
+          Key: "image/" + date + hour + filename,
+          ACL: "public-read",
+          Body: createReadStream(),
+          ContentType: mimetype
+        }
+
+        await new Promise((resolve, reject) => {
+          S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+            if (err) {
+              console.log(err)
+              reject(err)
+            }
+            console.log(data)
+            imageUrl = data.Location
+            resolve()
+          })
+        })
+      }
+      */

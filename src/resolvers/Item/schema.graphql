@@ -46,14 +46,14 @@ input GroupInfo {
   originalPrice: Int!
   itemMinorType: ItemMinorType!
   itemMajorType: ItemMajorType!
-  sourceWebsite: string!
+  sourceWebsite: String!
 }
 
 input VariationInfo {
   groupId: Int!
   name: String!
   salePrice: Int
-  itemImg: Upload!
+  imageUrl: String!
   purchaseUrl: String!
 }
 

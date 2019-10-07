@@ -55,4 +55,4 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 80 }, (): void => console.log(`GraphQL is now running on http://localhost:80/graphql`))
+httpServer.listen({ port: 3000 }, (): void => console.log(`GraphQL is now running on http://localhost:3000/graphql`))

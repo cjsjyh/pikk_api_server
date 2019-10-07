@@ -9,7 +9,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, getFormatDate, getFormatHour, RunSingleSQL } from "../util/Util"
+import { GetMetaData, SequentialPromiseValue, getFormatDate, getFormatHour, RunSingleSQL, UploadImage } from "../util/Util"
 import { InsertItem } from "../Item/util"
 import { GetReviewsAndCards, InsertItemReview, InsertItemReviewCard } from "../Review/util"
 
@@ -121,31 +121,11 @@ module.exports = {
           client.release()
           throw new Error("[Error] title type IMAGE but no image sent!")
         }
-        //Upload Image and retrieve URL
-        const { createReadStream, filename, mimetype, encoding } = await arg.titleImg
-
-        let date = getFormatDate(new Date())
-        let hour = getFormatHour(new Date())
-
-        var param = {
-          Bucket: "fashiondogam-images",
-          Key: "image/" + date + hour + filename,
-          ACL: "public-read",
-          Body: createReadStream(),
-          ContentType: mimetype
+        imageUrl = await UploadImage(arg.titleImg)
+        if (imageUrl == null) {
+          client.release()
+          throw new Error("[Error] Image Upload Failed!")
         }
-
-        await new Promise((resolve, reject) => {
-          S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-            if (err) {
-              console.log(err)
-              reject(err)
-            }
-            console.log(data)
-            imageUrl = data.Location
-            resolve()
-          })
-        })
       }
 
       let recommendPostId: number

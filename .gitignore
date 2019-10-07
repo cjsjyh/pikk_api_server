@@ -3,5 +3,6 @@ dist/
 .git/
 config.json
 *.env
+*.yaml
 *.pem
 *.csv

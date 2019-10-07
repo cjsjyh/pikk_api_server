@@ -1,8 +1,9 @@
 const { pool } = require("../../database/connectionPool")
-import { getFormatDate, getFormatHour } from "../util/Util"
+import { UploadImage } from "../util/Util"
 const { S3 } = require("../../database/aws_s3")
+import * as AWS from "aws-sdk"
 
-export function InsertItem(argReview:any): Promise<{}> {
+export function InsertItem(argReview: any): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -17,30 +18,8 @@ export function InsertItem(argReview:any): Promise<{}> {
     let imageUrl = null
     if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
       //Upload Image and retrieve URL
-      const { createReadStream, filename, mimetype, encoding } = await arg.itemImg
-
-      let date = getFormatDate(new Date())
-      let hour = getFormatHour(new Date())
-
-      var param = {
-        Bucket: "fashiondogam-images",
-        Key: "image/" + date + hour + filename,
-        ACL: "public-read",
-        Body: createReadStream(),
-        ContentType: mimetype
-      }
-
-      await new Promise((resolve, reject) => {
-        S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-          if (err) {
-            console.log(err)
-            reject(err)
-          }
-          console.log(data)
-          imageUrl = data.Location
-          resolve()
-        })
-      })
+      imageUrl = await UploadImage(arg.itemImg)
+      if (imageUrl == null) reject()
     }
 
     try {

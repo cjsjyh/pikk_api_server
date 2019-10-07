@@ -2,6 +2,10 @@ import { SelectionNode } from "graphql"
 
 const { pool } = require("../../database/connectionPool")
 
+import * as AWS from "aws-sdk"
+import { resolve } from "url"
+const { S3 } = require("../../database/aws_s3")
+
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<Array<any>> {
   let resultArr = new Array<T>(arr.length)
   await Promise.all(
@@ -76,6 +80,38 @@ export function SearchSelectionSet(selectionset: readonly SelectionNode[]): any 
     }
   })
   return result
+}
+
+export async function UploadImage(itemImg: any): Promise<string> {
+  const { createReadStream, filename, mimetype, encoding } = await itemImg
+
+  let date = getFormatDate(new Date())
+  let hour = getFormatHour(new Date())
+
+  var param = {
+    Bucket: "fashiondogam-images",
+    Key: "image/" + date + hour + filename,
+    ACL: "public-read",
+    Body: createReadStream(),
+    ContentType: mimetype
+  }
+
+  try {
+    let imageUrl: string = await new Promise((resolve, reject) => {
+      S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+        if (err) {
+          console.log(err)
+          reject(err)
+        }
+        console.log(data)
+        let imageUrl = data.Location
+        resolve(imageUrl)
+      })
+    })
+    return imageUrl
+  } catch (e) {
+    return null
+  }
 }
 
 /*

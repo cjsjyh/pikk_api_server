@@ -7,7 +7,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { getFormatDate, getFormatHour, RunSingleSQL } from "../util/Util"
+import { getFormatDate, getFormatHour, RunSingleSQL, UploadImage } from "../util/Util"
 
 module.exports = {
   Mutation: {
@@ -74,31 +74,11 @@ module.exports = {
       try {
         let profileImgUrl = null
         if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
-          //Upload Image and retrieve URL
-          const { createReadStream, filename, mimetype, encoding } = await arg.profileImg
-
-          let date = getFormatDate(new Date())
-          let hour = getFormatHour(new Date())
-
-          var param = {
-            Bucket: "fashiondogam-images",
-            Key: "image/" + date + hour + filename,
-            ACL: "public-read",
-            Body: createReadStream(),
-            ContentType: mimetype
+          profileImgUrl = await UploadImage(arg.profileImg)
+          if (profileImgUrl == null) {
+            client.release()
+            throw new Error("[Error] Image Upload Failed!")
           }
-
-          await new Promise((resolve, reject) => {
-            S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-              if (err) {
-                console.log(err)
-                reject(err)
-              }
-              console.log(data)
-              profileImgUrl = data.Location
-              resolve()
-            })
-          })
         }
 
         let qResult

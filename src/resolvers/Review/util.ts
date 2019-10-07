@@ -5,7 +5,7 @@ const _ = require("lodash")
 import * as RecPostReturnType from "../RecommendPost/type/ReturnType"
 import * as ReviewArgType from "./type/ArgType"
 import * as ReviewReturnType from "./type/ReturnType"
-import { SearchSelectionSet, getFormatDate, getFormatHour } from "../util/Util"
+import { SearchSelectionSet, getFormatDate, getFormatHour, UploadImage } from "../util/Util"
 
 import { GraphQLResolveInfo } from "graphql"
 import { PoolClient, QueryResult } from "pg"
@@ -127,30 +127,11 @@ export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, 
       let imageUrl = null
       if (Object.prototype.hasOwnProperty.call(itemReview, "img")) {
         //Upload Image and retrieve URL
-        const { createReadStream, filename, mimetype, encoding } = await itemReview.img
-
-        let date = getFormatDate(new Date())
-        let hour = getFormatHour(new Date())
-
-        var param = {
-          Bucket: "fashiondogam-images",
-          Key: "image/" + date + hour + filename,
-          ACL: "public-read",
-          Body: createReadStream(),
-          ContentType: mimetype
+        imageUrl = await UploadImage(itemReview.img)
+        if (imageUrl == null) {
+          client.release()
+          throw new Error("[Error] Image Upload Failed!")
         }
-
-        await new Promise((resolve, reject) => {
-          S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-            if (err) {
-              console.log(err)
-              reject(err)
-            }
-            console.log(data)
-            imageUrl = data.Location
-            resolve()
-          })
-        })
       }
 
       let postId = args[0]
@@ -181,30 +162,11 @@ export function InsertItemReviewCard(arg: ReviewArgType.ItemReviewCardInfoInput,
     }
     let imageUrl = null
     if (Object.prototype.hasOwnProperty.call(arg, "img")) {
-      const { createReadStream, filename, mimetype, encoding } = await arg.img
-
-      let date = getFormatDate(new Date())
-      let hour = getFormatHour(new Date())
-
-      var param = {
-        Bucket: "fashiondogam-images",
-        Key: "image/" + date + hour + filename,
-        ACL: "public-read",
-        Body: createReadStream(),
-        ContentType: mimetype
+      imageUrl = await UploadImage(arg.img)
+      if (imageUrl == null) {
+        client.release()
+        throw new Error("[Error] Image Upload Failed!")
       }
-
-      await new Promise((resolve, reject) => {
-        S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-          if (err) {
-            console.log(err)
-            reject(err)
-          }
-          console.log(data)
-          imageUrl = data.Location
-          resolve()
-        })
-      })
     }
 
     try {

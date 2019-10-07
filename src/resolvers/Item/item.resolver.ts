@@ -6,7 +6,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, getFormatDate, getFormatHour, RunSingleSQL } from "../util/Util"
+import { GetMetaData, getFormatDate, getFormatHour, RunSingleSQL } from "../Util/Util"
 
 import { GraphQLResolveInfo } from "graphql"
 
@@ -170,34 +170,3 @@ function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
 
   return filterSql
 }
-
-/*
-      let imageUrl = null
-      if (Object.prototype.hasOwnProperty.call(arg, "itemImg")) {
-        //Upload Image and retrieve URL
-        const { createReadStream, filename, mimetype, encoding } = await arg.variationInfo.itemImg
-
-        let date = getFormatDate(new Date())
-        let hour = getFormatHour(new Date())
-
-        var param = {
-          Bucket: "fashiondogam-images",
-          Key: "image/" + date + hour + filename,
-          ACL: "public-read",
-          Body: createReadStream(),
-          ContentType: mimetype
-        }
-
-        await new Promise((resolve, reject) => {
-          S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-            if (err) {
-              console.log(err)
-              reject(err)
-            }
-            console.log(data)
-            imageUrl = data.Location
-            resolve()
-          })
-        })
-      }
-      */

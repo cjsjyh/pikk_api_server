@@ -1,10 +1,8 @@
-import { SelectionNode } from "graphql"
-
 const { pool } = require("../../database/connectionPool")
-
-import * as AWS from "aws-sdk"
-import { resolve } from "url"
 const { S3 } = require("../../database/aws_s3")
+
+import { SelectionNode } from "graphql"
+import * as AWS from "aws-sdk"
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<Array<any>> {
   let resultArr = new Array<T>(arr.length)

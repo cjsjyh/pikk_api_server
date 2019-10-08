@@ -1,5 +1,9 @@
 import { ItemInfoInput } from "../../Item/type/ArgType"
 
+export type QueryArgInfo = {
+  reviewOption: ReviewQuery
+}
+
 //Mutation
 
 export type ItemReviewInfoInput = {
@@ -19,3 +23,19 @@ export type ItemReviewCardInfoInput = {
 }
 
 //Query
+type ReviewFilterGeneral = {
+  start: number
+  first: number
+  sort: string
+  sortBy: string
+}
+
+export type ReviewQueryFilter = {
+  reviewId: number
+  itemId: number
+}
+
+export interface ReviewQuery {
+  filterGeneral: ReviewFilterGeneral
+  reviewFilter: ReviewQueryFilter
+}

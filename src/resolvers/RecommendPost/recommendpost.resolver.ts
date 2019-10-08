@@ -1,6 +1,4 @@
-import * as AWS from "aws-sdk"
 const { pool } = require("../../database/connectionPool")
-const { S3 } = require("../../database/aws_s3")
 
 import { GraphQLResolveInfo } from "graphql"
 import { PoolClient, QueryResult } from "pg"
@@ -9,7 +7,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, getFormatDate, getFormatHour, RunSingleSQL, UploadImage } from "../Util/Util"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage, GetFormatSql } from "../Util/util"
 import { InsertItem } from "../Item/util"
 import { GetReviewsAndCards, InsertItemReview, InsertItemReviewCard } from "../Review/util"
 
@@ -17,35 +15,23 @@ module.exports = {
   Query: {
     allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
-      let client: PoolClient
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        console.log(e)
-        throw new Error("[Error] Failed Connecting to DB")
-      }
-
       let queryResult: QueryResult
       try {
         let filterSql: string = ""
         if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
           filterSql = await GetPostFilterSql(arg.postFilter)
           if (filterSql == null) {
-            client.release()
             return []
           }
         }
 
-        let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
-        let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+        let formatSql = GetFormatSql(arg)
         let postSql =
           'WITH aaa AS ( SELECT * FROM "RECOMMEND_POST"' +
           filterSql +
-          sortSql +
-          limitSql +
+          formatSql +
           ') SELECT aaa.*,bbb.name,bbb."profileImgUrl" FROM "USER_INFO" AS bbb INNER JOIN aaa ON aaa."FK_accountId" = bbb."FK_accountId"'
-        queryResult = await client.query(postSql)
-        client.release()
+        queryResult = await RunSingleSQL(postSql)
 
         let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
         if (postResult.length == 0) {
@@ -55,7 +41,6 @@ module.exports = {
         await GetReviewsAndCards(postResult, info, postSql)
         return postResult
       } catch (e) {
-        client.release()
         console.log(e)
         throw new Error("[Error] Failed to fetch user data from DB")
       }
@@ -72,23 +57,15 @@ module.exports = {
       info: GraphQLResolveInfo
     ): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
-      let client: PoolClient
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        console.log(e)
-        throw new Error("[Error] Failed Connecting to DB")
-      }
 
       let queryResult: QueryResult
       try {
-        let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+        let formatSql = GetFormatSql(arg)
         let postSql =
           `WITH bbb as (SELECT "FK_postId" FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
       SELECT aaa.* from "RECOMMEND_POST" as aaa 
-      INNER JOIN bbb on aaa.id = bbb."FK_postId"` + limitSql
-        queryResult = await client.query(postSql)
-        client.release()
+      INNER JOIN bbb on aaa.id = bbb."FK_postId"` + formatSql
+        queryResult = await RunSingleSQL(postSql)
 
         let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
         if (postResult.length == 0) {
@@ -98,7 +75,6 @@ module.exports = {
         await GetReviewsAndCards(postResult, info, postSql)
         return postResult
       } catch (e) {
-        client.release()
         console.log(e)
         throw new Error("[Error] Failed to fetch user data from DB")
       }
@@ -182,14 +158,13 @@ module.exports = {
 async function GetPostFilterSql(filter: any): Promise<string> {
   let multipleQuery: Boolean = false
   let filterSql: string = ""
-  if (Object.prototype.hasOwnProperty.call(filter, "filterCommon")) {
-    if (Object.prototype.hasOwnProperty.call(filter.filterCommon, "accountId")) {
-      filterSql = ` where "FK_accountId"=${filter.filterCommon.accountId}`
-      multipleQuery = true
-    } else if (Object.prototype.hasOwnProperty.call(filter.filterCommon, "postId")) {
-      filterSql = ` where id=${filter.filterCommon.postId}`
-      multipleQuery = true
-    }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
+    filterSql = ` where "FK_accountId"=${filter.accountId}`
+    multipleQuery = true
+  } else if (Object.prototype.hasOwnProperty.call(filter, "postId")) {
+    filterSql = ` where id=${filter.postId}`
+    multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "postType")) {

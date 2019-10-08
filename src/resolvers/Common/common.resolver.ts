@@ -1,4 +1,4 @@
-import { RunSingleSQL } from "../util/Util"
+import { RunSingleSQL } from "../Util/util"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 

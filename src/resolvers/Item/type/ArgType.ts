@@ -32,10 +32,11 @@ export type QueryArgInfo = {
   pickkItemOption: PickkItemQuery
 }
 
-type QueryCommon = {
+type ItemFilterGeneral = {
   start: number
   first: number
   sort: string
+  sortBy: string
 }
 
 export type ItemQueryFilter = {
@@ -45,12 +46,11 @@ export type ItemQueryFilter = {
 }
 
 export interface ItemQuery {
-  filterCommon: QueryCommon
+  filterGeneral: ItemFilterGeneral
   itemFilter: ItemQueryFilter
-  sortBy: string
 }
 
 export interface PickkItemQuery {
-  filterCommon: QueryCommon
+  filterGeneral: ItemFilterGeneral
   userId: number
 }

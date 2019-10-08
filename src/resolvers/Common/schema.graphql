@@ -12,18 +12,6 @@ type Mutation {
 #   INPUT
 #--------------
 
-# Query
-input QueryCommon {
-  start: Int = 0
-  first: Int = 50
-  sort: SortDirection = DESC
-}
-
-input PostQueryFilter {
-  accountId: Int
-  postId: Int
-}
-
 # Mutation
 input FollowInfoInput {
   accountId: Int!

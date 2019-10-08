@@ -13,14 +13,15 @@ export type QueryArgInfo = {
   commentOption: CommentQuery
 }
 
-type QueryCommon = {
+type CommentFilterGeneral = {
   start: number
   first: number
   sort: string
+  sortBy: string
 }
 
 export type CommentQuery = {
-  filterCommon: QueryCommon
+  filterGeneral: CommentFilterGeneral
   boardType: string
   postId: number
 }

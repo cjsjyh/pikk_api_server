@@ -1,8 +1,28 @@
+type Query {
+  allItemReviews(reviewOption: ReviewQuery!): [ItemReviewInfo!]
+}
+
 #--------------
 #   INPUT
 #--------------
 
 # Query
+
+input ReviewFilterGeneral {
+  start: Int = 0
+  first: Int = 50
+  sort: SortDirection = DESC
+  sortBy: ReviewSortableField = time
+}
+input ReviewQueryFilter {
+  reviewId: Int
+  itemId: Int
+}
+
+input ReviewQuery {
+  filterGeneral: ReviewFilterGeneral
+  reviewFilter: ReviewQueryFilter!
+}
 
 # Mutation
 input ItemReviewInfoInput {
@@ -32,6 +52,8 @@ type ItemReviewInfo {
   shortReview: String!
   score: Int!
   cards: [ItemReviewCardInfo!]!
+
+  itemInfo: ItemInfo
 }
 
 type ItemReviewCardInfo {
@@ -40,4 +62,12 @@ type ItemReviewCardInfo {
   title: String!
   content: String!
   imgUrl: String
+}
+
+#------------------
+#    ENUM
+#------------------
+enum ReviewSortableField {
+  time
+  score
 }

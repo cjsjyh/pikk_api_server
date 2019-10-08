@@ -30,10 +30,11 @@ export type QueryArgInfo = {
   pickkChannelOption: PickkChannelQuery
 }
 
-type QueryCommon = {
+type UserFilterGeneral = {
   start: number
   first: number
   sort: string
+  sortBy: string
 }
 
 export type UserQuery = {
@@ -45,6 +46,6 @@ export type ChannelQuery = {
 }
 
 export interface PickkChannelQuery {
-  filterCommon: QueryCommon
+  filterGeneral: UserFilterGeneral
   userId: number
 }

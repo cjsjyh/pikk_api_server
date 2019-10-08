@@ -1,5 +1,5 @@
 const { pool } = require("../../database/connectionPool")
-import { UploadImage } from "../Util/Util"
+import { UploadImage } from "../Util/util"
 const { S3 } = require("../../database/aws_s3")
 import * as AWS from "aws-sdk"
 

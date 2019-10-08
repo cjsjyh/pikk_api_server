@@ -16,6 +16,14 @@ type Mutation {
 #--------------
 
 # Query
+
+input ItemFilterGeneral {
+  start: Int = 0
+  first: Int = 50
+  sort: SortDirection = DESC
+  sortBy: ItemSortableField = score
+}
+
 input ItemQueryFilter {
   itemMajorType: ItemMajorType
   itemMinorType: ItemMinorType
@@ -23,9 +31,8 @@ input ItemQueryFilter {
 }
 
 input ItemQuery {
-  filterCommon: QueryCommon!
+  filterGeneral: ItemFilterGeneral
   itemFilter: ItemQueryFilter
-  sortBy: ItemSortableField = score
 }
 
 # Mutation
@@ -63,7 +70,7 @@ enum CreateItemLevel {
 }
 
 input PickkItemQuery {
-  filterCommon: QueryCommon!
+  filterGeneral: ItemFilterGeneral
   userId: Int!
 }
 

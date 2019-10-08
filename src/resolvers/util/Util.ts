@@ -1,7 +1,6 @@
 const { pool } = require("../../database/connectionPool")
 const { S3 } = require("../../database/aws_s3")
 
-import { SelectionNode } from "graphql"
 import * as AWS from "aws-sdk"
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<Array<any>> {
@@ -69,12 +68,15 @@ export async function GetMetaData(tableName: string): Promise<number> {
   return rows[0].count
 }
 
-export function SearchSelectionSet(selectionset: readonly SelectionNode[]): any {
+export function ExtractSelectionSet(info: any): any {
+  if (info.selectionSet === undefined) return []
+
+  let selectionset = info.selectionSet.selections
   let result: string[] = []
   selectionset.forEach((element: any) => {
     result.push(element.name.value)
     if (element.selectionSet !== undefined) {
-      result.push(SearchSelectionSet(element.selectionSet.selections))
+      result.push(ExtractSelectionSet(element))
     }
   })
   return result
@@ -110,6 +112,19 @@ export async function UploadImage(itemImg: any): Promise<string> {
   } catch (e) {
     return null
   }
+}
+
+export function GetFormatSql(filter: any): string {
+  let filterSql = ""
+  if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
+    filterSql += " ORDER BY " + filter.filterGeneral.sortBy + " " + filter.filterGeneral.sort
+    if (filter.filterGeneral.first > 50) filter.filterGeneral.first = 50
+    filterSql += " LIMIT " + filter.filterGeneral.first + " OFFSET " + filter.filterGeneral.start
+  } else {
+    filterSql += " LIMIT 50 OFFSET 0"
+  }
+
+  return filterSql
 }
 
 /*

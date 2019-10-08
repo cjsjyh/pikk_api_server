@@ -1,21 +1,20 @@
 const { pool } = require("../../database/connectionPool")
 
 import * as PostReturnType from "./type/ReturnType"
-import { RunSingleSQL } from "../util/Util"
+import { RunSingleSQL } from "../Util/util"
 
 import { QueryResult, PoolClient } from "pg"
 
 export async function GetPostFilterSql(filter: any): Promise<string> {
   let multipleQuery: Boolean = false
   let filterSql: string = ""
-  if (Object.prototype.hasOwnProperty.call(filter, "filterCommon")) {
-    if (Object.prototype.hasOwnProperty.call(filter.filterCommon, "accountId")) {
-      filterSql = ` where "FK_accountId"=${filter.filterCommon.accountId}`
-      multipleQuery = true
-    } else if (Object.prototype.hasOwnProperty.call(filter.filterCommon, "postId")) {
-      filterSql = ` where id=${filter.filterCommon.postId}`
-      multipleQuery = true
-    }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
+    filterSql = ` where "FK_accountId"=${filter.accountId}`
+    multipleQuery = true
+  } else if (Object.prototype.hasOwnProperty.call(filter, "postId")) {
+    filterSql = ` where id=${filter.postId}`
+    multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "postType")) {

@@ -1,6 +1,4 @@
-import * as AWS from "aws-sdk"
 const { pool } = require("../../database/connectionPool")
-const { S3 } = require("../../database/aws_s3")
 const _ = require("lodash")
 
 import * as ArgType from "./type/ArgType"
@@ -12,7 +10,7 @@ import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
-import { SequentialPromiseValue, GetMetaData, RunSingleSQL } from "../util/Util"
+import { SequentialPromiseValue, GetMetaData, RunSingleSQL, GetFormatSql } from "../Util/util"
 
 import { GraphQLResolveInfo } from "graphql"
 
@@ -33,9 +31,8 @@ module.exports = {
           filterSql = await GetPostFilterSql(arg.postFilter)
         }
 
-        let sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
-        let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
-        let querySql = 'SELECT * FROM "COMMUNITY_POST"' + filterSql + sortSql + limitSql
+        let formatSql = GetFormatSql(arg)
+        let querySql = 'SELECT * FROM "COMMUNITY_POST"' + filterSql + formatSql
         let commentSql = `WITH aaa AS (${querySql}) SELECT bbb."FK_postId" FROM "COMMUNITY_POST_COMMENT" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
 
         let queryResult = await client.query(querySql)

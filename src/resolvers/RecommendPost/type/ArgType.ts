@@ -24,31 +24,27 @@ export type QueryArgInfo = {
   pickkRecommendPostOption: PickkRecommendPostQuery
 }
 
-type QueryCommon = {
+type RecommendPostFilterGeneral = {
   start: number
   first: number
   sort: string
-}
-
-export type PostQueryFilter = {
-  accountId: number
-  postId: number
+  sortBy: string
 }
 
 export type RecommendPostQueryFilter = {
-  filterCommon: PostQueryFilter
+  accountId: number
+  postId: number
   postType: string
   styleType: string
   itemId: number
 }
 
 export interface RecommendPostQuery {
-  filterCommon: QueryCommon
+  filterGeneral: RecommendPostFilterGeneral
   postFilter: RecommendPostQueryFilter
-  sortBy: string
 }
 
 export interface PickkRecommendPostQuery {
-  filterCommon: QueryCommon
+  filterGeneral: RecommendPostFilterGeneral
   userId: number
 }

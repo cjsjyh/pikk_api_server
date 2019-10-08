@@ -14,8 +14,20 @@ type Mutation {
 #--------------
 
 # Query
+
+enum CommentSortableField {
+  time
+}
+
+input CommentFilterGeneral {
+  start: Int = 0
+  first: Int = 50
+  sort: SortDirection = DESC
+  sortBy: CommentSortableField = time
+}
+
 input CommentQuery {
-  filterCommon: QueryCommon!
+  filterGeneral: CommentFilterGeneral
   boardType: BoardType!
   postId: Int!
 }

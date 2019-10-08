@@ -7,7 +7,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { getFormatDate, getFormatHour, RunSingleSQL, UploadImage } from "../util/Util"
+import { getFormatDate, getFormatHour, RunSingleSQL, UploadImage, GetFormatSql } from "../Util/util"
 
 module.exports = {
   Mutation: {
@@ -136,11 +136,12 @@ module.exports = {
     getUserPickkChannel: async (parent: void, args: QueryArgInfo): Promise<ReturnType.UserInfo[]> => {
       let arg: ArgType.PickkChannelQuery = args.pickkChannelOption
 
-      let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+      let formatSql = GetFormatSql(arg)
+
       let postSql =
         `WITH bbb as (SELECT "FK_channelId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
       SELECT aaa.* from "USER_INFO" as aaa 
-      INNER JOIN bbb on aaa."FK_accountId" = bbb."FK_channelId"` + limitSql
+      INNER JOIN bbb on aaa."FK_accountId" = bbb."FK_channelId"` + formatSql
 
       let rows = await RunSingleSQL(postSql)
       return rows

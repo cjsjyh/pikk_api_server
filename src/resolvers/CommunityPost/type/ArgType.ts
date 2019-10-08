@@ -16,26 +16,22 @@ export type QueryArgInfo = {
   communityPostOption: CommunityPostQuery
 }
 
-type QueryCommon = {
+type CommunityPostFilterGeneral = {
   start: number
   first: number
   sort: string
-}
-
-export type PostQueryFilter = {
-  accountId: number
-  postId: number
+  sortBy: string
 }
 
 export type CommunityPostQueryFilter = {
-  filterCommon: PostQueryFilter
+  accountId: number
+  postId: number
   postType: string
   qnaType: string
   channelId: number
 }
 
 export interface CommunityPostQuery {
-  filterCommon: QueryCommon
+  filterGeneral: CommunityPostFilterGeneral
   postFilter: CommunityPostQueryFilter
-  sortBy: string
 }

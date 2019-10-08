@@ -18,17 +18,24 @@ type Mutation {
 
 # Query
 
+input CommunityPostFilterGeneral {
+  start: Int = 0
+  first: Int = 50
+  sort: SortDirection = DESC
+  sortBy: PostSortableField = time
+}
+
 input CommunityPostQueryFilter {
-  filterCommon: PostQueryFilter
+  accountId: Int
+  postId: Int
   postType: CommunityPostType!
   qnaType: QNAType
   channelId: Int
 }
 
 input CommunityPostQuery {
-  filterCommon: QueryCommon!
+  filterGeneral: CommunityPostFilterGeneral!
   postFilter: CommunityPostQueryFilter!
-  sortBy: PostSortableField = time
 }
 
 # Mutation

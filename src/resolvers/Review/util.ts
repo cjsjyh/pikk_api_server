@@ -5,7 +5,7 @@ const _ = require("lodash")
 import * as RecPostReturnType from "../RecommendPost/type/ReturnType"
 import * as ReviewArgType from "./type/ArgType"
 import * as ReviewReturnType from "./type/ReturnType"
-import { SearchSelectionSet, getFormatDate, getFormatHour, UploadImage } from "../Util/Util"
+import { ExtractSelectionSet, getFormatDate, getFormatHour, UploadImage } from "../Util/util"
 
 import { GraphQLResolveInfo } from "graphql"
 import { PoolClient, QueryResult } from "pg"
@@ -30,13 +30,10 @@ export async function GetReviewsAndCards(postResult: any, info: GraphQLResolveIn
       })
     )
 
-    let extractRequest: string[] = []
-    if (info.fieldNodes[0].selectionSet !== undefined) {
-      let requestedDataArray = info.fieldNodes[0].selectionSet.selections
-      extractRequest = SearchSelectionSet(requestedDataArray)
-    }
+    let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
+
     //CHECK IF QUERY FOR REVIEW IS NEEDED
-    if (extractRequest.includes("reviews")) {
+    if (selectionSet.includes("reviews")) {
       let reviewSql = `WITH aaa AS (${postSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_postId") FROM "ITEM_REVIEW" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
       queryResult = await client.query(reviewSql)
       let reviewResult: ReviewReturnType.ItemReviewInfo[] = queryResult.rows
@@ -70,8 +67,8 @@ export async function GetReviewsAndCards(postResult: any, info: GraphQLResolveIn
 
       //CHECK IF QUERY FOR CARD IS NEEDED
       let cardFlag = false
-      let reviewIndex = extractRequest.indexOf("reviews")
-      if (Array.isArray(extractRequest[reviewIndex + 1])) if (extractRequest[reviewIndex + 1].includes("cards")) cardFlag = true
+      let reviewIndex = selectionSet.indexOf("reviews")
+      if (Array.isArray(selectionSet[reviewIndex + 1])) if (selectionSet[reviewIndex + 1].includes("cards")) cardFlag = true
 
       if (cardFlag) {
         let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`

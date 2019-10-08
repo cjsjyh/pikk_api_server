@@ -3,7 +3,7 @@ import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
-import { RunSingleSQL } from "../util/Util"
+import { RunSingleSQL } from "../Util/util"
 import { ConvertToTableName, GetBoardName } from "./util"
 
 module.exports = {

@@ -1,3 +1,5 @@
+import { ItemInfo } from "../../Item/type/ReturnType"
+
 export type ItemReviewInfo = {
   //DB
   FK_itemId: number
@@ -10,6 +12,8 @@ export type ItemReviewInfo = {
   shortReview: string
   score: number
   cards: ItemReviewCardInfo[]
+
+  itemInfo: ItemInfo
 }
 
 export type ItemReviewCardInfo = {

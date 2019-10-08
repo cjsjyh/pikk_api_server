@@ -18,21 +18,29 @@ type Mutation {
 #--------------
 
 # Query
+
+input RecommendPostFilterGeneral {
+  start: Int = 0
+  first: Int = 50
+  sort: SortDirection = DESC
+  sortBy: PostSortableField = time
+}
+
 input RecommendPostQueryFilter {
-  filterCommon: PostQueryFilter
+  accountId: Int
+  postId: Int
   postType: RecommendPostType!
   styleType: StyleType
   itemId: Int
 }
 
 input RecommendPostQuery {
-  filterCommon: QueryCommon!
+  filterGeneral: RecommendPostFilterGeneral!
   postFilter: RecommendPostQueryFilter!
-  sortBy: PostSortableField = time
 }
 
 input PickkRecommendPostQuery {
-  filterCommon: QueryCommon!
+  filterGeneral: RecommendPostFilterGeneral!
   userId: Int!
 }
 

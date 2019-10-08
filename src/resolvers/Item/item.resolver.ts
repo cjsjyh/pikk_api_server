@@ -6,7 +6,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, getFormatDate, getFormatHour, RunSingleSQL } from "../Util/Util"
+import { GetMetaData, getFormatDate, getFormatHour, RunSingleSQL, GetFormatSql } from "../Util/util"
 
 import { GraphQLResolveInfo } from "graphql"
 
@@ -22,11 +22,7 @@ module.exports = {
       }
 
       try {
-        let sortSql: string
-        sortSql = " ORDER BY " + arg.sortBy + " " + arg.filterCommon.sort
-        let limitSql: string
-        limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
-
+        let formatSql = GetFormatSql(arg)
         let filterSql: string = ""
         if (Object.prototype.hasOwnProperty.call(arg, "itemFilter")) {
           filterSql = GetItemFilterSql(arg.itemFilter)
@@ -47,7 +43,7 @@ module.exports = {
           FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
         `
 
-        let queryResult = await client.query(querySql + filterSql + sortSql + limitSql)
+        let queryResult = await client.query(querySql + filterSql + formatSql)
         let itemResult: ReturnType.ItemInfo[] = queryResult.rows
 
         await Promise.all(
@@ -73,12 +69,12 @@ module.exports = {
     getUserPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.PickkItemQuery = args.pickkItemOption
 
-      let limitSql = " LIMIT " + arg.filterCommon.first + " OFFSET " + arg.filterCommon.start
+      let formatSql = GetFormatSql(arg)
       let postSql =
         `WITH 
         bbb as (SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}),
         ccc as (SELECT aaa.* from "ITEM_VARIATION" as aaa INNER JOIN bbb on aaa.id = bbb."FK_itemId"` +
-        limitSql +
+        formatSql +
         `), ` +
         `ddd as (SELECT ccc.*, 
           "ITEM_GROUP"."itemMinorType",  

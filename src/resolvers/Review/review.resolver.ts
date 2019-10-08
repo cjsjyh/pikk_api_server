@@ -11,27 +11,31 @@ import { MutationArgInfo } from "./type/ArgType"
 import { GraphQLResolveInfo } from "graphql"
 import { QueryArgInfo, ReviewQuery } from "./type/ArgType"
 import * as ReviewReturnType from "./type/ReturnType"
+import * as ItemReturnType from "../Item/type/ReturnType"
 import { ExtractSelectionSet } from "../Util/util"
-import { RunSingleSQL, GetFormatSql } from "../Util/util"
-import {} from "./util"
+import { RunSingleSQL, GetFormatSql, SequentialPromiseValue } from "../Util/util"
+import { ReviewMatchGraphQL } from "./util"
 import { strict } from "assert"
+import { GetSingleItem, FetchItemsForReview } from "../Item/util"
 
 module.exports = {
   Query: {
-    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<Boolean> => {
+    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReturnType.ItemInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       let filterSql = GetReviewFilterSql(arg)
       let formatSql = GetFormatSql(arg)
-      let queryResult = await RunSingleSQL('SELECT * FROM "ITEM_REVIEW" ' + filterSql + formatSql)
-
+      let reviewSql = 'SELECT * FROM "ITEM_REVIEW" ' + filterSql + formatSql
       //Query Item Info
       let selectionSet = ExtractSelectionSet(info.fieldNodes[0])
-      console.log(selectionSet)
+      let queryResult = await RunSingleSQL(reviewSql)
       if (selectionSet.flat(2).includes("itemInfo")) {
+        await SequentialPromiseValue(queryResult, FetchItemsForReview)
       }
-
-      return true
+      queryResult.forEach(review => {
+        ReviewMatchGraphQL(review)
+      })
+      return queryResult
     }
   },
 
@@ -45,7 +49,7 @@ function GetReviewFilterSql(filter: ReviewQuery): string {
   }
 
   if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "itemId")) {
-    filterSql = `WHERE "FK_itemId"=${filter.reviewFilter.reviewId}`
+    filterSql = `WHERE "FK_itemId"=${filter.reviewFilter.itemId}`
   }
 
   return filterSql

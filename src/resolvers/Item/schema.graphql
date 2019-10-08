@@ -81,7 +81,8 @@ input PickkItemQuery {
 type ItemInfo {
   id: Int!
   name: String!
-  brand: String!
+  brandKor: String!
+  brandEng: String!
   originalPrice: Int!
   salePrice: Int
   itemMinorType: ItemMinorType!

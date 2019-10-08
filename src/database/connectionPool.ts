@@ -9,7 +9,7 @@ if (process.env.MODE == "DEVELOPMENT") {
     password: process.env.RDS_PASSWORD,
     port: process.env.RDS_PORT,
 
-    max: 8,
+    max: 4,
     idleTimeoutMillis: 5000,
     connectionTimeoutMillis: 3000
   })
@@ -21,7 +21,7 @@ if (process.env.MODE == "DEVELOPMENT") {
     password: process.env.RDS_PASSWORD,
     port: process.env.RDS_PORT,
 
-    max: 8,
+    max: 4,
     idleTimeoutMillis: 5000,
     connectionTimeoutMillis: 3000
   })

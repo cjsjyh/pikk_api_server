@@ -2,7 +2,8 @@
 export type ItemInfo = {
   id: number
   name: string
-  brand: string
+  brandEng: string
+  brandKor: string
   originalPrice: number
   salePrice: number
   itemMinorType: string

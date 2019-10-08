@@ -38,7 +38,7 @@ module.exports = {
           FROM "ITEM_VARIATION" INNER JOIN "ITEM_GROUP" ON "ITEM_VARIATION"."FK_itemGroupId" = "ITEM_GROUP".id
         ) SELECT 
           bbb.*, 
-          "BRAND."nameKor", 
+          "BRAND"."nameKor", 
           "BRAND"."nameEng" 
           FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
         `

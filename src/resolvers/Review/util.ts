@@ -184,3 +184,8 @@ export function InsertItemReviewCard(arg: ReviewArgType.ItemReviewCardInfoInput,
     }
   })
 }
+
+export function ReviewMatchGraphQL(obj: any) {
+  obj.itemId = obj.FK_itemId
+  obj.postId = obj.FK_postId
+}

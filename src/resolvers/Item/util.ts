@@ -1,9 +1,21 @@
 import { RunSingleSQL, UploadImage } from "../Util/util"
 import * as ReturnType from "./type/ReturnType"
+import { ItemInfoInput } from "./type/ArgType"
+import { ItemReviewInfoInput } from "../Review/type/ArgType"
 
-export function InsertItem(argReview: any): Promise<{}> {
+export function InsertItemForRecommendPost(argReview: ItemReviewInfoInput): Promise<{}> {
   return new Promise(async (resolve, reject) => {
-    let arg = argReview.item
+    try {
+      argReview.itemId = await InsertItem(argReview.item)
+      resolve()
+    } catch (e) {
+      reject()
+    }
+  })
+}
+
+export function InsertItem(arg: ItemInfoInput): Promise<number> {
+  return new Promise(async (resolve, reject) => {
     try {
       let queryResult
       let groupId
@@ -36,10 +48,8 @@ export function InsertItem(argReview: any): Promise<{}> {
       queryResult = RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
         VALUES('${arg.variationInfo.name}','${arg.variationInfo.imageUrl}','${arg.variationInfo.purchaseUrl}','${arg.variationInfo.salePrice}','${groupId}') RETURNING id`)
 
-      argReview.itemId = queryResult.id
-
       console.log(`Item ${arg.variationInfo.name} created`)
-      resolve()
+      resolve(queryResult.id)
     } catch (e) {
       console.log("[Error] Failed to Insert into ITEM_VARIATION")
       console.log(e)

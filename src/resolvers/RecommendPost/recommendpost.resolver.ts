@@ -8,7 +8,7 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage, GetFormatSql } from "../Util/util"
-import { InsertItem } from "../Item/util"
+import { InsertItemForRecommendPost } from "../Item/util"
 import { GetReviewsAndCards, InsertItemReview, InsertItemReviewCard } from "../Review/util"
 
 module.exports = {
@@ -120,7 +120,7 @@ module.exports = {
       }
 
       try {
-        let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItem)
+        let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
         let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [recommendPostId])
         await Promise.all(
           arg.reviews.map((review, index) => {

@@ -9,6 +9,7 @@ import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, getFormatDate, getFormatHour, RunSingleSQL, GetFormatSql } from "../Util/util"
 
 import { GraphQLResolveInfo } from "graphql"
+import { InsertItem } from "./util"
 
 module.exports = {
   Query: {
@@ -99,43 +100,10 @@ module.exports = {
       let arg: ArgType.ItemInfoInput = args.itemInfoInput
 
       try {
-        let queryResult
-        let groupId
-        if (arg.createItemLevel == "GROUP") {
-          let brandId
-          //Find Brand Id for the group
-          if (arg.groupInfo.isNewBrand == true) {
-            queryResult = RunSingleSQL(`INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`)
-            brandId = queryResult.id
-          } else {
-            queryResult = RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"=${arg.groupInfo.brand} OR "nameKor"=${arg.groupInfo.brand}`)
-            brandId = queryResult.id
-          }
-
-          //Create new Group and save Id
-          queryResult = RunSingleSQL(`
-            INSERT INTO "ITEM_GROUP" ("itemMinorType","itemMajorType","originalPrice","sourceWebsite","FK_brandId") 
-            VALUES ('
-            ${arg.groupInfo.itemMinorType}','${arg.groupInfo.itemMajorType}',
-            ${arg.groupInfo.originalPrice},'${arg.groupInfo.sourceWebsite}',${brandId})
-            RETURNING id`)
-          groupId = queryResult.id
-        } else {
-          //Find Group Id of this Item
-          queryResult = RunSingleSQL(`SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`)
-          groupId = queryResult.id
-        }
-
-        //Insert Variation
-        queryResult = RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
-          VALUES('${arg.variationInfo.name}','${arg.variationInfo.imageUrl}','${arg.variationInfo.purchaseUrl}','${arg.variationInfo.salePrice}','${groupId}')`)
-
-        console.log(`Item ${arg.variationInfo.name} created`)
+        let queryResult = await InsertItem(arg)
         return true
       } catch (e) {
-        console.log("[Error] Failed to Insert into ITEM_VARIATION")
-        console.log(e)
-        return false
+        throw new Error("[Error] Failed to create Item!")
       }
     }
   }

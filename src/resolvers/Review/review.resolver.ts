@@ -1,22 +1,10 @@
-/*
-import * as AWS from "aws-sdk"
-const { pool } = require("../../database/connectionPool")
-const { S3 } = require("../../database/aws_s3")
-import * as ArgType from "./type/ArgType"
-import * as ReturnType from "./type/ReturnType"
-import { MutationArgInfo } from "./type/ArgType"
-
-
-*/
 import { GraphQLResolveInfo } from "graphql"
 import { QueryArgInfo, ReviewQuery } from "./type/ArgType"
-import * as ReviewReturnType from "./type/ReturnType"
 import * as ItemReturnType from "../Item/type/ReturnType"
 import { ExtractSelectionSet } from "../Util/util"
 import { RunSingleSQL, GetFormatSql, SequentialPromiseValue } from "../Util/util"
 import { ReviewMatchGraphQL } from "./util"
-import { strict } from "assert"
-import { GetSingleItem, FetchItemsForReview } from "../Item/util"
+import { FetchItemsForReview } from "../Item/util"
 
 module.exports = {
   Query: {

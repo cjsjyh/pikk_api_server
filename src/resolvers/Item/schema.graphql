@@ -89,6 +89,7 @@ type ItemInfo {
   itemMajorType: ItemMajorType!
   imageUrl: String
   purchaseUrl: String
+  averageScore: Float
 
   pickCount: Int!
 }

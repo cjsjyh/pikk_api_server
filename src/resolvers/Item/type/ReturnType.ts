@@ -10,6 +10,7 @@ export type ItemInfo = {
   itemMajorType: string
   itemImg: any
   purchaseUrl: string
+  averageScore: number
 
   pickCount: number
 }

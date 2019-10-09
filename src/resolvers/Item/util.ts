@@ -64,14 +64,13 @@ export function GetItems(sql: string): Promise<ReturnType.ItemInfo[]> {
     let itemResult: ReturnType.ItemInfo[] = queryResult
     await Promise.all(
       itemResult.map(async (item: ReturnType.ItemInfo) => {
-        queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" where "FK_itemId"=${item.id}`)
+        queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_itemId"=${item.id}`)
+        let scoreAverage = await RunSingleSQL(`SELECT AVG(score) FROM "ITEM_REVIEW" WHERE "FK_itemId"=${item.id}`)
         item.pickCount = queryResult[0].count
+        item.averageScore = scoreAverage[0].avg
+        ItemMatchGraphQL(item)
       })
     )
-
-    itemResult.map((item: ReturnType.ItemInfo) => {
-      ItemMatchGraphQL(item)
-    })
     resolve(itemResult)
   })
 }

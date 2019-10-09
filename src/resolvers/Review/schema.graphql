@@ -29,15 +29,12 @@ input ItemReviewInfoInput {
   itemId: Int
   item: ItemInfoInput!
   recommendReason: RecommendReason!
-  shortReview: String!
-  imgUrl: Upload
+  review: String!
   score: Int!
-  cards: [ItemReviewCardInfoInput!]!
+  imgs: [ItemReviewImgInfoInput!]!
 }
 
-input ItemReviewCardInfoInput {
-  title: String!
-  content: String!
+input ItemReviewImgInfoInput {
   img: Upload
 }
 
@@ -49,18 +46,16 @@ type ItemReviewInfo {
   itemId: Int!
   postId: Int!
   recommendReason: RecommendReason!
-  shortReview: String!
+  review: String!
   score: Int!
-  cards: [ItemReviewCardInfo!]!
+  imgs: [ItemReviewImgInfo!]!
 
   itemInfo: ItemInfo
 }
 
-type ItemReviewCardInfo {
+type ItemReviewImgInfo {
   id: Int!
   reviewId: Int!
-  title: String!
-  content: String!
   imgUrl: String
 }
 

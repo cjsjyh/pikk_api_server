@@ -10,15 +10,12 @@ export type ItemReviewInfoInput = {
   itemId: number
   item: ItemInfoInput
   recommendReason: string
-  shortReview: string
-  img: any
+  review: string
   score: number
-  cards: ItemReviewCardInfoInput[]
+  imgs: ItemReviewImgInfoInput[]
 }
 
-export type ItemReviewCardInfoInput = {
-  title: string
-  content: string
+export type ItemReviewImgInfoInput = {
   img: any
 }
 

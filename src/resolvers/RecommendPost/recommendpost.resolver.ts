@@ -9,7 +9,7 @@ import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage, GetFormatSql } from "../Util/util"
 import { InsertItemForRecommendPost } from "../Item/util"
-import { GetReviewsAndCards, InsertItemReview, InsertItemReviewCard } from "../Review/util"
+import { InsertItemReview, InsertItemReviewImage, GetReviewsAndImage } from "../Review/util"
 
 module.exports = {
   Query: {
@@ -38,7 +38,7 @@ module.exports = {
           return []
         }
 
-        await GetReviewsAndCards(postResult, info, postSql)
+        await GetReviewsAndImage(postResult, info, postSql)
         return postResult
       } catch (e) {
         console.log(e)
@@ -72,7 +72,7 @@ module.exports = {
           return []
         }
 
-        await GetReviewsAndCards(postResult, info, postSql)
+        await GetReviewsAndImage(postResult, info, postSql)
         return postResult
       } catch (e) {
         console.log(e)
@@ -116,8 +116,8 @@ module.exports = {
         await Promise.all(
           arg.reviews.map((review, index) => {
             return Promise.all(
-              review.cards.map(card => {
-                return InsertItemReviewCard(card, ReviewResult[index])
+              review.imgs.map(img => {
+                return InsertItemReviewImage(img, ReviewResult[index])
               })
             )
           })

@@ -9,20 +9,18 @@ export type ItemReviewInfo = {
   itemId: number
   postId: number
   recommendReason: string
-  shortReview: string
+  review: string
   score: number
-  cards: ItemReviewCardInfo[]
+  imgs: ItemReviewImgInfo[]
 
   itemInfo: ItemInfo
 }
 
-export type ItemReviewCardInfo = {
+export type ItemReviewImgInfo = {
   //DB
   FK_reviewId: number
-  //Card
+  //Img
   id: number
   reviewId: number
-  title: string
-  content: string
   imgUrl: string
 }

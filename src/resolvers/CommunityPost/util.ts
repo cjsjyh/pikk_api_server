@@ -39,16 +39,8 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
-    let client: PoolClient
     try {
-      client = await pool.connect()
-    } catch (e) {
-      console.log(e)
-      throw new Error("[Error] Failed Connecting to DB")
-    }
-    try {
-      let { rows } = await client.query(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
-      client.release()
+      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       if (rows.length == 0) return null
 
       let postIdSql = ""
@@ -61,7 +53,6 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
       filterSql += ` id in (${postIdSql})`
       multipleQuery = true
     } catch (e) {
-      client.release()
       throw new Error("[Error] Failed to fetch postId with itemId")
     }
   }

@@ -13,47 +13,36 @@ module.exports = {
   Mutation: {
     createUser: async (parent: void, args: MutationArgInfo, ctx: any): Promise<ReturnType.UserCredentialInfo> => {
       let arg: ArgType.UserCredentialInput = args.userAccountInfo
-      //Make Connection
-      let client
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        console.log(e)
-        throw new Error("[Error] Failed Connecting to DB")
-      }
-
       //Make UserCredential
       try {
         let userAccount: ReturnType.UserCredentialInfo
-        let queryResult = await client.query(
+        let queryResult = await RunSingleSQL(
           `INSERT INTO "USER_CONFIDENTIAL" ("providerType", "providerId") VALUES ($1,$2) ON CONFLICT DO NOTHING RETURNING id`,
           [arg.providerType, arg.providerId]
         )
-        if (queryResult.rows.length == 0) {
-          queryResult = await client.query(
+        if (queryResult.length == 0) {
+          queryResult = await RunSingleSQL(
             `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"='${arg.providerId}'`
           )
-          userAccount = queryResult.rows[0]
-          queryResult = await client.query(`SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`)
+          userAccount = queryResult[0]
+          queryResult = await RunSingleSQL(`SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`)
           //If user didn't insert user info yet
-          if (queryResult.rows.length == 0) userAccount.isNewUser = true
+          if (queryResult.length == 0) userAccount.isNewUser = true
           else {
             userAccount.isNewUser = false
-            userAccount.name = queryResult.rows[0].name
-            userAccount.profileImgUrl = queryResult.rows[0].profileImgUrl
-            userAccount.rank = queryResult.rows[0].rank
+            userAccount.name = queryResult[0].name
+            userAccount.profileImgUrl = queryResult[0].profileImgUrl
+            userAccount.rank = queryResult[0].rank
           }
           userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
         } else {
-          userAccount = queryResult.rows[0]
+          userAccount = queryResult[0]
           userAccount.isNewUser = true
           userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
         }
-        client.release()
         console.log(`User ${userAccount.id} Created`)
         return userAccount
       } catch (e) {
-        client.release()
         console.log(e)
         throw new Error("[Error] Failed to create User")
       }
@@ -61,14 +50,6 @@ module.exports = {
 
     createUserInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.UserInfoInput = args.userInfo
-      //Make Connection
-      let client
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        console.log("[Error] Failed Connecting to DB")
-        return false
-      }
 
       //Make UserCredential
       try {
@@ -76,28 +57,25 @@ module.exports = {
         if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
           profileImgUrl = await UploadImage(arg.profileImg)
           if (profileImgUrl == null) {
-            client.release()
             throw new Error("[Error] Image Upload Failed!")
           }
         }
 
         let qResult
         if (profileImgUrl != null) {
-          qResult = await client.query(
+          qResult = await RunSingleSQL(
             'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
             [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
           )
         } else {
-          qResult = await client.query(
+          qResult = await RunSingleSQL(
             'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
             [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, arg.phoneNum, arg.address]
           )
         }
-        client.release()
         console.log(`User Info for User ${arg.id} created`)
         return true
       } catch (e) {
-        client.release()
         console.log("[Error] Failed to Insert into USER_INFO")
         console.log(e)
         return false

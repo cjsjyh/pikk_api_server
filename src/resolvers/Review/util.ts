@@ -5,28 +5,20 @@ const _ = require("lodash")
 import * as RecPostReturnType from "../RecommendPost/type/ReturnType"
 import * as ReviewArgType from "./type/ArgType"
 import * as ReviewReturnType from "./type/ReturnType"
-import { ExtractSelectionSet, getFormatDate, getFormatHour, UploadImage } from "../Util/util"
+import { ExtractSelectionSet, getFormatDate, getFormatHour, UploadImage, RunSingleSQL } from "../Util/util"
 
 import { GraphQLResolveInfo } from "graphql"
 import { PoolClient, QueryResult } from "pg"
 
 export async function GetReviewsAndCards(postResult: any, info: GraphQLResolveInfo, postSql: string) {
-  let client: PoolClient
-  try {
-    client = await pool.connect()
-  } catch (e) {
-    console.log(e)
-    throw new Error("[Error] Failed Connecting to DB")
-  }
-
   try {
     let queryResult: QueryResult
     await Promise.all(
       postResult.map(async (post: RecPostReturnType.RecommendPostInfo) => {
         post.accountId = post.FK_accountId
         post.reviews = []
-        queryResult = await client.query(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
-        post.pickCount = queryResult.rows[0].count
+        queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" where "FK_postId"=${post.id}`)
+        post.pickCount = queryResult[0].count
       })
     )
 
@@ -35,10 +27,9 @@ export async function GetReviewsAndCards(postResult: any, info: GraphQLResolveIn
     //CHECK IF QUERY FOR REVIEW IS NEEDED
     if (selectionSet.includes("reviews")) {
       let reviewSql = `WITH aaa AS (${postSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_postId") FROM "ITEM_REVIEW" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
-      queryResult = await client.query(reviewSql)
-      let reviewResult: ReviewReturnType.ItemReviewInfo[] = queryResult.rows
+      queryResult = await RunSingleSQL(reviewSql)
+      let reviewResult: any = queryResult
       if (reviewResult.length == 0) {
-        client.release()
         return postResult
       }
       reviewResult.forEach((review: ReviewReturnType.ItemReviewInfo) => {
@@ -72,10 +63,9 @@ export async function GetReviewsAndCards(postResult: any, info: GraphQLResolveIn
 
       if (cardFlag) {
         let cardSql = `WITH aaa AS (${reviewSql}) SELECT bbb.*, rank() OVER (PARTITION BY bbb."FK_reviewId") FROM "ITEM_REVIEW_CARD" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_reviewId"`
-        queryResult = await client.query(cardSql)
-        client.release()
+        queryResult = await RunSingleSQL(cardSql)
 
-        let cardResult: ReviewReturnType.ItemReviewCardInfo[] = queryResult.rows
+        let cardResult: any = queryResult
         if (cardResult.length == 0) {
           return postResult
         }
@@ -105,7 +95,6 @@ export async function GetReviewsAndCards(postResult: any, info: GraphQLResolveIn
       }
     }
   } catch (e) {
-    client.release()
     console.log(e)
     throw new Error("[Error] Failed to fetch user data from DB")
   }
@@ -113,35 +102,26 @@ export async function GetReviewsAndCards(postResult: any, info: GraphQLResolveIn
 
 export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, args: Array<number>): Promise<{}> {
   return new Promise(async (resolve, reject) => {
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      reject(e)
-    }
-
     try {
       let imageUrl = null
       if (Object.prototype.hasOwnProperty.call(itemReview, "img")) {
         //Upload Image and retrieve URL
         imageUrl = await UploadImage(itemReview.img)
         if (imageUrl == null) {
-          client.release()
           throw new Error("[Error] Image Upload Failed!")
         }
       }
 
       let postId = args[0]
-      let insertResult = await client.query(
-        'INSERT INTO "ITEM_REVIEW"("FK_itemId","FK_postId","recommendReason","shortReview","score", "imgUrl") VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-        [itemReview.itemId, postId, itemReview.recommendReason, itemReview.shortReview, itemReview.score, imageUrl]
+      let insertResult = await RunSingleSQL(
+        `INSERT INTO "ITEM_REVIEW"
+        ("FK_itemId","FK_postId","recommendReason","shortReview","score", "imgUrl") 
+        VALUES (${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.shortReview}', ${itemReview.score}, '${imageUrl}') RETURNING id`
       )
-      client.release()
-      let reviewId = insertResult.rows[0].id
+      let reviewId = insertResult[0].id
       console.log(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
       resolve(reviewId)
     } catch (e) {
-      client.release()
       console.log(e)
       reject(e)
     }
@@ -150,34 +130,21 @@ export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, 
 
 export function InsertItemReviewCard(arg: ReviewArgType.ItemReviewCardInfoInput, reviewId: number): Promise<{}> {
   return new Promise(async (resolve, reject) => {
-    let client
-    try {
-      client = await pool.connect()
-    } catch (e) {
-      console.log("[Error] Failed Connecting to DB")
-      return false
-    }
     let imageUrl = null
     if (Object.prototype.hasOwnProperty.call(arg, "img")) {
       imageUrl = await UploadImage(arg.img)
       if (imageUrl == null) {
-        client.release()
         throw new Error("[Error] Image Upload Failed!")
       }
     }
 
     try {
-      let cardId = await client.query('INSERT INTO "ITEM_REVIEW_CARD"("FK_reviewId","title","content","imgUrl") VALUES ($1,$2,$3,$4) RETURNING id', [
-        reviewId,
-        arg.title,
-        arg.content,
-        imageUrl
-      ])
-      client.release()
-      console.log(`Inserted CardId: ${cardId.rows[0].id} for ReviewId: ${reviewId}`)
-      resolve(cardId.rows[0].id)
+      let cardId = await RunSingleSQL(`
+      INSERT INTO "ITEM_REVIEW_CARD"("FK_reviewId","title","content","imgUrl") 
+      VALUES (${reviewId},'${arg.title}','${arg.content}','${imageUrl}') RETURNING id`)
+      console.log(`Inserted CardId: ${cardId[0].id} for ReviewId: ${reviewId}`)
+      resolve(cardId[0].id)
     } catch (e) {
-      client.release()
       console.log("[Error] Failed to Insert into ITEM_REVIEW_CARD")
       console.log(e)
       reject()

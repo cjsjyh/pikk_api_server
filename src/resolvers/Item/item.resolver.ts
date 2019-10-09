@@ -9,19 +9,12 @@ import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, getFormatDate, getFormatHour, RunSingleSQL, GetFormatSql } from "../Util/util"
 
 import { GraphQLResolveInfo } from "graphql"
-import { InsertItem } from "./util"
+import { InsertItem, GetItems } from "./util"
 
 module.exports = {
   Query: {
     allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.ItemQuery = args.itemOption
-      let client
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        throw new Error("[Error] Failed Connecting to DB")
-      }
-
       try {
         let formatSql = GetFormatSql(arg)
         let filterSql: string = ""
@@ -44,20 +37,11 @@ module.exports = {
           FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
         `
 
-        let queryResult = await client.query(querySql + filterSql + formatSql)
-        let itemResult: ReturnType.ItemInfo[] = queryResult.rows
+        let queryResult = await GetItems(querySql + filterSql + formatSql)
+        let itemResult: ReturnType.ItemInfo[] = queryResult
 
-        await Promise.all(
-          itemResult.map(async (item: ReturnType.ItemInfo) => {
-            queryResult = await client.query(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" where "FK_itemId"=${item.id}`)
-            item.pickCount = queryResult.rows[0].count
-          })
-        )
-
-        client.release()
         return itemResult
       } catch (e) {
-        client.release()
         console.log(e)
         throw new Error("[Error] Failed to fetch data from DB")
       }

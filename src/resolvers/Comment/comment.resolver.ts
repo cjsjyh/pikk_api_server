@@ -10,19 +10,11 @@ module.exports = {
   Query: {
     getComments: async (parent: void, args: QueryArgInfo): Promise<ReturnType.CommentInfo[]> => {
       let arg: ArgType.CommentQuery = args.commentOption
-      let client
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        console.log(e)
-        throw new Error("[Error] Failed Connecting to DB")
-      }
 
       try {
         let boardName = GetBoardName(arg.boardType)
-        let queryResult = await client.query(`SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`)
-        client.release()
-        let commentResults: ReturnType.CommentInfo[] = queryResult.rows
+        let queryResult = await RunSingleSQL(`SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`)
+        let commentResults: ReturnType.CommentInfo[] = queryResult
         commentResults.forEach(comment => {
           comment.postId = comment.FK_postId
           comment.accountId = comment.FK_accountId
@@ -30,7 +22,6 @@ module.exports = {
 
         return commentResults
       } catch (e) {
-        client.release()
         console.log(e)
         throw new Error("[Error] Failed to fetch comments")
       }

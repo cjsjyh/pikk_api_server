@@ -42,7 +42,7 @@ export function getFormatHour(secs) {
   return hours + "" + minutes + "" + seconds
 }
 
-export function RunSingleSQL(sql: string): Promise<any> {
+export function RunSingleSQL(sql: string, args?: any): Promise<any> {
   return new Promise(async (resolve, reject) => {
     let client
     try {
@@ -52,7 +52,10 @@ export function RunSingleSQL(sql: string): Promise<any> {
     }
 
     try {
-      let queryResult = await client.query(sql)
+      let queryResult
+      if (args == null) queryResult = await client.query(sql)
+      else queryResult = await client.query(sql, args)
+
       client.release()
       resolve(queryResult.rows)
     } catch (e) {

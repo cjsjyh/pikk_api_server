@@ -33,7 +33,7 @@ module.exports = {
           ') SELECT aaa.*,bbb.name,bbb."profileImgUrl" FROM "USER_INFO" AS bbb INNER JOIN aaa ON aaa."FK_accountId" = bbb."FK_accountId"'
         queryResult = await RunSingleSQL(postSql)
 
-        let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
+        let postResult: any = queryResult
         if (postResult.length == 0) {
           return []
         }
@@ -67,7 +67,7 @@ module.exports = {
       INNER JOIN bbb on aaa.id = bbb."FK_postId"` + formatSql
         queryResult = await RunSingleSQL(postSql)
 
-        let postResult: ReturnType.RecommendPostInfo[] = queryResult.rows
+        let postResult: any = queryResult
         if (postResult.length == 0) {
           return []
         }
@@ -84,36 +84,27 @@ module.exports = {
     createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
-      let client
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        console.log("[Error] Failed Connecting to DB")
-        return false
-      }
       let imageUrl = null
       if (arg.titleType == "IMAGE") {
         if (!Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
-          client.release()
           throw new Error("[Error] title type IMAGE but no image sent!")
         }
         imageUrl = await UploadImage(arg.titleImg)
         if (imageUrl == null) {
-          client.release()
           throw new Error("[Error] Image Upload Failed!")
         }
       }
 
       let recommendPostId: number
       try {
-        let insertResult = await client.query(
-          'INSERT INTO "RECOMMEND_POST"("FK_accountId","title","content","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',
-          [arg.accountId, arg.title, arg.content, arg.postType, arg.styleType, arg.titleType, arg.titleYoutubeUrl, imageUrl]
+        let insertResult = await RunSingleSQL(
+          `INSERT INTO "RECOMMEND_POST"
+          ("FK_accountId","title","content","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") 
+          VALUES (${arg.accountId}, '${arg.title}', '${arg.content}', '${arg.postType}', '${arg.styleType}', 
+          '${arg.titleType}', '${arg.titleYoutubeUrl}', '${imageUrl}') RETURNING id`
         )
-        client.release()
-        recommendPostId = insertResult.rows[0].id
+        recommendPostId = insertResult[0].id
       } catch (e) {
-        client.release()
         console.log("[Error] Failed to Insert into RECOMMEND_POST")
         console.log(e)
         return false
@@ -189,20 +180,12 @@ async function GetPostFilterSql(filter: any): Promise<string> {
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
-    let client: PoolClient
     try {
-      client = await pool.connect()
-    } catch (e) {
-      console.log(e)
-      throw new Error("[Error] Failed Connecting to DB")
-    }
-    try {
-      let { rows } = await client.query(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
-      client.release()
+      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       if (rows.length == 0) return null
 
       let postIdSql = ""
-      rows.forEach((row, index) => {
+      rows.forEach((row: any, index: number) => {
         if (index != 0) postIdSql += ","
         postIdSql += row.FK_postId
       })
@@ -211,7 +194,6 @@ async function GetPostFilterSql(filter: any): Promise<string> {
       filterSql += ` id in (${postIdSql})`
       multipleQuery = true
     } catch (e) {
-      client.release()
       throw new Error("[Error] Failed to fetch postId with itemId")
     }
   }

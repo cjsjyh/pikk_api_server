@@ -58,29 +58,39 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
   })
 }
 
-export function GetSingleItem(id: number): Promise<ReturnType.ItemInfo> {
+export function GetItems(sql: string): Promise<ReturnType.ItemInfo[]> {
   return new Promise(async (resolve, reject) => {
-    let queryResult = await RunSingleSQL(`
-    WITH aaa as (SELECT * FROM "ITEM_VARIATION" WHERE id=${id}),
-    bbb as (SELECT aaa.*,
-      "ITEM_GROUP"."itemMinorType",  
-      "ITEM_GROUP"."itemMajorType",
-      "ITEM_GROUP"."originalPrice",
-      "ITEM_GROUP"."FK_brandId"
-      FROM "ITEM_GROUP" INNER JOIN aaa ON aaa."FK_itemGroupId" = "ITEM_GROUP".id)
-    SELECT bbb.*, "BRAND"."nameKor", "BRAND"."nameEng" FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
-    `)
-    console.log(queryResult)
-    ItemMatchGraphQL(queryResult[0])
-    resolve(queryResult[0])
+    let queryResult = await RunSingleSQL(sql)
+    let itemResult: ReturnType.ItemInfo[] = queryResult
+    await Promise.all(
+      itemResult.map(async (item: ReturnType.ItemInfo) => {
+        queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" where "FK_itemId"=${item.id}`)
+        item.pickCount = queryResult[0].count
+      })
+    )
+
+    itemResult.map((item: ReturnType.ItemInfo) => {
+      ItemMatchGraphQL(item)
+    })
+    resolve(itemResult)
   })
 }
 
 export function FetchItemsForReview(review: any): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
-      let queryResult = await GetSingleItem(review.FK_itemId)
-      review.itemInfo = queryResult
+      let sql = `
+      WITH aaa as (SELECT * FROM "ITEM_VARIATION" WHERE id=${review.FK_itemId}),
+      bbb as (SELECT aaa.*,
+        "ITEM_GROUP"."itemMinorType",  
+        "ITEM_GROUP"."itemMajorType",
+        "ITEM_GROUP"."originalPrice",
+        "ITEM_GROUP"."FK_brandId"
+        FROM "ITEM_GROUP" INNER JOIN aaa ON aaa."FK_itemGroupId" = "ITEM_GROUP".id)
+      SELECT bbb.*, "BRAND"."nameKor", "BRAND"."nameEng" FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
+      `
+      let queryResult = await GetItems(sql)
+      review.itemInfo = queryResult[0]
       resolve()
     } catch (e) {
       reject()

@@ -18,12 +18,6 @@ module.exports = {
   Query: {
     allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<PostReturnType.CommunityPostInfo[]> => {
       let arg: ArgType.CommunityPostQuery = args.communityPostOption
-      let client
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        throw new Error("[Error] Failed Connecting to DB")
-      }
 
       try {
         let filterSql: string = ""
@@ -35,12 +29,11 @@ module.exports = {
         let querySql = 'SELECT * FROM "COMMUNITY_POST"' + filterSql + formatSql
         let commentSql = `WITH aaa AS (${querySql}) SELECT bbb."FK_postId" FROM "COMMUNITY_POST_COMMENT" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
 
-        let queryResult = await client.query(querySql)
-        let postResult: PostReturnType.CommunityPostInfo[] = queryResult.rows
+        let queryResult = await RunSingleSQL(querySql)
+        let postResult: PostReturnType.CommunityPostInfo[] = queryResult
 
-        queryResult = await client.query(commentSql)
-        client.release()
-        let commentResult: CommentReturnType.CommentInfo[] = queryResult.rows
+        queryResult = await RunSingleSQL(commentSql)
+        let commentResult: CommentReturnType.CommentInfo[] = queryResult
         let commentResultGroup = _.countBy(commentResult, "FK_postId")
 
         let PromiseResult: any = await Promise.all([
@@ -68,7 +61,6 @@ module.exports = {
         })
         return postResult
       } catch (e) {
-        client.release()
         console.log(e)
         throw new Error("[Error] Failed to fetch community post from DB")
       }
@@ -82,13 +74,6 @@ module.exports = {
     createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
-      let client
-      try {
-        client = await pool.connect()
-      } catch (e) {
-        console.log("[Error] Failed Connecting to DB")
-        return false
-      }
 
       try {
         /*
@@ -122,15 +107,13 @@ module.exports = {
         })
       }
       */
-        await client.query(
+        await RunSingleSQL(
           'INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content","postType","qnaType") VALUES ($1,$2,$3,$4,$5,$6)',
           [arg.accountId, arg.channelId, arg.title, arg.content, arg.postType, arg.qnaType]
         )
-        client.release()
         console.log(`Community Post has been created by User ${arg.accountId}`)
         return true
       } catch (e) {
-        client.release()
         console.log("[Error] Failed to Insert into COMMUNITY_POST")
         console.log(e)
         return false

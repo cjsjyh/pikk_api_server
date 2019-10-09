@@ -51,6 +51,7 @@ type ItemReviewInfo {
   imgs: [ItemReviewImgInfo!]!
 
   itemInfo: ItemInfo
+  userInfo: UserInfo
 }
 
 type ItemReviewImgInfo {

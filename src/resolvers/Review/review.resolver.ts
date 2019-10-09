@@ -5,6 +5,7 @@ import { ExtractSelectionSet } from "../Util/util"
 import { RunSingleSQL, GetFormatSql, SequentialPromiseValue } from "../Util/util"
 import { ReviewMatchGraphQL } from "./util"
 import { FetchItemsForReview } from "../Item/util"
+import { FetchUserForReview } from "../User/util"
 
 module.exports = {
   Query: {
@@ -14,12 +15,19 @@ module.exports = {
       let filterSql = GetReviewFilterSql(arg)
       let formatSql = GetFormatSql(arg)
       let reviewSql = 'SELECT * FROM "ITEM_REVIEW" ' + filterSql + formatSql
+      let queryResult = await RunSingleSQL(reviewSql)
+
       //Query Item Info
       let selectionSet = ExtractSelectionSet(info.fieldNodes[0])
-      let queryResult = await RunSingleSQL(reviewSql)
-      if (selectionSet.flat(2).includes("itemInfo")) {
+      selectionSet = selectionSet.flat(2)
+      console.log(selectionSet)
+      if (selectionSet.includes("itemInfo")) {
         await SequentialPromiseValue(queryResult, FetchItemsForReview)
       }
+      if (selectionSet.includes("userInfo")) {
+        await SequentialPromiseValue(queryResult, FetchUserForReview)
+      }
+
       queryResult.forEach(review => {
         ReviewMatchGraphQL(review)
       })

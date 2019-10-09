@@ -1,4 +1,5 @@
 import { ItemInfo } from "../../Item/type/ReturnType"
+import { UserInfo } from "../../User/type/ReturnType"
 
 export type ItemReviewInfo = {
   //DB
@@ -14,6 +15,7 @@ export type ItemReviewInfo = {
   imgs: ItemReviewImgInfo[]
 
   itemInfo: ItemInfo
+  userInfo: UserInfo
 }
 
 export type ItemReviewImgInfo = {

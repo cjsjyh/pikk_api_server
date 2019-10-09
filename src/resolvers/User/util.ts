@@ -12,3 +12,18 @@ export async function GetUserInfo(postInfo: any): Promise<ReturnType.UserInfo> {
     }
   })
 }
+
+export async function FetchUserForReview(reviewInfo: any): Promise<{}> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let queryResult = await RunSingleSQL(`
+      WITH aaa as (SELECT "FK_accountId" FROM "RECOMMEND_POST" WHERE id = ${reviewInfo.FK_postId})
+      SELECT bbb.* FROM "USER_INFO" as bbb
+      INNER JOIN aaa on aaa."FK_accountId" = bbb."FK_accountId"`)
+      reviewInfo.userInfo = queryResult[0]
+      resolve()
+    } catch (e) {
+      reject(e)
+    }
+  })
+}

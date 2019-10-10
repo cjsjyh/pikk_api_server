@@ -1,4 +1,4 @@
-import { RunSingleSQL, UploadImage } from "../Util/util"
+import { RunSingleSQL, UploadImage } from "../Utils/util"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput } from "./type/ArgType"
 import { ItemReviewInfoInput } from "../Review/type/ArgType"

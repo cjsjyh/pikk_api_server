@@ -5,7 +5,7 @@ const _ = require("lodash")
 import * as RecPostReturnType from "../RecommendPost/type/ReturnType"
 import * as ReviewArgType from "./type/ArgType"
 import * as ReviewReturnType from "./type/ReturnType"
-import { ExtractSelectionSet, getFormatDate, getFormatHour, UploadImage, RunSingleSQL } from "../Util/util"
+import { ExtractSelectionSet, getFormatDate, getFormatHour, UploadImage, RunSingleSQL } from "../Utils/util"
 
 import { GraphQLResolveInfo } from "graphql"
 import { PoolClient, QueryResult } from "pg"

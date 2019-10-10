@@ -1,6 +1,6 @@
 const { pool } = require("../../database/connectionPool")
 import * as ReturnType from "./type/ReturnType"
-import { RunSingleSQL } from "../Util/util"
+import { RunSingleSQL } from "../Utils/util"
 
 export async function GetUserInfo(postInfo: any): Promise<ReturnType.UserInfo> {
   return new Promise(async (resolve, reject) => {

@@ -7,7 +7,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { getFormatDate, getFormatHour, RunSingleSQL, UploadImage, GetFormatSql } from "../Util/util"
+import { getFormatDate, getFormatHour, RunSingleSQL, UploadImage, GetFormatSql } from "../Utils/util"
 
 module.exports = {
   Mutation: {

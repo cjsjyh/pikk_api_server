@@ -10,7 +10,7 @@ import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
-import { SequentialPromiseValue, GetMetaData, RunSingleSQL, GetFormatSql } from "../Util/util"
+import { SequentialPromiseValue, GetMetaData, RunSingleSQL, GetFormatSql } from "../Utils/util"
 
 import { GraphQLResolveInfo } from "graphql"
 

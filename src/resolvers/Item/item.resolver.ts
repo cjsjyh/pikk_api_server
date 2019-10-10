@@ -6,7 +6,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, getFormatDate, getFormatHour, RunSingleSQL, GetFormatSql } from "../Util/util"
+import { GetMetaData, getFormatDate, getFormatHour, RunSingleSQL, GetFormatSql } from "../Utils/util"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertItem, GetItems } from "./util"

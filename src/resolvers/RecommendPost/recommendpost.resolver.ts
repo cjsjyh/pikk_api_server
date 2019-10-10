@@ -7,7 +7,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage, GetFormatSql } from "../Util/util"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage, GetFormatSql } from "../Utils/util"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, InsertItemReviewImage, GetReviewsAndImage } from "../Review/util"
 

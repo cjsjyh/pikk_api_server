@@ -1,7 +1,7 @@
 const { pool } = require("../../database/connectionPool")
 
 import * as PostReturnType from "./type/ReturnType"
-import { RunSingleSQL } from "../Util/util"
+import { RunSingleSQL } from "../Utils/util"
 
 import { QueryResult, PoolClient } from "pg"
 

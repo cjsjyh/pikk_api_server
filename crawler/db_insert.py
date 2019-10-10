@@ -7,8 +7,9 @@ def convertStringPriceToInt(price):
   return result
 
 def InsertItems():
-  filename = input("Filename: ")
-  fileList = open(filename,"r")
+  #filename = input("Filename: ")
+  #fileList = open(filename,"r")
+  fileList = open("final_list.txt","r")
 
   try:
     password = input("db password: ")
@@ -20,12 +21,13 @@ def InsertItems():
     #print(result)
 
     item = []
+    salePrice = ""
+    lastItemId = -1
+    itemGroupId = -1
     while True:
       line = fileList.readline()
       if not line: break
       
-      lastItemId = -1
-      itemGroupId = -1
       if(line[0] == '-'):
         #Remove Brand and Get Item Id
         item[2] = item[2].split('/')[1]
@@ -43,25 +45,33 @@ def InsertItems():
         result = curs.fetchall()
         brandId = result[0][0]
 
-        if (lastItemId != item[categoryMajor+4] || itemGroupId == -1):
+        if(len(result) == 0):
+          print("ERROR!")
+          print(item)
+          break
+
+        print(item[1])
+
+        if (lastItemId != item[categoryMajor+4] or lastItemId == -1):
           curs.execute("""INSERT INTO "ITEM_GROUP"
-          ("itemMinorType","itemMajorType","originalPrice","sourceWebsite","FK_brandId") 
+          ("itemMinorType_raw","itemMajorType_raw","originalPrice","sourceWebsite","FK_brandId") 
           VALUES('%s','%s','%s','%s','%s') RETURNING id""" 
           %(item[categoryMajor+1],item[categoryMajor],int(originalPrice),source,brandId))
           result = curs.fetchall()
+          lastItemId = item[categoryMajor+4]
           itemGroupId = result[0][0]
           
-        if (len(item) == 9):
-          curs.execute("""INSERT INTO "ITEM" 
+
+        if (len(item) == 10):
+          curs.execute("""INSERT INTO "ITEM_VARIATION" 
           ("name","imageUrl","purchaseUrl","salePrice","code","FK_itemGroupId") 
           VALUES ('%s','%s','%s','%s','%s','%s')""" 
-          %(item[1],item[categoryMajor+2],item[categoryMajor+3],item[categoryMajor-1],item[2].split('/')[1],itemGroupId))
+          %(item[1],item[categoryMajor+2],item[categoryMajor+3],int(salePrice),item[2],itemGroupId))
         else:
-          curs.execute("""INSERT INTO "ITEM" 
+          curs.execute("""INSERT INTO "ITEM_VARIATION" 
           ("name","imageUrl","purchaseUrl","code","FK_itemGroupId") 
-          VALUES ('%s','%s','%s','%s','%s','%s')""" 
-          %(item[1],item[categoryMajor+2],item[categoryMajor+3],item[2].split('/')[1],itemGroupId))
-
+          VALUES ('%s','%s','%s','%s','%s')""" 
+          %(item[1],item[categoryMajor+2],item[categoryMajor+3],item[2],itemGroupId))
 
         item.clear()
       else:
@@ -69,6 +79,7 @@ def InsertItems():
         line = line.replace("'","")
         item.append(line)
   except Exception as e:
+    conn.close()
     print(e)
   finally:
     fileList.close()

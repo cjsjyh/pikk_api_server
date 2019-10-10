@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .git/
+crawler/*.txt
 config.json
 *.env
 *.yaml

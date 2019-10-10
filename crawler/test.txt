@@ -2,11 +2,12 @@
 울트라부스트 SMTM -  블랙
 ADIDAS/FW8233
 219,000원
+123,000원
 OUTER
 TSHIRT
 //image.msscdn.net/images/goods_img/20190918/1157499/1157499_2_125.jpg
 1157499/0
-0
+1
 ---------
 아디다스
 스탠스미스 - 화이트:블루
@@ -26,5 +27,5 @@ ADIDAS/FH8075
 레깅스
 //image.msscdn.net/images/goods_img/20190910/1150987/1150987_1_125.jpg
 1150987/0
-2
+1
 ---------

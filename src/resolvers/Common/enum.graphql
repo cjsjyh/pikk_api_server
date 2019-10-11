@@ -3,16 +3,6 @@ enum SortDirection {
   DESC
 }
 
-enum ItemSortableField {
-  id
-  name
-  brand
-  originalPrice
-  score
-  itemMinorType
-  itemMajorType
-}
-
 enum PostSortableField {
   title
   time

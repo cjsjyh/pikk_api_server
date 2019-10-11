@@ -60,18 +60,22 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
 
 export function GetItems(sql: string): Promise<ReturnType.ItemInfo[]> {
   return new Promise(async (resolve, reject) => {
-    let queryResult = await RunSingleSQL(sql)
-    let itemResult: ReturnType.ItemInfo[] = queryResult
-    await Promise.all(
-      itemResult.map(async (item: ReturnType.ItemInfo) => {
-        queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_itemId"=${item.id}`)
-        let scoreAverage = await RunSingleSQL(`SELECT AVG(score) FROM "ITEM_REVIEW" WHERE "FK_itemId"=${item.id}`)
-        item.pickCount = queryResult[0].count
-        item.averageScore = scoreAverage[0].avg
-        ItemMatchGraphQL(item)
-      })
-    )
-    resolve(itemResult)
+    try {
+      let queryResult = await RunSingleSQL(sql)
+      let itemResult: ReturnType.ItemInfo[] = queryResult
+      await Promise.all(
+        itemResult.map(async (item: ReturnType.ItemInfo) => {
+          queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_itemId"=${item.id}`)
+          let scoreAverage = await RunSingleSQL(`SELECT AVG(score) FROM "ITEM_REVIEW" WHERE "FK_itemId"=${item.id}`)
+          item.pickCount = queryResult[0].count
+          item.averageScore = scoreAverage[0].avg
+          ItemMatchGraphQL(item)
+        })
+      )
+      resolve(itemResult)
+    } catch (e) {
+      throw new Error("Get Item Failed!")
+    }
   })
 }
 

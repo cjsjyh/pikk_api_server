@@ -30,14 +30,13 @@ module.exports = {
           "ITEM_GROUP"."originalPrice",
           "ITEM_GROUP"."FK_brandId"
           FROM "ITEM_VARIATION" INNER JOIN "ITEM_GROUP" ON "ITEM_VARIATION"."FK_itemGroupId" = "ITEM_GROUP".id
-        ) SELECT 
+        )
+        SELECT 
           bbb.*, 
           "BRAND"."nameKor", 
           "BRAND"."nameEng" 
           FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
         `
-
-        console.log(querySql + filterSql + formatSql)
 
         let queryResult = await GetItems(querySql + filterSql + formatSql)
         let itemResult: ReturnType.ItemInfo[] = queryResult
@@ -45,7 +44,7 @@ module.exports = {
         return itemResult
       } catch (e) {
         console.log(e)
-        throw new Error("[Error] Failed to fetch data from DB")
+        throw new Error("[Error] Failed to fetch Item data from DB")
       }
     },
 
@@ -76,8 +75,9 @@ module.exports = {
             FROM "BRAND" INNER JOIN ddd on "BRAND".id = ddd."FK_brandId"
         `
 
-      let rows = await RunSingleSQL(postSql)
-      return rows
+      let queryResult = await GetItems(postSql)
+      let itemResult: ReturnType.ItemInfo[] = queryResult
+      return itemResult
     }
   },
   Mutation: {

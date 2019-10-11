@@ -11,6 +11,17 @@ type Mutation {
   createItem(itemInfo: ItemInfoInput!): Boolean!
 }
 
+enum ItemSortableField {
+  id
+  name
+  brand
+  originalPrice
+  averageScore
+  pickCount
+  itemMinorType
+  itemMajorType
+}
+
 #--------------
 #   INPUT
 #--------------
@@ -21,7 +32,7 @@ input ItemFilterGeneral {
   start: Int = 0
   first: Int = 50
   sort: SortDirection = DESC
-  sortBy: ItemSortableField = score
+  sortBy: ItemSortableField = averageScore
 }
 
 input ItemQueryFilter {

@@ -20,18 +20,25 @@ import * as fs from "fs"
 //Create Express Server
 const app = express()
 
-var whitelist = ["localhost:3000", "pickk.one"]
+app.use(function(req, res, next) {
+  req.headers.origin = req.headers.origin || req.headers.host
+  next()
+})
+var whitelist = ["https://pickk.one", "http://pickk.one", "https://pickkapiserver.online", "http://pickkapiserver.online"]
 var corsOptions = {
   origin: function(origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error("Not allowed by CORS"))
+    if (process.env.MODE == "DEVELOPMENT") callback(null, true)
+    else {
+      if (whitelist.indexOf(origin) !== -1) {
+        callback(null, true)
+      } else {
+        callback(new Error("Not allowed by CORS"))
+      }
     }
   }
 }
 
-app.use("*", cors(corsOptions))
+//app.use("*", cors(corsOptions))
 app.use(require("express-status-monitor")())
 app.use(compression())
 

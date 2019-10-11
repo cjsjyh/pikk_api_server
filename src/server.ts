@@ -24,7 +24,13 @@ app.use(function(req, res, next) {
   req.headers.origin = req.headers.origin || req.headers.host
   next()
 })
-var whitelist = ["https://pickk.one", "http://pickk.one", "https://pickkapiserver.online", "http://pickkapiserver.online"]
+var whitelist = [
+  "https://pickk.one",
+  "http://pickk.one",
+  "https://pickkapiserver.online",
+  "http://pickkapiserver.online",
+  "https://pickkcli.greatsumini.now.sh"
+]
 var corsOptions = {
   origin: function(origin, callback) {
     if (process.env.MODE == "DEVELOPMENT") callback(null, true)

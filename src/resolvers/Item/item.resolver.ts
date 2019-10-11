@@ -37,6 +37,8 @@ module.exports = {
           FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
         `
 
+        console.log(querySql + filterSql + formatSql)
+
         let queryResult = await GetItems(querySql + filterSql + formatSql)
         let itemResult: ReturnType.ItemInfo[] = queryResult
 
@@ -112,7 +114,7 @@ function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     if (multipleQuery) filterSql += " and"
     else filterSql += " where"
-    filterSql += ` "id"='${filter.itemId}'`
+    filterSql += ` bbb.id=${filter.itemId}`
     multipleQuery = true
   }
 

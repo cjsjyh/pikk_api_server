@@ -19,7 +19,19 @@ import * as fs from "fs"
 
 //Create Express Server
 const app = express()
-app.use("*", cors())
+
+var whitelist = ["localhost:3000", "pickk.one"]
+var corsOptions = {
+  origin: function(origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error("Not allowed by CORS"))
+    }
+  }
+}
+
+app.use("*", cors(corsOptions))
 app.use(require("express-status-monitor")())
 app.use(compression())
 

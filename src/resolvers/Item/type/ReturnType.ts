@@ -1,5 +1,7 @@
 //Return
 export type ItemInfo = {
+  avg: number
+
   id: number
   name: string
   brandEng: string

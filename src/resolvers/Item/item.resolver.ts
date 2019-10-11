@@ -6,7 +6,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, getFormatDate, getFormatHour, RunSingleSQL, GetFormatSql } from "../Utils/util"
+import { GetMetaData, GetFormatSql } from "../Utils/util"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertItem, GetItems } from "./util"
@@ -23,22 +23,29 @@ module.exports = {
         }
 
         let querySql = `
-        WITH bbb as (SELECT 
-          "ITEM_VARIATION".*, 
-          "ITEM_GROUP"."itemMinorType",  
-          "ITEM_GROUP"."itemMajorType",
-          "ITEM_GROUP"."originalPrice",
-          "ITEM_GROUP"."FK_brandId"
-          FROM "ITEM_VARIATION" INNER JOIN "ITEM_GROUP" ON "ITEM_VARIATION"."FK_itemGroupId" = "ITEM_GROUP".id
-        )
-        SELECT 
-          bbb.*, 
-          "BRAND"."nameKor", 
-          "BRAND"."nameEng" 
-          FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
+        SELECT
+        item_full.*,
+        "BRAND"."nameKor",
+        "BRAND"."nameEng"
+        FROM
+        (
+          SELECT 
+          score.*, 
+          item_group."itemMinorType",  
+          item_group."itemMajorType",
+          item_group."originalPrice",
+          item_group."FK_brandId"
+          FROM 
+          (
+            SELECT items.*, AVG(reviews.score) as "averageScore" FROM "ITEM_VARIATION" as items
+            INNER JOIN "ITEM_REVIEW" as reviews ON reviews."FK_itemId"=items.id ${filterSql}
+            GROUP BY items.id
+          ) as score
+          INNER JOIN "ITEM_GROUP" as item_group ON score."FK_itemGroupId" = item_group.id
+        ) as item_full
+        INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId"
         `
-
-        let queryResult = await GetItems(querySql + filterSql + formatSql)
+        let queryResult = await GetItems(querySql + formatSql)
         let itemResult: ReturnType.ItemInfo[] = queryResult
 
         return itemResult
@@ -56,23 +63,29 @@ module.exports = {
       let arg: ArgType.PickkItemQuery = args.pickkItemOption
 
       let formatSql = GetFormatSql(arg)
-      let postSql =
-        `WITH 
-        bbb as (SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}),
-        ccc as (SELECT aaa.* from "ITEM_VARIATION" as aaa INNER JOIN bbb on aaa.id = bbb."FK_itemId"` +
-        formatSql +
-        `), ` +
-        `ddd as (SELECT ccc.*, 
-          "ITEM_GROUP"."itemMinorType",  
-          "ITEM_GROUP"."itemMajorType",
-          "ITEM_GROUP"."originalPrice",
-          "ITEM_GROUP"."FK_brandId"
-        FROM "ITEM_GROUP" INNER JOIN ccc ON ccc."FK_itemGroupId" = "ITEM_GROUP".id) 
+      let postSql = `
+        WITH bbb as (SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId})
         SELECT
-            ddd.*,
-            "BRAND"."nameKor",
-            "BRAND"."nameEng"
-            FROM "BRAND" INNER JOIN ddd on "BRAND".id = ddd."FK_brandId"
+        item_full.*,
+        "BRAND"."nameKor",
+        "BRAND"."nameEng"
+        FROM
+        (
+          SELECT 
+          score.*, 
+          item_group."itemMinorType",  
+          item_group."itemMajorType",
+          item_group."originalPrice",
+          item_group."FK_brandId"
+          FROM 
+          (
+            SELECT items.*, AVG(reviews.score) as "averageScore" FROM bbb,"ITEM_VARIATION" as items
+            INNER JOIN "ITEM_REVIEW" as reviews ON reviews."FK_itemId"=items.id WHERE items.id=bbb."FK_itemId"
+            GROUP BY items.id
+          ) as score
+          INNER JOIN "ITEM_GROUP" as item_group ON score."FK_itemGroupId" = item_group.id
+        ) as item_full
+        INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId" ${formatSql}
         `
 
       let queryResult = await GetItems(postSql)
@@ -114,7 +127,7 @@ function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     if (multipleQuery) filterSql += " and"
     else filterSql += " where"
-    filterSql += ` bbb.id=${filter.itemId}`
+    filterSql += ` items.id=${filter.itemId}`
     multipleQuery = true
   }
 

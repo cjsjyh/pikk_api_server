@@ -120,7 +120,7 @@ export async function UploadImage(itemImg: any): Promise<string> {
 export function GetFormatSql(filter: any): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
-    filterSql += `ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort}`
+    filterSql += `ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} NULLS LAST`
     if (filter.filterGeneral.first > 50) filter.filterGeneral.first = 50
     filterSql += " LIMIT " + filter.filterGeneral.first + " OFFSET " + filter.filterGeneral.start
   } else {

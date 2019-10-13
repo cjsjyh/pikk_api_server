@@ -24,28 +24,29 @@ module.exports = {
 
         let querySql = `
         SELECT
-        item_full.*,
-        "BRAND"."nameKor",
-        "BRAND"."nameEng"
+          item_full.*,
+          "BRAND"."nameKor",
+          "BRAND"."nameEng"
         FROM
         (
           SELECT 
-          score.*, 
-          item_group."itemMinorType",  
-          item_group."itemMajorType",
-          item_group."originalPrice",
-          item_group."FK_brandId"
+            item_var.*,
+            item_group.*,
+            (SELECT AVG(r.score) as "averageScore"
+            FROM "ITEM_REVIEW" r
+            WHERE r."FK_itemId" = item_var.id
+            ),
+            (SELECT COUNT(*) as "pickCount"
+            FROM "ITEM_FOLLOWER" f
+            WHERE f."FK_itemId" = item_var.id
+            )
           FROM 
-          (
-            SELECT items.*, AVG(reviews.score) as "averageScore" FROM "ITEM_VARIATION" as items
-            INNER JOIN "ITEM_REVIEW" as reviews ON reviews."FK_itemId"=items.id ${filterSql}
-            GROUP BY items.id
-          ) as score
-          INNER JOIN "ITEM_GROUP" as item_group ON score."FK_itemGroupId" = item_group.id
+          "ITEM_VARIATION" item_var
+          INNER JOIN "ITEM_GROUP" as item_group ON item_var."FK_itemGroupId" = item_group.id ${filterSql}
         ) as item_full
-        INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId"
+        INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId" WHERE item_full."averageScore" IS NOT NULL ${formatSql}
         `
-        let queryResult = await GetItems(querySql + formatSql)
+        let queryResult = await GetItems(querySql)
         let itemResult: ReturnType.ItemInfo[] = queryResult
 
         return itemResult
@@ -64,28 +65,26 @@ module.exports = {
 
       let formatSql = GetFormatSql(arg)
       let postSql = `
-        WITH bbb as (SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId})
-        SELECT
+      WITH bbb as (SELECT "FK_itemId" as item_id FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId})
+      SELECT
         item_full.*,
         "BRAND"."nameKor",
         "BRAND"."nameEng"
-        FROM
-        (
-          SELECT 
-          score.*, 
-          item_group."itemMinorType",  
-          item_group."itemMajorType",
-          item_group."originalPrice",
-          item_group."FK_brandId"
-          FROM 
-          (
-            SELECT items.*, AVG(reviews.score) as "averageScore" FROM bbb,"ITEM_VARIATION" as items
-            INNER JOIN "ITEM_REVIEW" as reviews ON reviews."FK_itemId"=items.id WHERE items.id=bbb."FK_itemId"
-            GROUP BY items.id
-          ) as score
-          INNER JOIN "ITEM_GROUP" as item_group ON score."FK_itemGroupId" = item_group.id
-        ) as item_full
-        INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId" ${formatSql}
+      FROM
+      (
+        SELECT item_var.*,item_group.*,
+          (SELECT AVG(r.score) as "averageScore"
+          FROM "ITEM_REVIEW" r
+          WHERE r."FK_itemId" = bbb.item_id
+          ),
+          (SELECT COUNT(*) as "pickCount"
+          FROM "ITEM_FOLLOWER" f
+          WHERE bbb.item_id = f."FK_itemId"
+          ) 
+        FROM bbb,"ITEM_VARIATION" item_var
+        INNER JOIN "ITEM_GROUP" as item_group ON item_var."FK_itemGroupId" = item_group.id WHERE item_var.id = bbb.item_id
+      ) as item_full
+      INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId" ${formatSql}
         `
 
       let queryResult = await GetItems(postSql)
@@ -127,7 +126,7 @@ function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     if (multipleQuery) filterSql += " and"
     else filterSql += " where"
-    filterSql += ` items.id=${filter.itemId}`
+    filterSql += ` item_var.id=${filter.itemId}`
     multipleQuery = true
   }
 

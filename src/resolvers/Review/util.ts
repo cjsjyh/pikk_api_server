@@ -1,14 +1,6 @@
-const { pool } = require("../../database/connectionPool")
-const { S3 } = require("../../database/aws_s3")
-const _ = require("lodash")
-
-import * as RecPostReturnType from "../RecommendPost/type/ReturnType"
 import * as ReviewArgType from "./type/ArgType"
-import * as ReviewReturnType from "./type/ReturnType"
 import {
   ExtractSelectionSet,
-  getFormatDate,
-  getFormatHour,
   UploadImage,
   RunSingleSQL,
   ConvertListToString,
@@ -19,7 +11,6 @@ import {
 } from "../Utils/util"
 
 import { GraphQLResolveInfo } from "graphql"
-import { PoolClient, QueryResult } from "pg"
 import { FetchItemsForReview } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
 
@@ -27,42 +18,54 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
   try {
     let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
     //CHECK IF QUERY FOR REVIEW IS NEEDED
-
     if (selectionSet.includes("reviews")) {
       let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews")
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
         review.imgs = []
       })
-
       if (IsSubFieldRequired(selectionSet, "reviews", "imgs")) {
-        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs")
+        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs", 2)
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
 
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
-        await SequentialPromiseValue(reviewResult, FetchUserForReview)
+        await Promise.all(
+          reviewResult.map(reviewSet => {
+            return SequentialPromiseValue(reviewSet, FetchUserForReview)
+          })
+        )
       }
 
       if (IsSubFieldRequired(selectionSet, "reviews", "itemInfo")) {
-        await SequentialPromiseValue(reviewResult, FetchItemsForReview)
+        await Promise.all(
+          reviewResult.map(reviewSet => {
+            return SequentialPromiseValue(reviewSet, FetchItemsForReview)
+          })
+        )
       }
     }
   } catch (e) {
     console.log(e)
-    throw new Error("[Error] Failed to fetch user data from DB")
+    throw new Error("[Error] Failed to fetch review by post list from DB")
   }
 }
 
-export async function GetSubField(parentList: any, tableName: string, filterBy: string, assignTo: string, customSql?: string): Promise<any[]> {
-  let parentIdList = ExtractFieldFromList(parentList, "id")
+export async function GetSubField(
+  parentList: any,
+  tableName: string,
+  filterBy: string,
+  assignTo: string,
+  depth: number = 1,
+  customSql?: string
+): Promise<any[]> {
+  let parentIdList = ExtractFieldFromList(parentList, "id", depth)
   let querySql = `
   SELECT 
     subfield.*, 
     rank() OVER (PARTITION BY subfield."${filterBy}") 
   FROM "${tableName}" AS subfield 
   WHERE subfield."${filterBy}" IN (${ConvertListToString(parentIdList)})`
-
   let queryResult
   if (customSql == null) queryResult = await RunSingleSQL(querySql)
   else queryResult = await RunSingleSQL(customSql)
@@ -74,7 +77,6 @@ export async function GetSubField(parentList: any, tableName: string, filterBy: 
   let groupedSubfield = MakeGroups(queryResult, filterBy)
   //Add Review Group to Post
   AssignGroupsToParent(parentList, groupedSubfield, filterBy, assignTo)
-
   return groupedSubfield
 }
 

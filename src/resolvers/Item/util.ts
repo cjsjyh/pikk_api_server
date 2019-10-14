@@ -154,7 +154,7 @@ async function GetItemByPostId(postList: any) {
   FROM gr
   INNER JOIN "BRAND" ON "BRAND".id = gr."FK_brandId"
   `
-  await GetSubField(postList, "", "postId", "simpleItemList", querySql)
+  await GetSubField(postList, "", "postId", "simpleItemList", 1, querySql)
 }
 
 function ItemMatchGraphQL(obj: any) {

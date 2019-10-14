@@ -43,13 +43,12 @@ module.exports = {
           return []
         }
         await GetReviewsByPostList(postResult, info)
-
         await GetSimpleItemListByPostList(postResult, info)
 
         return postResult
       } catch (e) {
         console.log(e)
-        throw new Error("[Error] Failed to fetch user data from DB")
+        throw new Error("[Error] Failed to load RecommendPost data from DB")
       }
     },
 
@@ -87,7 +86,7 @@ module.exports = {
         return postResult
       } catch (e) {
         console.log(e)
-        throw new Error("[Error] Failed to fetch user data from DB")
+        throw new Error("[Error] Failed to load Picked RecommendPost data from DB")
       }
     }
   },

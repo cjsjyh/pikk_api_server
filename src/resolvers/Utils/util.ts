@@ -3,21 +3,29 @@ const { S3 } = require("../../database/aws_s3")
 
 import * as AWS from "aws-sdk"
 
-export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<Array<any>> {
-  let resultArr = new Array<T>(arr.length)
-  await Promise.all(
-    arr.map((item: any, index: number) => {
-      return new Promise((resolve, reject) => {
-        func(item, args)
-          .then((result: any) => {
-            resultArr[index] = result
-            resolve()
+export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<{}> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let resultArr = new Array<T>(arr.length)
+      await Promise.all(
+        arr.map((item: any, index: number) => {
+          return new Promise(async (resolve, reject) => {
+            try {
+              let result = await func(item, args)
+              resultArr[index] = result
+              resolve()
+            } catch (e) {
+              reject(e)
+            }
           })
-          .catch((e: Error) => reject(e))
-      })
-    })
-  )
-  return resultArr
+        })
+      )
+      console.log("Seq Done")
+      resolve(resultArr)
+    } catch (e) {
+      reject()
+    }
+  })
 }
 
 export function MakeGroups(data: any, groupBy: string): any {
@@ -151,10 +159,13 @@ export function GetFormatSql(filter: any): string {
   return filterSql
 }
 
-export function ExtractFieldFromList(list: any, fieldName: string): any {
+export function ExtractFieldFromList(list: any, fieldName: string, depth: number = 1): any {
   let result = []
   list.forEach(item => {
-    result.push(item[fieldName])
+    if (depth != 1) {
+      let tempArray = ExtractFieldFromList(item, fieldName, depth - 1)
+      result = result.concat(tempArray)
+    } else result.push(item[fieldName])
   })
   return result
 }

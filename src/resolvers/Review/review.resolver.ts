@@ -1,15 +1,16 @@
 import { GraphQLResolveInfo } from "graphql"
 import { QueryArgInfo, ReviewQuery } from "./type/ArgType"
+import { ItemReviewInfo } from "./type/ReturnType"
 import * as ItemReturnType from "../Item/type/ReturnType"
 import { ExtractSelectionSet } from "../Utils/util"
 import { RunSingleSQL, GetFormatSql, SequentialPromiseValue } from "../Utils/util"
-import { ReviewMatchGraphQL } from "./util"
+import { ReviewMatchGraphQL, GetSubField } from "./util"
 import { FetchItemsForReview } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
 
 module.exports = {
   Query: {
-    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReturnType.ItemInfo[]> => {
+    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReviewInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       let filterSql = GetReviewFilterSql(arg)
@@ -26,6 +27,10 @@ module.exports = {
       }
       if (selectionSet.includes("userInfo")) {
         await SequentialPromiseValue(queryResult, FetchUserForReview)
+      }
+      if (selectionSet.includes("imgs")) {
+        let imgResult = await GetSubField(queryResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs")
+        imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
 
       queryResult.forEach(review => {

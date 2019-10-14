@@ -8,8 +8,9 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage, GetFormatSql } from "../Utils/util"
-import { InsertItemForRecommendPost } from "../Item/util"
-import { InsertItemReview, InsertItemReviewImage, GetReviewsAndImage } from "../Review/util"
+import { InsertItemForRecommendPost, FetchItemsForReview, GetSimpleItemListByPostList } from "../Item/util"
+import { InsertItemReview, InsertItemReviewImage, GetReviewsByPostList } from "../Review/util"
+import { performance } from "perf_hooks"
 
 module.exports = {
   Query: {
@@ -26,19 +27,25 @@ module.exports = {
         }
 
         let formatSql = GetFormatSql(arg)
-        let postSql =
-          'WITH aaa AS ( SELECT * FROM "RECOMMEND_POST"' +
-          filterSql +
-          formatSql +
-          ') SELECT aaa.*,bbb.name,bbb."profileImgUrl" FROM "USER_INFO" AS bbb INNER JOIN aaa ON aaa."FK_accountId" = bbb."FK_accountId"'
+        let postSql = `
+        WITH aaa AS ( SELECT * FROM "RECOMMEND_POST" ${filterSql}) 
+        SELECT 
+          aaa.*, bbb.name, 
+          bbb."profileImgUrl",
+          (SELECT COUNT(*) as "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=aaa.id)
+        FROM "USER_INFO" AS bbb 
+        INNER JOIN aaa ON aaa."FK_accountId" = bbb."FK_accountId" ${formatSql}
+        `
         queryResult = await RunSingleSQL(postSql)
 
         let postResult: any = queryResult
         if (postResult.length == 0) {
           return []
         }
+        await GetReviewsByPostList(postResult, info)
 
-        await GetReviewsAndImage(postResult, info, postSql)
+        await GetSimpleItemListByPostList(postResult, info)
+
         return postResult
       } catch (e) {
         console.log(e)
@@ -61,10 +68,14 @@ module.exports = {
       let queryResult: QueryResult
       try {
         let formatSql = GetFormatSql(arg)
-        let postSql =
-          `WITH bbb as (SELECT "FK_postId" FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
-      SELECT aaa.* from "RECOMMEND_POST" as aaa 
-      INNER JOIN bbb on aaa.id = bbb."FK_postId"` + formatSql
+        let postSql = `WITH post_id as (
+            SELECT "FK_postId" FROM "RECOMMEND_POST_FOLLOWER" 
+            WHERE "FK_accountId"=${arg.userId}) 
+          SELECT posts.*,
+            (SELECT COUNT(*) as "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow 
+            WHERE follow."FK_postId"=post_id.id)
+          from "RECOMMEND_POST" as posts
+          INNER JOIN post_id on posts.id = post_id."FK_postId" ${formatSql}`
         queryResult = await RunSingleSQL(postSql)
 
         let postResult: any = queryResult
@@ -72,7 +83,7 @@ module.exports = {
           return []
         }
 
-        await GetReviewsAndImage(postResult, info, postSql)
+        await GetReviewsByPostList(postResult, info)
         return postResult
       } catch (e) {
         console.log(e)

@@ -20,6 +20,27 @@ export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, arg
   return resultArr
 }
 
+export function MakeGroups(data: any, groupBy: string): any {
+  let resultArray = [[]]
+  let currentId = -1
+  data.forEach(datum => {
+    if (datum[groupBy] != currentId) {
+      if (currentId != -1) resultArray.push([])
+      currentId = datum[groupBy]
+    }
+    resultArray[resultArray.length - 1].push(datum)
+  })
+  return resultArray
+}
+
+export function AssignGroupsToParent(parents: any, groups: any, parentId: string, parentField: string) {
+  groups.forEach(item => {
+    parents.forEach(parent => {
+      if (parent.id == item[0][parentId]) parent[parentField] = item
+    })
+  })
+}
+
 export function getFormatDate(date) {
   var year = date.getFullYear() //yyyy
   var month = 1 + date.getMonth() //M
@@ -120,7 +141,7 @@ export async function UploadImage(itemImg: any): Promise<string> {
 export function GetFormatSql(filter: any): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
-    filterSql += `ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} NULLS LAST`
+    filterSql += ` ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} NULLS LAST`
     if (filter.filterGeneral.first > 50) filter.filterGeneral.first = 50
     filterSql += " LIMIT " + filter.filterGeneral.first + " OFFSET " + filter.filterGeneral.start
   } else {
@@ -128,6 +149,26 @@ export function GetFormatSql(filter: any): string {
   }
 
   return filterSql
+}
+
+export function ExtractFieldFromList(list: any, fieldName: string): any {
+  let result = []
+  list.forEach(item => {
+    result.push(item[fieldName])
+  })
+  return result
+}
+
+export function ConvertListToString(list: any): string {
+  let result = ""
+  let isFirst = true
+  list.forEach(item => {
+    if (isFirst) isFirst = false
+    else result += ", "
+    result += String(item)
+  })
+
+  return result
 }
 
 /*

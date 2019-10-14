@@ -10,9 +10,15 @@ export type ItemInfo = {
   salePrice: number
   itemMinorType: string
   itemMajorType: string
-  itemImg: any
+  imageUrl: string
   purchaseUrl: string
   averageScore: number
 
   pickCount: number
+}
+
+export type SimpleItemInfo = {
+  brandEng: string
+  brandKor: string
+  imageUrl: string
 }

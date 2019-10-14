@@ -1,7 +1,9 @@
-import { RunSingleSQL, UploadImage } from "../Utils/util"
+import { RunSingleSQL, UploadImage, ExtractSelectionSet, ExtractFieldFromList, ConvertListToString } from "../Utils/util"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput } from "./type/ArgType"
 import { ItemReviewInfoInput } from "../Review/type/ArgType"
+import { GraphQLResolveInfo } from "graphql"
+import { GetSubField } from "../Review/util"
 
 export function InsertItemForRecommendPost(argReview: ItemReviewInfoInput): Promise<{}> {
   return new Promise(async (resolve, reject) => {
@@ -98,6 +100,61 @@ export function FetchItemsForReview(review: any): Promise<{}> {
       reject()
     }
   })
+}
+
+export async function GetSimpleItemListByPostList(postResult: any, info: GraphQLResolveInfo) {
+  try {
+    let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
+
+    if (selectionSet.includes("simpleItemList")) {
+      await GetItemByPostId(postResult)
+    }
+  } catch (e) {
+    console.log("[ERROR] Failed to fetch simpleItemList")
+    console.log(e)
+    throw new Error("[ERROR] Failed to fetch simpleItemList")
+  }
+}
+
+async function GetItemByPostId(postList: any) {
+  let postIdList = ExtractFieldFromList(postList, "id")
+  let querySql = `
+  WITH review as
+  (
+    SELECT 
+      "ITEM_REVIEW"."FK_itemId",
+      "ITEM_REVIEW"."FK_postId" as "postId"
+    FROM "ITEM_REVIEW" 
+    WHERE "ITEM_REVIEW"."FK_postId" in (${ConvertListToString(postIdList)})
+  ),
+  item as
+  (
+    SELECT 
+      item_var."imageUrl", 
+      item_var."FK_itemGroupId",
+      review."postId"
+    FROM review
+    INNER JOIN "ITEM_VARIATION" item_var ON item_var.id = review."FK_itemId"
+  ),
+  gr as
+  (
+    SELECT 
+      item."imageUrl",
+      item."postId",
+      item_gr."FK_brandId"
+    FROM item
+    INNER JOIN "ITEM_GROUP" item_gr ON item."FK_itemGroupId" = item_gr.id
+  )
+  SELECT
+    "BRAND"."nameKor" as "brandKor",
+    "BRAND"."nameEng"as "brandEng",
+    gr."imageUrl",
+	  gr."postId",
+    rank() OVER (PARTITION BY gr."postId")
+  FROM gr
+  INNER JOIN "BRAND" ON "BRAND".id = gr."FK_brandId"
+  `
+  await GetSubField(postList, "", "postId", "simpleItemList", querySql)
 }
 
 function ItemMatchGraphQL(obj: any) {

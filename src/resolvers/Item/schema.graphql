@@ -104,3 +104,9 @@ type ItemInfo {
 
   pickCount: Int!
 }
+
+type SimpleItemInfo {
+  brandKor: String!
+  brandEng: String!
+  imageUrl: String
+}

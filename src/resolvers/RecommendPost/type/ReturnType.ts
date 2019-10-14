@@ -1,4 +1,5 @@
 import { ItemReviewInfo } from "../../Review/type/ReturnType"
+import { SimpleItemInfo } from "../../Item/type/ReturnType"
 
 export type RecommendPostInfo = {
   //DB
@@ -9,6 +10,7 @@ export type RecommendPostInfo = {
   profileImgUrl: string
   //LOOK
   pickCount: number
+  simpleItemList: SimpleItemInfo[]
   //POST
   id: number
   title: string

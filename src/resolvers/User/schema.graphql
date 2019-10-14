@@ -1,6 +1,5 @@
 type Query {
   getUserPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
-  getChannelPickkCount(channelId: Int!): Int!
   getUserInfo(userOption: UserQuery!): [UserInfo!]
 }
 
@@ -82,6 +81,7 @@ type UserInfo {
   channel_titleImgUrl: String
   channel_description: String
   channel_snsUrl: String
+  channel_pickCount: Int
 }
 
 type UserCredentialInfo {

@@ -14,6 +14,7 @@ export type UserInfo = {
   channel_titleImgUrl: string
   channel_description: string
   channel_snsUrl: string
+  channel_pickCount: number
 }
 
 export type UserCredentialInfo = {

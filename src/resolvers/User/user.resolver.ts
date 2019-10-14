@@ -7,7 +7,8 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { getFormatDate, getFormatHour, RunSingleSQL, UploadImage, GetFormatSql } from "../Utils/util"
+import { getFormatDate, getFormatHour, RunSingleSQL, UploadImage, GetFormatSql, ExtractSelectionSet } from "../Utils/util"
+import { GraphQLResolveInfo } from "graphql"
 
 module.exports = {
   Mutation: {
@@ -98,10 +99,17 @@ module.exports = {
     }
   },
   Query: {
-    getUserInfo: async (parent: void, args: QueryArgInfo): Promise<[ReturnType.UserInfo]> => {
+    getUserInfo: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo[]> => {
       let arg: ArgType.UserQuery = args.userOption
+      let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
       try {
-        let result = await RunSingleSQL('SELECT * FROM "USER_INFO" WHERE "FK_accountId"=' + arg.id)
+        let result: ReturnType.UserInfo[] = await RunSingleSQL('SELECT * FROM "USER_INFO" WHERE "FK_accountId"=' + arg.id)
+
+        if (selectionSet.includes("channel_pickCount")) {
+          let rows = await RunSingleSQL(`SELECT COUNT(*) FROM "CHANNEL_FOLLOWER" WHERE "FK_channelId"=${arg.id}`)
+          result[0].channel_pickCount = rows[0].count
+        }
+
         console.log(`Retrieve UserInfo for ${arg.id}`)
         return result
       } catch (e) {
@@ -123,11 +131,6 @@ module.exports = {
 
       let rows = await RunSingleSQL(postSql)
       return rows
-    },
-
-    getChannelPickkCount: async (parent: void, args: any): Promise<number> => {
-      let rows = await RunSingleSQL(`SELECT COUNT(*) FROM "CHANNEL_FOLLOWER" WHERE "FK_channelId"=${args.channelId}`)
-      return rows[0].count
     }
   }
 }

@@ -2,6 +2,7 @@ import { ItemInfoInput } from "../../Item/type/ArgType"
 
 export type QueryArgInfo = {
   reviewOption: ReviewQuery
+  incrementOption: IncrementReviewCount
 }
 
 //Mutation
@@ -17,6 +18,11 @@ export type ItemReviewInfoInput = {
 
 export type ItemReviewImgInfoInput = {
   img: any
+}
+
+export type IncrementReviewCount = {
+  id: number
+  type: string
 }
 
 //Query

@@ -1,6 +1,9 @@
 type Query {
   allItemReviews(reviewOption: ReviewQuery!): [ItemReviewInfo!]
 }
+type Mutation {
+  incrementReviewCount(incrementOption: IncrementReviewCount!): Boolean!
+}
 
 #--------------
 #   INPUT
@@ -38,6 +41,11 @@ input ItemReviewImgInfoInput {
   img: Upload
 }
 
+input IncrementReviewCount {
+  id: Int!
+  type: IncrementField!
+}
+
 #---------------
 #   Return
 #---------------
@@ -66,4 +74,9 @@ type ItemReviewImgInfo {
 enum ReviewSortableField {
   time
   score
+}
+
+enum IncrementField {
+  urlClickCount
+  purchaseCount
 }

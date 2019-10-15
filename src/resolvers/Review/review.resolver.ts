@@ -39,7 +39,19 @@ module.exports = {
     }
   },
 
-  Mutation: {}
+  Mutation: {
+    incrementReviewCount: async (parent: void, args: QueryArgInfo): Promise<Boolean> => {
+      try {
+        let query = `UPDATE "ITEM_REVIEW" SET "${args.incrementOption.type}" = "${args.incrementOption.type}" + 1 WHERE id = ${args.incrementOption.id}`
+        let result = await RunSingleSQL(query)
+        return true
+      } catch (e) {
+        console.log(`[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`)
+        console.log(e)
+        return false
+      }
+    }
+  }
 }
 
 function GetReviewFilterSql(filter: ReviewQuery): string {

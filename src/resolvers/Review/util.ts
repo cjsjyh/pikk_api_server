@@ -28,7 +28,6 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
         let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs", 2)
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
-
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
         await Promise.all(
           reviewResult.map(reviewSet => {
@@ -36,7 +35,6 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           })
         )
       }
-
       if (IsSubFieldRequired(selectionSet, "reviews", "itemInfo")) {
         await Promise.all(
           reviewResult.map(reviewSet => {
@@ -60,6 +58,8 @@ export async function GetSubField(
   customSql?: string
 ): Promise<any[]> {
   let parentIdList = ExtractFieldFromList(parentList, "id", depth)
+  if (parentIdList.length == 0) return []
+
   let querySql = `
   SELECT 
     subfield.*, 

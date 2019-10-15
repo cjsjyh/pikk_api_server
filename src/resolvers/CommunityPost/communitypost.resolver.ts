@@ -124,7 +124,6 @@ module.exports = {
       try {
         let query = `DELETE FROM "COMMUNITY_POST" WHERE id=${args.postId}`
         let result = await RunSingleSQL(query)
-        console.log(query)
         return true
       } catch (e) {
         console.log(`[Error] Delete CommunityPost id: ${args.postId} Failed!`)

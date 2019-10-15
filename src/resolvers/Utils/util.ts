@@ -20,7 +20,6 @@ export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, arg
           })
         })
       )
-      console.log("Seq Done")
       resolve(resultArr)
     } catch (e) {
       reject()
@@ -135,7 +134,6 @@ export async function UploadImage(itemImg: any): Promise<string> {
           console.log(err)
           reject(err)
         }
-        console.log(data)
         let imageUrl = data.Location
         resolve(imageUrl)
       })

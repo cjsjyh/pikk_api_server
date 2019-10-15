@@ -7,9 +7,9 @@ def convertStringPriceToInt(price):
   return result
 
 def InsertItems():
-  #filename = input("Filename: ")
-  #fileList = open(filename,"r")
-  fileList = open("final_list.txt","r")
+  filename = input("Filename: ")
+  fileList = open(filename,"r")
+  #fileList = open("final_list.txt","r")
 
   try:
     password = input("db password: ")

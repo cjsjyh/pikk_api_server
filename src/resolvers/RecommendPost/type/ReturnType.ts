@@ -11,6 +11,7 @@ export type RecommendPostInfo = {
   //LOOK
   pickCount: number
   simpleItemList: SimpleItemInfo[]
+  commentCount: number
   //POST
   id: number
   title: string
@@ -24,5 +25,4 @@ export type RecommendPostInfo = {
   postType: string
   styleType: string
   saleEndDate: string
-  commentCount: number
 }

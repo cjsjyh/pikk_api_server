@@ -11,6 +11,7 @@ import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage, GetForm
 import { InsertItemForRecommendPost, FetchItemsForReview, GetSimpleItemListByPostList } from "../Item/util"
 import { InsertItemReview, InsertItemReviewImage, GetReviewsByPostList } from "../Review/util"
 import { performance } from "perf_hooks"
+import { RecommendPostMatchGraphQL, GetRecommendPostList } from "./util"
 
 module.exports = {
   Query: {
@@ -32,18 +33,12 @@ module.exports = {
         SELECT 
           aaa.*, bbb.name, 
           bbb."profileImgUrl",
-          (SELECT COUNT(*) as "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=aaa.id)
+          (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=aaa.id),
+          (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=aaa.id)
         FROM "USER_INFO" AS bbb 
         INNER JOIN aaa ON aaa."FK_accountId" = bbb."FK_accountId" ${formatSql}
         `
-        queryResult = await RunSingleSQL(postSql)
-
-        let postResult: any = queryResult
-        if (postResult.length == 0) {
-          return []
-        }
-        await GetReviewsByPostList(postResult, info)
-        await GetSimpleItemListByPostList(postResult, info)
+        let postResult = await GetRecommendPostList(postSql, info)
 
         return postResult
       } catch (e) {
@@ -75,14 +70,9 @@ module.exports = {
             WHERE follow."FK_postId"=post_id.id)
           from "RECOMMEND_POST" as posts
           INNER JOIN post_id on posts.id = post_id."FK_postId" ${formatSql}`
-        queryResult = await RunSingleSQL(postSql)
 
-        let postResult: any = queryResult
-        if (postResult.length == 0) {
-          return []
-        }
+        let postResult = await GetRecommendPostList(postSql, info)
 
-        await GetReviewsByPostList(postResult, info)
         return postResult
       } catch (e) {
         console.log(e)

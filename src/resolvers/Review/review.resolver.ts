@@ -21,7 +21,6 @@ module.exports = {
       //Query Item Info
       let selectionSet = ExtractSelectionSet(info.fieldNodes[0])
       selectionSet = selectionSet.flat(2)
-      console.log(selectionSet)
       if (selectionSet.includes("itemInfo")) {
         await SequentialPromiseValue(queryResult, FetchItemsForReview)
       }

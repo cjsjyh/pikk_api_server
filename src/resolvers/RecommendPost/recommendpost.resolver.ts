@@ -1,21 +1,30 @@
-const { pool } = require("../../database/connectionPool")
-
 import { GraphQLResolveInfo } from "graphql"
-import { PoolClient, QueryResult } from "pg"
+import { QueryResult } from "pg"
 
 import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage, GetFormatSql } from "../Utils/util"
-import { InsertItemForRecommendPost, FetchItemsForReview, GetSimpleItemListByPostList } from "../Item/util"
+import {
+  GetMetaData,
+  SequentialPromiseValue,
+  RunSingleSQL,
+  UploadImage
+} from "../Utils/promiseUtil"
+import { GetFormatSql } from "../Utils/stringUtil"
+import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, InsertItemReviewImage, GetReviewsByPostList } from "../Review/util"
 import { performance } from "perf_hooks"
-import { RecommendPostMatchGraphQL, GetRecommendPostList } from "./util"
+import { GetRecommendPostList } from "./util"
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
       let queryResult: QueryResult
       try {
@@ -81,7 +90,11 @@ module.exports = {
     }
   },
   Mutation: {
-    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createRecommendPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
       let imageUrl = null
@@ -112,7 +125,9 @@ module.exports = {
 
       try {
         let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
-        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [recommendPostId])
+        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [
+          recommendPostId
+        ])
         await Promise.all(
           arg.reviews.map((review, index) => {
             return Promise.all(
@@ -181,7 +196,9 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
+      let rows = await RunSingleSQL(
+        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
+      )
       if (rows.length == 0) return null
 
       let postIdSql = ""

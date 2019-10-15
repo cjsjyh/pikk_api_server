@@ -1,0 +1,46 @@
+export function getFormatDate(date) {
+  var year = date.getFullYear() //yyyy
+  var month = 1 + date.getMonth() //M
+  month = month >= 10 ? month : "0" + month //month 두자리로 저장
+  var day = date.getDate() //d
+  day = day >= 10 ? day : "0" + day //day 두자리로 저장
+  return year + "" + month + "" + day
+}
+
+export function getFormatHour(secs) {
+  secs = Math.round(secs)
+  var hours = Math.floor(secs / (60 * 60))
+
+  var divisor_for_minutes = secs % (60 * 60)
+  var minutes = Math.floor(divisor_for_minutes / 60)
+
+  var divisor_for_seconds = divisor_for_minutes % 60
+  var seconds = Math.ceil(divisor_for_seconds)
+
+  return hours + "" + minutes + "" + seconds
+}
+
+export function GetFormatSql(filter: any): string {
+  let filterSql = ""
+  if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
+    filterSql += ` ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} NULLS LAST`
+    if (filter.filterGeneral.first > 50) filter.filterGeneral.first = 50
+    filterSql += " LIMIT " + filter.filterGeneral.first + " OFFSET " + filter.filterGeneral.start
+  } else {
+    filterSql += " LIMIT 50 OFFSET 0"
+  }
+
+  return filterSql
+}
+
+export function ConvertListToString(list: any): string {
+  let result = ""
+  let isFirst = true
+  list.forEach(item => {
+    if (isFirst) isFirst = false
+    else result += ", "
+    result += String(item)
+  })
+
+  return result
+}

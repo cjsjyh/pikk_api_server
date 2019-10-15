@@ -3,7 +3,7 @@ import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
-import { RunSingleSQL } from "../Utils/util"
+import { RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertToTableName, GetBoardName } from "./util"
 
 module.exports = {
@@ -13,7 +13,9 @@ module.exports = {
 
       try {
         let boardName = GetBoardName(arg.boardType)
-        let queryResult = await RunSingleSQL(`SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`)
+        let queryResult = await RunSingleSQL(
+          `SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`
+        )
         let commentResults: ReturnType.CommentInfo[] = queryResult
         commentResults.forEach(comment => {
           comment.postId = comment.FK_postId
@@ -39,7 +41,9 @@ module.exports = {
 
       try {
         let rows = await RunSingleSQL(querySql)
-        console.log(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
+        console.log(
+          `Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`
+        )
         return true
       } catch (e) {
         console.log("[Error] Failed to create Comment")

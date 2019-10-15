@@ -7,12 +7,17 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { getFormatDate, getFormatHour, RunSingleSQL, UploadImage, GetFormatSql, ExtractSelectionSet } from "../Utils/util"
+import { RunSingleSQL, UploadImage, ExtractSelectionSet } from "../Utils/promiseUtil"
+import { GetFormatSql } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 
 module.exports = {
   Mutation: {
-    createUser: async (parent: void, args: MutationArgInfo, ctx: any): Promise<ReturnType.UserCredentialInfo> => {
+    createUser: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<ReturnType.UserCredentialInfo> => {
       let arg: ArgType.UserCredentialInput = args.userAccountInfo
       //Make UserCredential
       try {
@@ -26,7 +31,9 @@ module.exports = {
             `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"='${arg.providerId}'`
           )
           userAccount = queryResult[0]
-          queryResult = await RunSingleSQL(`SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`)
+          queryResult = await RunSingleSQL(
+            `SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`
+          )
           //If user didn't insert user info yet
           if (queryResult.length == 0) userAccount.isNewUser = true
           else {
@@ -66,12 +73,31 @@ module.exports = {
         if (profileImgUrl != null) {
           qResult = await RunSingleSQL(
             'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-            [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
+            [
+              arg.id,
+              arg.name,
+              arg.email,
+              arg.age,
+              arg.height,
+              arg.weight,
+              profileImgUrl,
+              arg.phoneNum,
+              arg.address
+            ]
           )
         } else {
           qResult = await RunSingleSQL(
             'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-            [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, arg.phoneNum, arg.address]
+            [
+              arg.id,
+              arg.name,
+              arg.email,
+              arg.age,
+              arg.height,
+              arg.weight,
+              arg.phoneNum,
+              arg.address
+            ]
           )
         }
         console.log(`User Info for User ${arg.id} created`)
@@ -99,14 +125,23 @@ module.exports = {
     }
   },
   Query: {
-    getUserInfo: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo[]> => {
+    getUserInfo: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.UserInfo[]> => {
       let arg: ArgType.UserQuery = args.userOption
       let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
       try {
-        let result: ReturnType.UserInfo[] = await RunSingleSQL('SELECT * FROM "USER_INFO" WHERE "FK_accountId"=' + arg.id)
+        let result: ReturnType.UserInfo[] = await RunSingleSQL(
+          'SELECT * FROM "USER_INFO" WHERE "FK_accountId"=' + arg.id
+        )
 
         if (selectionSet.includes("channel_pickCount")) {
-          let rows = await RunSingleSQL(`SELECT COUNT(*) FROM "CHANNEL_FOLLOWER" WHERE "FK_channelId"=${arg.id}`)
+          let rows = await RunSingleSQL(
+            `SELECT COUNT(*) FROM "CHANNEL_FOLLOWER" WHERE "FK_channelId"=${arg.id}`
+          )
           result[0].channel_pickCount = rows[0].count
         }
 
@@ -119,7 +154,10 @@ module.exports = {
       }
     },
 
-    getUserPickkChannel: async (parent: void, args: QueryArgInfo): Promise<ReturnType.UserInfo[]> => {
+    getUserPickkChannel: async (
+      parent: void,
+      args: QueryArgInfo
+    ): Promise<ReturnType.UserInfo[]> => {
       let arg: ArgType.PickkChannelQuery = args.pickkChannelOption
 
       let formatSql = GetFormatSql(arg)

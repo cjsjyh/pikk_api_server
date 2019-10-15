@@ -6,14 +6,20 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, GetFormatSql } from "../Utils/util"
+import { GetMetaData } from "../Utils/promiseUtil"
+import { GetFormatSql } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertItem, GetItems } from "./util"
 
 module.exports = {
   Query: {
-    allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.ItemInfo[]> => {
+    allItems: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.ItemQuery = args.itemOption
       try {
         let formatSql = GetFormatSql(arg)

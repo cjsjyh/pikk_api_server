@@ -10,13 +10,19 @@ import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
-import { SequentialPromiseValue, GetMetaData, RunSingleSQL, GetFormatSql } from "../Utils/util"
+import { SequentialPromiseValue, GetMetaData, RunSingleSQL } from "../Utils/promiseUtil"
+import { GetFormatSql } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 
 module.exports = {
   Query: {
-    allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<PostReturnType.CommunityPostInfo[]> => {
+    allCommunityPosts: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<PostReturnType.CommunityPostInfo[]> => {
       let arg: ArgType.CommunityPostQuery = args.communityPostOption
 
       try {
@@ -71,7 +77,11 @@ module.exports = {
     }
   },
   Mutation: {
-    createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createCommunityPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
 

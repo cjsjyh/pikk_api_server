@@ -1,7 +1,7 @@
 const { pool } = require("../../database/connectionPool")
 
 import * as PostReturnType from "./type/ReturnType"
-import { RunSingleSQL } from "../Utils/util"
+import { RunSingleSQL } from "../Utils/promiseUtil"
 
 import { QueryResult, PoolClient } from "pg"
 
@@ -40,7 +40,9 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
+      let rows = await RunSingleSQL(
+        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
+      )
       if (rows.length == 0) return null
 
       let postIdSql = ""
@@ -60,7 +62,11 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
   return filterSql
 }
 
-export async function GetCommunityPostImage(postInfo: PostReturnType.CommunityPostInfo): Promise<QueryResult> {
-  let rows = await RunSingleSQL(`SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=${postInfo.id}`)
+export async function GetCommunityPostImage(
+  postInfo: PostReturnType.CommunityPostInfo
+): Promise<QueryResult> {
+  let rows = await RunSingleSQL(
+    `SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=${postInfo.id}`
+  )
   return rows
 }

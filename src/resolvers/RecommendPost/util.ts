@@ -1,5 +1,5 @@
 import { RecommendPostInfo } from "./type/ReturnType"
-import { RunSingleSQL } from "../Utils/util"
+import { RunSingleSQL } from "../Utils/promiseUtil"
 import { GetReviewsByPostList } from "../Review/util"
 import { info } from "console"
 import { GetSimpleItemListByPostList } from "../Item/util"

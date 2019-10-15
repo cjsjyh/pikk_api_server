@@ -1,4 +1,5 @@
-import { RunSingleSQL, UploadImage, ExtractSelectionSet, ExtractFieldFromList, ConvertListToString } from "../Utils/util"
+import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList } from "../Utils/promiseUtil"
+import { ConvertListToString } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput } from "./type/ArgType"
 import { ItemReviewInfoInput } from "../Review/type/ArgType"
@@ -25,10 +26,14 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         let brandId
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
-          queryResult = RunSingleSQL(`INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`)
+          queryResult = RunSingleSQL(
+            `INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`
+          )
           brandId = queryResult.id
         } else {
-          queryResult = RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"=${arg.groupInfo.brand} OR "nameKor"=${arg.groupInfo.brand}`)
+          queryResult = RunSingleSQL(
+            `SELECT id FROM "BRAND" WHERE "nameEng"=${arg.groupInfo.brand} OR "nameKor"=${arg.groupInfo.brand}`
+          )
           brandId = queryResult.id
         }
 
@@ -42,7 +47,9 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         groupId = queryResult.id
       } else {
         //Find Group Id of this Item
-        queryResult = RunSingleSQL(`SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`)
+        queryResult = RunSingleSQL(
+          `SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`
+        )
         groupId = queryResult.id
       }
 
@@ -67,7 +74,9 @@ export function GetItems(sql: string): Promise<ReturnType.ItemInfo[]> {
       let itemResult: ReturnType.ItemInfo[] = queryResult
       await Promise.all(
         itemResult.map(async (item: ReturnType.ItemInfo) => {
-          queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_itemId"=${item.id}`)
+          queryResult = await RunSingleSQL(
+            `SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_itemId"=${item.id}`
+          )
           item.pickCount = queryResult[0].count
           //item.averageScore = item.avg
           ItemMatchGraphQL(item)

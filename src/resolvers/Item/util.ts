@@ -26,14 +26,10 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         let brandId
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
-          queryResult = RunSingleSQL(
-            `INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`
-          )
+          queryResult = RunSingleSQL(`INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`)
           brandId = queryResult.id
         } else {
-          queryResult = RunSingleSQL(
-            `SELECT id FROM "BRAND" WHERE "nameEng"=${arg.groupInfo.brand} OR "nameKor"=${arg.groupInfo.brand}`
-          )
+          queryResult = RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"=${arg.groupInfo.brand} OR "nameKor"=${arg.groupInfo.brand}`)
           brandId = queryResult.id
         }
 
@@ -47,9 +43,7 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         groupId = queryResult.id
       } else {
         //Find Group Id of this Item
-        queryResult = RunSingleSQL(
-          `SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`
-        )
+        queryResult = RunSingleSQL(`SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`)
         groupId = queryResult.id
       }
 
@@ -67,42 +61,10 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
   })
 }
 
-export function GetItems(sql: string): Promise<ReturnType.ItemInfo[]> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let queryResult = await RunSingleSQL(sql)
-      let itemResult: ReturnType.ItemInfo[] = queryResult
-      await Promise.all(
-        itemResult.map(async (item: ReturnType.ItemInfo) => {
-          queryResult = await RunSingleSQL(
-            `SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_itemId"=${item.id}`
-          )
-          item.pickCount = queryResult[0].count
-          //item.averageScore = item.avg
-          ItemMatchGraphQL(item)
-        })
-      )
-      resolve(itemResult)
-    } catch (e) {
-      throw new Error("Get Item Failed!")
-    }
-  })
-}
-
 export function FetchItemsForReview(review: any): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
-      let sql = `
-      WITH aaa as (SELECT * FROM "ITEM_VARIATION" WHERE id=${review.FK_itemId}),
-      bbb as (SELECT aaa.*,
-        "ITEM_GROUP"."itemMinorType",  
-        "ITEM_GROUP"."itemMajorType",
-        "ITEM_GROUP"."originalPrice",
-        "ITEM_GROUP"."FK_brandId"
-        FROM "ITEM_GROUP" INNER JOIN aaa ON aaa."FK_itemGroupId" = "ITEM_GROUP".id)
-      SELECT bbb.*, "BRAND"."nameKor", "BRAND"."nameEng" FROM "BRAND" INNER JOIN bbb on "BRAND".id = bbb."FK_brandId"
-      `
-      let queryResult = await GetItems(sql)
+      let queryResult = await GetItemsById([review.FK_itemId], "")
       review.itemInfo = queryResult[0]
       resolve()
     } catch (e) {
@@ -123,6 +85,48 @@ export async function GetSimpleItemListByPostList(postResult: any, info: GraphQL
     console.log(e)
     throw new Error("[ERROR] Failed to fetch simpleItemList")
   }
+}
+
+export async function GetItemsById(idList: number[], formatSql, customFilter?) {
+  let filterSql = ""
+  if (customFilter != null && customFilter != "") filterSql = customFilter
+  else {
+    if (idList.length != 0) filterSql = `and item_var.id IN (${ConvertListToString(idList)})`
+    else filterSql = ""
+  }
+
+  let itemInfo = await RunSingleSQL(
+    `
+  SELECT
+    item_full.*,
+    "BRAND"."nameKor" as "brandKor",
+    "BRAND"."nameEng" as "brandEng"
+  FROM
+  (
+    SELECT 
+      item_var.*,
+      item_group.*,
+      COALESCE(
+        (
+          SELECT AVG(r.score)
+          FROM "ITEM_REVIEW" r
+          WHERE r."FK_itemId" = item_var.id
+        )
+      ,0) as "averageScore",
+      (
+        SELECT COUNT(*) as "pickCount"
+        FROM "ITEM_FOLLOWER" f
+        WHERE f."FK_itemId" = item_var.id
+      )
+    FROM 
+    "ITEM_VARIATION" item_var
+    INNER JOIN "ITEM_GROUP" as item_group ON item_var."FK_itemGroupId" = item_group.id ${filterSql}
+  ) as item_full
+  INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId" ${formatSql}
+  `
+  )
+
+  return itemInfo
 }
 
 async function GetItemByPostId(postList: any) {

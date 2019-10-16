@@ -24,13 +24,7 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
         review.imgs = []
       })
       if (IsSubFieldRequired(selectionSet, "reviews", "imgs")) {
-        let imgResult = await GetSubField(
-          reviewResult,
-          "ITEM_REVIEW_IMAGE",
-          "FK_reviewId",
-          "imgs",
-          2
-        )
+        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs", 2)
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
@@ -85,10 +79,7 @@ export async function GetSubField(
   return groupedSubfield
 }
 
-export function InsertItemReview(
-  itemReview: ReviewArgType.ItemReviewInfoInput,
-  args: Array<number>
-): Promise<{}> {
+export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, args: Array<number>): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       let postId = args[0]
@@ -107,10 +98,7 @@ export function InsertItemReview(
   })
 }
 
-export function InsertItemReviewImage(
-  arg: ReviewArgType.ItemReviewImgInfoInput,
-  reviewId: number
-): Promise<{}> {
+export function InsertItemReviewImage(arg: ReviewArgType.ItemReviewImgInfoInput, reviewId: number): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     let imageUrl = null
     if (Object.prototype.hasOwnProperty.call(arg, "img")) {

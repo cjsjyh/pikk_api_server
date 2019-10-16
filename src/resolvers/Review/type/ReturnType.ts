@@ -10,6 +10,7 @@ export type ItemReviewInfo = {
   itemId: number
   postId: number
   recommendReason: string
+  shortReview: string
   review: string
   score: number
   imgs: ItemReviewImgInfo[]

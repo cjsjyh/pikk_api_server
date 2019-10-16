@@ -75,7 +75,7 @@ export async function GetSubField(
   //Grouping Reviews
   let groupedSubfield = MakeGroups(queryResult, filterBy)
   //Add Review Group to Post
-  AssignGroupsToParent(parentList, groupedSubfield, filterBy, assignTo)
+  AssignGroupsToParent(parentList, groupedSubfield, filterBy, assignTo, depth)
   return groupedSubfield
 }
 

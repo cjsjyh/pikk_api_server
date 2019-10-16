@@ -4,11 +4,7 @@ const { S3 } = require("../../database/aws_s3")
 import * as AWS from "aws-sdk"
 import { getFormatDate, getFormatHour } from "./stringUtil"
 
-export async function SequentialPromiseValue<T, U>(
-  arr: T[],
-  func: Function,
-  args: Array<U> = []
-): Promise<{}> {
+export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       let resultArr = new Array<T>(arr.length)
@@ -45,16 +41,19 @@ export function MakeGroups(data: any, groupBy: string): any {
   return resultArray
 }
 
-export function AssignGroupsToParent(
-  parents: any,
-  groups: any,
-  parentId: string,
-  parentField: string
-) {
+export function AssignGroupsToParent(parentsGroup: any, groups: any, parentId: string, parentField: string, depth: number) {
   groups.forEach(item => {
-    parents.forEach(parent => {
-      if (parent.id == item[0][parentId]) parent[parentField] = item
-    })
+    if (depth == 2) {
+      parentsGroup.forEach(parents => {
+        parents.forEach(parent => {
+          if (parent.id == item[0][parentId]) parent[parentField] = item
+        })
+      })
+    } else {
+      parentsGroup.forEach(parent => {
+        if (parent.id == item[0][parentId]) parent[parentField] = item
+      })
+    }
   })
 }
 

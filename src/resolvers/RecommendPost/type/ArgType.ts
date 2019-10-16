@@ -37,6 +37,7 @@ export type RecommendPostQueryFilter = {
   postType: string
   styleType: string
   itemId: number
+  minimumPickCount: number
 }
 
 export interface RecommendPostQuery {

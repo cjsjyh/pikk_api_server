@@ -38,6 +38,7 @@ input RecommendPostQueryFilter {
   postType: RecommendPostType!
   styleType: StyleType
   itemId: Int
+  minimumPickCount: Int!
 }
 
 input RecommendPostQuery {

@@ -1,5 +1,4 @@
 import { GraphQLResolveInfo } from "graphql"
-import { QueryResult } from "pg"
 
 import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
@@ -27,13 +26,20 @@ module.exports = {
 
         let formatSql = GetFormatSql(arg)
         let postSql = `
-        WITH post AS ( SELECT * FROM "RECOMMEND_POST" ${filterSql}) 
+        WITH post AS 
+        ( 
+          SELECT 
+            rec_post.*,
+            (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=rec_post.id),
+            (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=rec_post.id)
+          FROM "RECOMMEND_POST" rec_post ${filterSql}
+        ) 
         SELECT 
-          post.*, user.name, user."profileImgUrl",
-          (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=post.id),
-          (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=post.id)
-        FROM "USER_INFO" AS user 
-        INNER JOIN post ON post."FK_accountId" = user."FK_accountId" ${formatSql}
+          post.*, user_info.name, user_info."profileImgUrl"
+        FROM "USER_INFO" AS user_info 
+        INNER JOIN post ON post."FK_accountId" = user_info."FK_accountId" 
+        WHERE post."pickCount" >= ${arg.postFilter.minimumPickCount}
+        ${formatSql}
         `
         let postResult = await GetRecommendPostList(postSql, info)
 
@@ -60,13 +66,17 @@ module.exports = {
         let formatSql = GetFormatSql(arg)
         let postSql = `
           WITH post_id as (
-            SELECT "FK_postId" FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_accountId"=${arg.userId}
+          SELECT
+            follower."FK_postId"
+          FROM "RECOMMEND_POST_FOLLOWER" follower
+          WHERE follower."FK_accountId"=${arg.userId}
           )
-          SELECT post.*,user_info.name,user_info."profileImgUrl",
-            (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=post_id."FK_postId"),
-            (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=post_id."FK_postId")
+          SELECT
+            post.*,user_info.name,user_info."profileImgUrl",
+            (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=post.id),
+            (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=post.id)
           FROM "RECOMMEND_POST" as post
-          INNER JOIN post_id on post.id = post_id."FK_postId"  
+          INNER JOIN post_id on post.id = post_id."FK_postId"
           INNER JOIN "USER_INFO" user_info ON user_info."FK_accountId" = post."FK_accountId"
           ${formatSql}`
         let postResult = await GetRecommendPostList(postSql, info)

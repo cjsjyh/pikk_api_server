@@ -5,12 +5,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import {
-  GetMetaData,
-  SequentialPromiseValue,
-  RunSingleSQL,
-  UploadImage
-} from "../Utils/promiseUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
 import { GetFormatSql } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, InsertItemReviewImage, GetReviewsByPostList } from "../Review/util"
@@ -19,14 +14,8 @@ import { GetRecommendPostList } from "./util"
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: any,
-      info: GraphQLResolveInfo
-    ): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
-      let queryResult: QueryResult
       try {
         let filterSql: string = ""
         if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
@@ -38,14 +27,13 @@ module.exports = {
 
         let formatSql = GetFormatSql(arg)
         let postSql = `
-        WITH aaa AS ( SELECT * FROM "RECOMMEND_POST" ${filterSql}) 
+        WITH post AS ( SELECT * FROM "RECOMMEND_POST" ${filterSql}) 
         SELECT 
-          aaa.*, bbb.name, 
-          bbb."profileImgUrl",
-          (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=aaa.id),
-          (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=aaa.id)
-        FROM "USER_INFO" AS bbb 
-        INNER JOIN aaa ON aaa."FK_accountId" = bbb."FK_accountId" ${formatSql}
+          post.*, user.name, user."profileImgUrl",
+          (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=post.id),
+          (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=post.id)
+        FROM "USER_INFO" AS user 
+        INNER JOIN post ON post."FK_accountId" = user."FK_accountId" ${formatSql}
         `
         let postResult = await GetRecommendPostList(postSql, info)
 
@@ -68,18 +56,19 @@ module.exports = {
     ): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
 
-      let queryResult: QueryResult
       try {
         let formatSql = GetFormatSql(arg)
-        let postSql = `WITH post_id as (
-            SELECT "FK_postId" FROM "RECOMMEND_POST_FOLLOWER" 
-            WHERE "FK_accountId"=${arg.userId}) 
-          SELECT posts.*,
-            (SELECT COUNT(*) as "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow 
-            WHERE follow."FK_postId"=post_id.id)
-          from "RECOMMEND_POST" as posts
-          INNER JOIN post_id on posts.id = post_id."FK_postId" ${formatSql}`
-
+        let postSql = `
+          WITH post_id as (
+            SELECT "FK_postId" FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_accountId"=${arg.userId}
+          )
+          SELECT post.*,user_info.name,user_info."profileImgUrl",
+            (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=post_id."FK_postId"),
+            (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=post_id."FK_postId")
+          FROM "RECOMMEND_POST" as post
+          INNER JOIN post_id on post.id = post_id."FK_postId"  
+          INNER JOIN "USER_INFO" user_info ON user_info."FK_accountId" = post."FK_accountId"
+          ${formatSql}`
         let postResult = await GetRecommendPostList(postSql, info)
 
         return postResult
@@ -90,11 +79,7 @@ module.exports = {
     }
   },
   Mutation: {
-    createRecommendPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
+    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
       let imageUrl = null
@@ -125,9 +110,7 @@ module.exports = {
 
       try {
         let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
-        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [
-          recommendPostId
-        ])
+        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [recommendPostId])
         await Promise.all(
           arg.reviews.map((review, index) => {
             return Promise.all(
@@ -196,9 +179,7 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(
-        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
-      )
+      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       if (rows.length == 0) return null
 
       let postIdSql = ""

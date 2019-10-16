@@ -4,6 +4,7 @@ import { GetReviewsByPostList } from "../Review/util"
 import { info } from "console"
 import { GetSimpleItemListByPostList } from "../Item/util"
 import { GraphQLResolveInfo } from "graphql"
+import { ConvertListToOrderedPair } from "../Utils/stringUtil"
 
 export function RecommendPostMatchGraphQL(postList: RecommendPostInfo[]) {
   postList.forEach(post => {
@@ -30,9 +31,7 @@ export async function GetRecommendPostListById(idList: number[]) {
     SELECT * FROM "RECOMMEND_POST" post
     JOIN (
       VALUES
-      (,1),
-      (,2),
-      (,3)
+      ${ConvertListToOrderedPair(idList)}
     ) AS x (id,ordering) ON post.id = x.id
     order by x.ordering
   `

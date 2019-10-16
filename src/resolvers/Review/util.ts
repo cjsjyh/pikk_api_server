@@ -85,8 +85,8 @@ export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, 
       let postId = args[0]
       let insertResult = await RunSingleSQL(
         `INSERT INTO "ITEM_REVIEW"
-        ("FK_itemId","FK_postId","recommendReason","review","score") 
-        VALUES (${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.review}', ${itemReview.score}) RETURNING id`
+        ("FK_itemId","FK_postId","recommendReason","review","shortReview","score") 
+        VALUES (${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.review}','${itemReview.shortReview}' ,${itemReview.score}) RETURNING id`
       )
       let reviewId = insertResult[0].id
       console.log(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)

@@ -32,6 +32,7 @@ input ItemReviewInfoInput {
   itemId: Int
   item: ItemInfoInput!
   recommendReason: RecommendReason!
+  shortReview: String!
   review: String!
   score: Int!
   imgs: [ItemReviewImgInfoInput!]!

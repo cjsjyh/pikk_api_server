@@ -11,6 +11,7 @@ export type ItemReviewInfoInput = {
   itemId: number
   item: ItemInfoInput
   recommendReason: string
+  shortReview: string
   review: string
   score: number
   imgs: ItemReviewImgInfoInput[]

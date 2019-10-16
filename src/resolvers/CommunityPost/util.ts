@@ -4,9 +4,10 @@ import * as PostReturnType from "./type/ReturnType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 
 import { QueryResult, PoolClient } from "pg"
+import { MakeMultipleQuery } from "../Utils/stringUtil"
 
 export async function GetPostFilterSql(filter: any): Promise<string> {
-  let multipleQuery: Boolean = false
+  let multipleQuery: boolean = false
   let filterSql: string = ""
 
   if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
@@ -18,31 +19,23 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "postType")) {
-    if (multipleQuery) filterSql += " and"
-    else filterSql += " where"
-    filterSql += ` "postType"='${filter.postType}'`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "postType"='${filter.postType}'`)
     multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "channelId")) {
-    if (multipleQuery) filterSql += " and"
-    else filterSql += " where"
-    filterSql += ` "FK_channelId"='${filter.channelId}'`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "FK_channelId"='${filter.channelId}'`)
     multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "styleType")) {
-    if (multipleQuery) filterSql += " and"
-    else filterSql += " where"
-    filterSql += ` "styleType"='${filter.styleType}'`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "styleType"='${filter.styleType}'`)
     multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(
-        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
-      )
+      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       if (rows.length == 0) return null
 
       let postIdSql = ""
@@ -50,9 +43,7 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
         if (index != 0) postIdSql += ","
         postIdSql += row.FK_postId
       })
-      if (multipleQuery) filterSql += " and"
-      else filterSql += " where"
-      filterSql += ` id in (${postIdSql})`
+      filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` id in (${postIdSql})`)
       multipleQuery = true
     } catch (e) {
       throw new Error("[Error] Failed to fetch postId with itemId")
@@ -62,11 +53,7 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
   return filterSql
 }
 
-export async function GetCommunityPostImage(
-  postInfo: PostReturnType.CommunityPostInfo
-): Promise<QueryResult> {
-  let rows = await RunSingleSQL(
-    `SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=${postInfo.id}`
-  )
+export async function GetCommunityPostImage(postInfo: PostReturnType.CommunityPostInfo): Promise<QueryResult> {
+  let rows = await RunSingleSQL(`SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=${postInfo.id}`)
   return rows
 }

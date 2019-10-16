@@ -53,3 +53,11 @@ export function ConvertListToOrderedPair(list: any): string {
   })
   return result
 }
+
+export function MakeMultipleQuery(isMultiple: boolean, before: string, append: string): string {
+  let result = ""
+  if (isMultiple) result = before + " and"
+  else result = before + " where"
+  result += append
+  return result
+}

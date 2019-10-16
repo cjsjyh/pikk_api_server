@@ -6,7 +6,7 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
-import { GetFormatSql } from "../Utils/stringUtil"
+import { GetFormatSql, MakeMultipleQuery } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, InsertItemReviewImage, GetReviewsByPostList } from "../Review/util"
 import { performance } from "perf_hooks"
@@ -145,7 +145,7 @@ module.exports = {
 }
 
 async function GetPostFilterSql(filter: any): Promise<string> {
-  let multipleQuery: Boolean = false
+  let multipleQuery: boolean = false
   let filterSql: string = ""
 
   if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
@@ -157,23 +157,17 @@ async function GetPostFilterSql(filter: any): Promise<string> {
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "postType")) {
-    if (multipleQuery) filterSql += " and"
-    else filterSql += " where"
-    filterSql += ` "postType"='${filter.postType}'`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "postType"='${filter.postType}'`)
     multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "channelId")) {
-    if (multipleQuery) filterSql += " and"
-    else filterSql += " where"
-    filterSql += ` "FK_channelId"='${filter.channelId}'`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "FK_channelId"='${filter.channelId}'`)
     multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "styleType")) {
-    if (multipleQuery) filterSql += " and"
-    else filterSql += " where"
-    filterSql += ` "styleType"='${filter.styleType}'`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "styleType"='${filter.styleType}'`)
     multipleQuery = true
   }
 
@@ -187,9 +181,8 @@ async function GetPostFilterSql(filter: any): Promise<string> {
         if (index != 0) postIdSql += ","
         postIdSql += row.FK_postId
       })
-      if (multipleQuery) filterSql += " and"
-      else filterSql += " where"
-      filterSql += ` id in (${postIdSql})`
+
+      filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` id in (${postIdSql})`)
       multipleQuery = true
     } catch (e) {
       throw new Error("[Error] Failed to fetch postId with itemId")

@@ -7,7 +7,7 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql } from "../Utils/stringUtil"
+import { GetFormatSql, MakeMultipleQuery } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertItem, GetItemsById } from "./util"
@@ -63,7 +63,7 @@ module.exports = {
 }
 
 function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
-  let multipleQuery: Boolean = false
+  let multipleQuery: boolean = false
   let filterSql: string = ""
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemMajorType")) {
@@ -72,16 +72,12 @@ function GetItemFilterSql(filter: ArgType.ItemQueryFilter): string {
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemMinorType")) {
-    if (multipleQuery) filterSql += " and"
-    else filterSql += " where"
-    filterSql += ` "itemMinorType"='${filter.itemMinorType}'`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "itemMinorType"='${filter.itemMinorType}'`)
     multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
-    if (multipleQuery) filterSql += " and"
-    else filterSql += " where"
-    filterSql += ` item_var.id=${filter.itemId}`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` item_var.id=${filter.itemId}`)
     multipleQuery = true
   }
 

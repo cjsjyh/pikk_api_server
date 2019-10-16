@@ -13,6 +13,12 @@ type Mutation {
   deleteRecommendPost(postId: Int!): Boolean
 }
 
+enum RecPostSortableField {
+  title
+  time
+  viewCount
+}
+
 #--------------
 #   INPUT
 #--------------
@@ -23,7 +29,7 @@ input RecommendPostFilterGeneral {
   start: Int = 0
   first: Int = 50
   sort: SortDirection = DESC
-  sortBy: PostSortableField = time
+  sortBy: RecPostSortableField = time
 }
 
 input RecommendPostQueryFilter {

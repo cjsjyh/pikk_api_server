@@ -37,7 +37,7 @@ export async function GetRecommendPostListById(idList: number[]) {
   `
 }
 
-export async function GetRecommendPostRankingId() {
+export async function GetRecommendPostRankingId(postOption: string) {
   let queryResult = await RunSingleSQL(`
   WITH post_group as
   (
@@ -45,7 +45,7 @@ export async function GetRecommendPostRankingId() {
     (
       SELECT review.*, COUNT(img)
       FROM "ITEM_REVIEW" review
-      INNER JOIN "ITEM_REVIEW_IMAGE" img ON review.id = img."FK_reviewId"
+      LEFT JOIN "ITEM_REVIEW_IMAGE" img ON review.id = img."FK_reviewId"
       GROUP BY review.id
     )
     SELECT 
@@ -72,10 +72,11 @@ export async function GetRecommendPostRankingId() {
     INNER JOIN "RECOMMEND_POST_COMMENT" com ON com."FK_postId" = post_group.id
     GROUP BY post_group.id
   )
-  SELECT post_group.id, (post_group.purchase_score + post_group.click_score + post_group.length_score + post_group.img_score + COALESCE(follower_count.follower_score,0) + COALESCE(comment_count.comment_score,0)) as total_score FROM post_group
+  SELECT post_group.id, (post_group.purchase_score + post_group.click_score + post_group.length_score + post_group.img_score + COALESCE(follower_count.follower_score,0) + COALESCE(comment_count.comment_score,0)) as total_score 
+  FROM post_group
   LEFT JOIN follower_count ON post_group.id = follower_count.id
   LEFT JOIN comment_count ON post_group.id = comment_count.id
-  ORDER BY total_score ASC
+  ORDER BY total_score DESC
   `)
   return queryResult
 }

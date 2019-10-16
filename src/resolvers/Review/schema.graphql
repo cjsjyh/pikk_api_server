@@ -81,4 +81,5 @@ enum ReviewSortableField {
 enum IncrementField {
   urlClickCount
   purchaseCount
+  detailPageClickCount
 }

@@ -1,14 +1,28 @@
 const { pool } = require("../../database/connectionPool")
 import * as ReturnType from "./type/ReturnType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
+import { ConvertListToString } from "../Utils/stringUtil"
 
-export async function GetUserInfo(postInfo: any): Promise<ReturnType.UserInfo> {
+export async function GetUserInfo(userIdList: any): Promise<ReturnType.UserInfo[]> {
   return new Promise(async (resolve, reject) => {
     try {
-      let queryResult = await RunSingleSQL('SELECT * FROM "USER_INFO" where "FK_accountId"=$1', [
-        postInfo.FK_accountId
-      ])
-      resolve(queryResult[0])
+      let querySql = `
+      WITH user_info as 
+      (
+        SELECT * FROM "USER_INFO"
+        WHERE "USER_INFO"."FK_accountId" IN (${ConvertListToString(userIdList)})
+      )
+      SELECT 
+        user_info.*,
+        (
+          SELECT COUNT(*) as "channel_pickCount" 
+          FROM "CHANNEL_FOLLOWER" follower WHERE follower."FK_channelId"=user_info."FK_accountId"
+        )
+      FROM user_info
+      `
+
+      let queryResult = await RunSingleSQL(querySql)
+      resolve(queryResult)
     } catch (e) {
       reject(e)
     }
@@ -18,14 +32,17 @@ export async function GetUserInfo(postInfo: any): Promise<ReturnType.UserInfo> {
 export async function FetchUserForReview(reviewInfo: any): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
-      let queryResult = await RunSingleSQL(`
-      WITH aaa as (SELECT "FK_accountId" FROM "RECOMMEND_POST" WHERE id = ${reviewInfo.FK_postId})
-      SELECT bbb.* FROM "USER_INFO" as bbb
-      INNER JOIN aaa on aaa."FK_accountId" = bbb."FK_accountId"`)
+      let queryResult = await RunSingleSQL(`SELECT "FK_accountId" FROM "RECOMMEND_POST" WHERE id = ${reviewInfo.FK_postId}`)
+      queryResult = await GetUserInfo([queryResult[0]])
       reviewInfo.userInfo = queryResult[0]
       resolve()
     } catch (e) {
       reject(e)
     }
   })
+}
+
+export async function FetchUserForCommunityPost(postInfo: any): Promise<ReturnType.UserInfo> {
+  let queryResult = await GetUserInfo([postInfo.FK_accountId])
+  return queryResult[0]
 }

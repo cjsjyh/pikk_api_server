@@ -5,7 +5,7 @@ import * as ArgType from "./type/ArgType"
 import * as PostReturnType from "./type/ReturnType"
 import * as CommentReturnType from "../Comment/type/ReturnType"
 import * as UserReturnType from "../User/type/ReturnType"
-import { GetUserInfo } from "../User/util"
+import { GetUserInfo, FetchUserForCommunityPost } from "../User/util"
 import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
@@ -17,12 +17,7 @@ import { GraphQLResolveInfo } from "graphql"
 
 module.exports = {
   Query: {
-    allCommunityPosts: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<PostReturnType.CommunityPostInfo[]> => {
+    allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<PostReturnType.CommunityPostInfo[]> => {
       let arg: ArgType.CommunityPostQuery = args.communityPostOption
 
       try {
@@ -44,7 +39,7 @@ module.exports = {
 
         let PromiseResult: any = await Promise.all([
           SequentialPromiseValue(postResult, GetCommunityPostImage),
-          SequentialPromiseValue(postResult, GetUserInfo)
+          SequentialPromiseValue(postResult, FetchUserForCommunityPost)
         ])
         let imgResult: PostReturnType.ImageInfo[][] = PromiseResult[0]
         let userResult: UserReturnType.UserInfo[] = PromiseResult[1]
@@ -77,11 +72,7 @@ module.exports = {
     }
   },
   Mutation: {
-    createCommunityPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
+    createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
 

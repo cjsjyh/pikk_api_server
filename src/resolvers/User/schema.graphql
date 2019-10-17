@@ -1,6 +1,6 @@
 type Query {
   getUserPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
-  getUserInfo(userOption: UserQuery!): [UserInfo!]
+  getUserInfo(userOption: UserQuery!): UserInfo!
 }
 
 type Mutation {

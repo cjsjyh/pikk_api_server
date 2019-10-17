@@ -10,14 +10,24 @@ import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
-import { SequentialPromiseValue, GetMetaData, RunSingleSQL } from "../Utils/promiseUtil"
+import {
+  SequentialPromiseValue,
+  GetMetaData,
+  RunSingleSQL,
+  ExtractSelectionSet
+} from "../Utils/promiseUtil"
 import { GetFormatSql } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 
 module.exports = {
   Query: {
-    allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<PostReturnType.CommunityPostInfo[]> => {
+    allCommunityPosts: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<PostReturnType.CommunityPostInfo[]> => {
       let arg: ArgType.CommunityPostQuery = args.communityPostOption
 
       try {
@@ -27,35 +37,25 @@ module.exports = {
         }
 
         let formatSql = GetFormatSql(arg)
-        let querySql = 'SELECT * FROM "COMMUNITY_POST"' + filterSql + formatSql
-        let commentSql = `WITH aaa AS (${querySql}) SELECT bbb."FK_postId" FROM "COMMUNITY_POST_COMMENT" AS bbb INNER JOIN aaa ON aaa.id = bbb."FK_postId"`
+        let requestSql = CommunityPostSelectionField(info)
+        let querySql = `
+        WITH post as (SELECT * FROM "COMMUNITY_POST" ${filterSql} ${formatSql})
+        SELECT 
+          user_info."name",
+          user_info."profileImgUrl",
+          post.*
+          ${requestSql}
+        FROM post
+        INNER JOIN "USER_INFO" user_info ON post."FK_accountId" = user_info."FK_accountId"
+        `
+        let postResult: PostReturnType.CommunityPostInfo[] = await RunSingleSQL(querySql)
 
-        let queryResult = await RunSingleSQL(querySql)
-        let postResult: PostReturnType.CommunityPostInfo[] = queryResult
-
-        queryResult = await RunSingleSQL(commentSql)
-        let commentResult: CommentReturnType.CommentInfo[] = queryResult
-        let commentResultGroup = _.countBy(commentResult, "FK_postId")
-
-        let PromiseResult: any = await Promise.all([
-          SequentialPromiseValue(postResult, GetCommunityPostImage),
-          SequentialPromiseValue(postResult, FetchUserForCommunityPost)
-        ])
-        let imgResult: PostReturnType.ImageInfo[][] = PromiseResult[0]
-        let userResult: UserReturnType.UserInfo[] = PromiseResult[1]
+        let imgResult = await SequentialPromiseValue(postResult, GetCommunityPostImage)
 
         postResult.forEach((post: PostReturnType.CommunityPostInfo, index: number) => {
-          if (Object.prototype.hasOwnProperty.call(commentResultGroup, String(post.id))) {
-            post.commentCount = commentResultGroup[String(post.id)]
-          } else {
-            post.commentCount = 0
-          }
-
           post.accountId = post.FK_accountId
           post.channelId = post.FK_channelId
-          post.name = userResult[index].name
-          post.profileImgUrl = userResult[index].profileImgUrl
-          post.imageUrl = new Array()
+          post.imageUrl = []
           imgResult[index].forEach(image => {
             post.imageUrl.push(image.imageUrl)
           })
@@ -72,7 +72,11 @@ module.exports = {
     }
   },
   Mutation: {
-    createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createCommunityPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
 
@@ -132,5 +136,25 @@ module.exports = {
         throw new Error(`[Error] Delete CommunityPost id: ${args.postId} Failed!`)
       }
     }
+  }
+}
+
+function CommunityPostSelectionField(info: GraphQLResolveInfo) {
+  let result = ""
+  try {
+    let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
+    if (selectionSet.includes("commentCount")) {
+      result += `
+      ,
+      COALESCE((
+        SELECT COUNT(*) as "commentCount" 
+        FROM "COMMUNITY_POST_COMMENT" comment WHERE comment."FK_postId"=post.id
+      ),0)
+      `
+    }
+
+    return result
+  } catch (e) {
+    console.log(e)
   }
 }

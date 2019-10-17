@@ -67,6 +67,8 @@ type CommunityPostInfo {
   name: String!
   profileImgUrl: String
 
+  commentCount: Int!
+
   id: Int
   channelId: Int
   title: String!
@@ -76,5 +78,5 @@ type CommunityPostInfo {
   imageUrl: [String]
   postType: String!
   qnaType: String
-  commentCount: Int!
+  
 }

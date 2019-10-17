@@ -82,6 +82,7 @@ type UserInfo {
   channel_description: String
   channel_snsUrl: String
   channel_pickCount: Int
+  channel_totalViewCount: Int
 }
 
 type UserCredentialInfo {

@@ -104,7 +104,8 @@ module.exports = {
     getUserInfo: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo> => {
       let arg: ArgType.UserQuery = args.userOption
       try {
-        let result: ReturnType.UserInfo[] = await GetUserInfo([arg.id])
+        let requestSql = UserInfoSelectionField(info)
+        let result: ReturnType.UserInfo[] = await GetUserInfo([arg.id], requestSql)
         console.log(`Retrieve UserInfo for ${arg.id}`)
         return result[0]
       } catch (e) {
@@ -114,26 +115,52 @@ module.exports = {
       }
     },
 
-    getUserPickkChannel: async (parent: void, args: QueryArgInfo): Promise<ReturnType.UserInfo[]> => {
+    getUserPickkChannel: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo[]> => {
       let arg: ArgType.PickkChannelQuery = args.pickkChannelOption
+      try {
+        let formatSql = GetFormatSql(arg)
+        let postSql = `SELECT "FK_channelId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
+        let followingChannelList = await RunSingleSQL(postSql)
 
-      let formatSql = GetFormatSql(arg)
-      let tempSql = `SELECT "FK_channelId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
-      let postSql = `WITH follower as (SELECT "FK_channelId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}) 
-        SELECT 
-          channel.*,
-          (
-            SELECT COUNT(*) as "channel_pickCount" 
-            FROM "CHANNEL_FOLLOWER" fol WHERE fol."FK_channelId"=follower."FK_channelId"
-          )
-        FROM "USER_INFO" as channel 
-        INNER JOIN follower on channel."FK_accountId" = follower."FK_channelId" 
-        ${formatSql}`
-
-      let followingChannelList = await RunSingleSQL(tempSql)
-      let channelIdList = ExtractFieldFromList(followingChannelList, "FK_channelId")
-      let final_result = await GetUserInfo(channelIdList)
-      return final_result
+        let channelIdList = ExtractFieldFromList(followingChannelList, "FK_channelId")
+        let requestSql = UserInfoSelectionField(info)
+        let final_result = await GetUserInfo(channelIdList, requestSql, formatSql)
+        return final_result
+      } catch (e) {
+        console.log("[Error] Failed to fetch Picked UserInfo from DB")
+        console.log(e)
+        throw new Error("[Error] Failed to fetch UserInfo from DB")
+      }
     }
+  }
+}
+
+function UserInfoSelectionField(info: GraphQLResolveInfo) {
+  let result = ""
+  try {
+    let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
+    if (selectionSet.includes("channel_pickCount")) {
+      result += `
+      ,
+      (
+        SELECT COUNT(*) as "channel_pickCount" 
+        FROM "CHANNEL_FOLLOWER" follower WHERE follower."FK_channelId"=user_info."FK_accountId"
+      )
+      `
+    }
+
+    if (selectionSet.includes("channel_totalViewCount")) {
+      result += `
+      ,
+      (
+        SELECT SUM(post."viewCount") as "channel_totalViewCount"
+        FROM "RECOMMEND_POST" post WHERE post."FK_accountId"=user_info."FK_accountId"
+        GROUP BY post."FK_accountId"
+      )
+      `
+    }
+    return result
+  } catch (e) {
+    console.log(e)
   }
 }

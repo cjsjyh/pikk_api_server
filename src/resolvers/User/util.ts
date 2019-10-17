@@ -3,7 +3,7 @@ import * as ReturnType from "./type/ReturnType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertListToString } from "../Utils/stringUtil"
 
-export async function GetUserInfo(userIdList: any): Promise<ReturnType.UserInfo[]> {
+export async function GetUserInfo(userIdList: any, requestSql: string = "", formatSql: string = ""): Promise<ReturnType.UserInfo[]> {
   return new Promise(async (resolve, reject) => {
     try {
       let querySql = `
@@ -13,12 +13,9 @@ export async function GetUserInfo(userIdList: any): Promise<ReturnType.UserInfo[
         WHERE "USER_INFO"."FK_accountId" IN (${ConvertListToString(userIdList)})
       )
       SELECT 
-        user_info.*,
-        (
-          SELECT COUNT(*) as "channel_pickCount" 
-          FROM "CHANNEL_FOLLOWER" follower WHERE follower."FK_channelId"=user_info."FK_accountId"
-        )
+        user_info.* ${requestSql}
       FROM user_info
+      ${formatSql}
       `
 
       let queryResult = await RunSingleSQL(querySql)

@@ -10,17 +10,16 @@ import { FetchUserForReview } from "../User/util"
 
 module.exports = {
   Query: {
-    allItemReviews: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<ItemReviewInfo[]> => {
+    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReviewInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       let filterSql = GetReviewFilterSql(arg)
       let formatSql = GetFormatSql(arg)
       let reviewSql = 'SELECT * FROM "ITEM_REVIEW" ' + filterSql + formatSql
+
+      let overrideSql = OverrideReviewSql(arg)
+      if (overrideSql != "") reviewSql = overrideSql + filterSql + formatSql
+
       let queryResult = await RunSingleSQL(reviewSql)
 
       //Query Item Info
@@ -51,9 +50,7 @@ module.exports = {
         let result = await RunSingleSQL(query)
         return true
       } catch (e) {
-        console.log(
-          `[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`
-        )
+        console.log(`[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`)
         console.log(e)
         return false
       }
@@ -72,4 +69,17 @@ function GetReviewFilterSql(filter: ReviewQuery): string {
   }
 
   return filterSql
+}
+
+function OverrideReviewSql(filter: ReviewQuery): string {
+  let overrideSql = ""
+  if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
+    if (filter.filterGeneral.sortBy == "userId")
+      overrideSql = `SELECT review.*, post."FK_accountId" as "userId" 
+      FROM "ITEM_REVIEW" review 
+      INNER JOIN "RECOMMEND_POST" post 
+      ON review."FK_postId" = post.id
+      `
+  }
+  return overrideSql
 }

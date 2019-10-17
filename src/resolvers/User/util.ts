@@ -1,9 +1,13 @@
 const { pool } = require("../../database/connectionPool")
 import * as ReturnType from "./type/ReturnType"
-import { RunSingleSQL } from "../Utils/promiseUtil"
+import { RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
 import { ConvertListToString } from "../Utils/stringUtil"
 
-export async function GetUserInfo(userIdList: any, requestSql: string = "", formatSql: string = ""): Promise<ReturnType.UserInfo[]> {
+export async function GetUserInfo(
+  userIdList: any,
+  requestSql: string = "",
+  formatSql: string = ""
+): Promise<ReturnType.UserInfo[]> {
   return new Promise(async (resolve, reject) => {
     try {
       let querySql = `
@@ -29,8 +33,10 @@ export async function GetUserInfo(userIdList: any, requestSql: string = "", form
 export async function FetchUserForReview(reviewInfo: any): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
-      let queryResult = await RunSingleSQL(`SELECT "FK_accountId" FROM "RECOMMEND_POST" WHERE id = ${reviewInfo.FK_postId}`)
-      queryResult = await GetUserInfo([queryResult[0]])
+      let queryResult = await RunSingleSQL(
+        `SELECT "FK_accountId" FROM "RECOMMEND_POST" WHERE id = ${reviewInfo.FK_postId}`
+      )
+      queryResult = await GetUserInfo(ExtractFieldFromList(queryResult, "FK_accountId"))
       reviewInfo.userInfo = queryResult[0]
       resolve()
     } catch (e) {

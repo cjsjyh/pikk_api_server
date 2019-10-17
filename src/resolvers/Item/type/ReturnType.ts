@@ -10,6 +10,7 @@ export type ItemInfo = {
   salePrice: number
   itemMinorType: string
   itemMajorType: string
+  itemFinalType: string
   imageUrl: string
   purchaseUrl: string
   averageScore: number

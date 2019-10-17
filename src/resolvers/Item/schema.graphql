@@ -21,6 +21,7 @@ enum ItemSortableField {
   pickCount
   itemMinorType
   itemMajorType
+  itemFinalType
 }
 
 #--------------

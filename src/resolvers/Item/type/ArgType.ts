@@ -14,6 +14,7 @@ type GroupInfo = {
   originalPrice: number
   itemMinorType: string
   itemMajorType: string
+  itemFinalType: string
   sourceWebsite: string
 }
 
@@ -42,6 +43,7 @@ type ItemFilterGeneral = {
 export type ItemQueryFilter = {
   itemMajorType: string
   itemMinorType: string
+  itemFinalType: string
   itemId: number
 }
 

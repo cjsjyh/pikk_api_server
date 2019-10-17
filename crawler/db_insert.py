@@ -6,6 +6,29 @@ def convertStringPriceToInt(price):
   result = "".join(result)
   return result
 
+def InsertFinalCategory():
+  try:
+    categoryList = open("major_category.txt","r")
+
+    password = input("db password: ")
+    conn = pg2.connect("host=52.79.246.136 dbname=postgres user=postgres password="+password)
+    conn.autocommit = True
+    curs = conn.cursor()
+    
+    while True:
+      line = categoryList.readline()
+      if not line: break
+
+      curs.execute("""ALTER TYPE "TAG_ITEM_MAJORTYPE" ADD VALUE '%s'""" %(line.split('\n')[0]))
+
+  except Exception as e:
+    conn.close()
+    print(e)
+  finally:
+    categoryList.close()
+    if (conn):
+      conn.close()
+
 def InsertItems():
   filename = input("Filename: ")
   fileList = open(filename,"r")
@@ -108,7 +131,8 @@ def InsertBrands():
   conn.close()
 
 def main():
-  InsertItems()
+  InsertFinalCategory()
+  #InsertItems()
   #InsertBrands()
 
 

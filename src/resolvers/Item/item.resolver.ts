@@ -7,10 +7,10 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery } from "../Utils/stringUtil"
+import { GetFormatSql, MakeMultipleQuery, ConvertListToOrderedPair } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
-import { InsertItem, GetItemsById } from "./util"
+import { InsertItem, GetItemsById, GetItemIdInRanking } from "./util"
 
 module.exports = {
   Query: {
@@ -45,6 +45,19 @@ module.exports = {
       let itemResult = await GetItemsById(idList, formatSql)
 
       return itemResult
+    },
+
+    getItemRanking: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
+      let rankList = await GetItemIdInRanking()
+      let itemIdList = ExtractFieldFromList(rankList, "id")
+      let customFilterSql = `
+        JOIN (
+          VALUES
+        ${ConvertListToOrderedPair(itemIdList)}
+        ) AS x (id,ordering) ON item_var.id = x.id
+      `
+      let itemList = await GetItemsById(itemIdList, "", customFilterSql)
+      return itemList
     }
   },
   Mutation: {

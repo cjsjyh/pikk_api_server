@@ -2,6 +2,7 @@ type Query {
   allItems(itemOption: ItemQuery!): [ItemInfo!]
   _allItemsMetadata: Int!
   getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
+  getItemRanking: [ItemInfo!]
 }
 
 type Mutation {
@@ -38,6 +39,7 @@ input ItemFilterGeneral {
 input ItemQueryFilter {
   itemMajorType: ItemMajorType
   itemMinorType: ItemMinorType
+  itemFinalType: ItemFinalType
   itemId: Int
 }
 
@@ -64,6 +66,7 @@ input GroupInfo {
   originalPrice: Int!
   itemMinorType: ItemMinorType!
   itemMajorType: ItemMajorType!
+  itemFinalType: ItemFinalType!
   sourceWebsite: String!
 }
 
@@ -96,8 +99,9 @@ type ItemInfo {
   brandEng: String!
   originalPrice: Int!
   salePrice: Int
-  itemMinorType: ItemMinorType!
-  itemMajorType: ItemMajorType!
+  itemMinorType: ItemMinorType
+  itemMajorType: ItemMajorType
+  itemFinalType: ItemFinalType
   imageUrl: String
   purchaseUrl: String
   averageScore: Float

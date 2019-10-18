@@ -6,4 +6,5 @@ config.json
 *.env
 *.yaml
 *.pem
+*.ppk
 *.csv

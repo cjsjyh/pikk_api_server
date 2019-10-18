@@ -3,9 +3,7 @@ const _ = require("lodash")
 
 import * as ArgType from "./type/ArgType"
 import * as PostReturnType from "./type/ReturnType"
-import * as CommentReturnType from "../Comment/type/ReturnType"
-import * as UserReturnType from "../User/type/ReturnType"
-import { GetUserInfo, FetchUserForCommunityPost } from "../User/util"
+import { GetUserInfoByIdList, FetchUserForCommunityPost } from "../User/util"
 import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"

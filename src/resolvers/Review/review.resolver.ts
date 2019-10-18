@@ -10,7 +10,12 @@ import { FetchUserForReview } from "../User/util"
 
 module.exports = {
   Query: {
-    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReviewInfo[]> => {
+    allItemReviews: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<ItemReviewInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       let filterSql = GetReviewFilterSql(arg)
@@ -19,9 +24,7 @@ module.exports = {
 
       let overrideSql = OverrideReviewSql(arg)
       if (overrideSql != "") reviewSql = overrideSql + filterSql + formatSql
-
       let queryResult = await RunSingleSQL(reviewSql)
-
       //Query Item Info
       let selectionSet = ExtractSelectionSet(info.fieldNodes[0])
       selectionSet = selectionSet.flat(2)
@@ -35,10 +38,10 @@ module.exports = {
         let imgResult = await GetSubField(queryResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs")
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
-
       queryResult.forEach(review => {
         ReviewMatchGraphQL(review)
       })
+      console.log(`allItemReviews Called!`)
       return queryResult
     }
   },
@@ -50,7 +53,9 @@ module.exports = {
         let result = await RunSingleSQL(query)
         return true
       } catch (e) {
-        console.log(`[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`)
+        console.log(
+          `[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`
+        )
         console.log(e)
         return false
       }
@@ -81,5 +86,20 @@ function OverrideReviewSql(filter: ReviewQuery): string {
       ON review."FK_postId" = post.id
       `
   }
+
+  if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "userId")) {
+    overrideSql = `
+    WITH post_id AS 
+    (
+      SELECT post.id 
+      FROM "RECOMMEND_POST" post 
+      WHERE post."FK_accountId" = ${filter.reviewFilter.userId}
+    )
+    SELECT review.* 
+    FROM "ITEM_REVIEW" review, post_id 
+    WHERE review."FK_postId" = post_id.id 
+    `
+  }
+
   return overrideSql
 }

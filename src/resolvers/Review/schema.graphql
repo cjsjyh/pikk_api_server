@@ -20,6 +20,7 @@ input ReviewFilterGeneral {
 input ReviewQueryFilter {
   reviewId: Int
   itemId: Int
+  userId: Int
 }
 
 input ReviewQuery {

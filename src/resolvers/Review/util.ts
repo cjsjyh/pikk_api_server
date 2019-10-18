@@ -8,7 +8,7 @@ import {
   MakeGroups,
   AssignGroupsToParent
 } from "../Utils/promiseUtil"
-import { ConvertListToString } from "../Utils/stringUtil"
+import { ConvertListToString, ConvertListToOrderedPair } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { FetchItemsForReview } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
@@ -29,7 +29,9 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           "ITEM_REVIEW_IMAGE",
           "FK_reviewId",
           "imgs",
-          2
+          2,
+          "",
+          `ORDER BY "order" ASC`
         )
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
@@ -60,7 +62,8 @@ export async function GetSubField(
   filterBy: string,
   assignTo: string,
   depth: number = 1,
-  customSql?: string
+  customSql: string = "",
+  formatSql: string = ""
 ): Promise<any[]> {
   let parentIdList = ExtractFieldFromList(parentList, "id", depth)
   if (parentIdList.length == 0) return []
@@ -70,9 +73,10 @@ export async function GetSubField(
     subfield.*, 
     rank() OVER (PARTITION BY subfield."${filterBy}") 
   FROM "${tableName}" AS subfield 
-  WHERE subfield."${filterBy}" IN (${ConvertListToString(parentIdList)})`
+  WHERE subfield."${filterBy}" IN (${ConvertListToString(parentIdList)}) ${formatSql}`
+
   let queryResult
-  if (customSql == null) queryResult = await RunSingleSQL(querySql)
+  if (customSql == "") queryResult = await RunSingleSQL(querySql)
   else queryResult = await RunSingleSQL(customSql)
 
   if (queryResult.length == 0) {
@@ -98,6 +102,15 @@ export function InsertItemReview(
         VALUES (${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.review}','${itemReview.shortReview}' ,${itemReview.score}) RETURNING id`
       )
       let reviewId = insertResult[0].id
+
+      let imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImage)
+      let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`)
+      await RunSingleSQL(
+        `INSERT INTO "ITEM_REVIEW_IMAGE ("imgUrl","order","FK_reviewId") 
+        VALUES ${imgPairs}
+        `
+      )
+
       console.log(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
       resolve(reviewId)
     } catch (e) {
@@ -181,57 +194,3 @@ export function GetImagesForSingleReview(review: any) {
     }
   })
 }
-
-/*
-    if (selectionSet.includes("reviews")) {
-      let postIdList = ExtractFieldFromList(postResult, "id")
-      let reviewSql = `
-      SELECT 
-        review.*, 
-        rank() OVER (PARTITION BY review."FK_postId") 
-      FROM "ITEM_REVIEW" AS review 
-      WHERE review."FK_postId" IN (${ConvertListToString(postIdList)})`
-
-      queryResult = await RunSingleSQL(reviewSql)
-      let reviewResult: any = queryResult
-      if (reviewResult.length == 0) {
-        return postResult
-      }
-
-      reviewResult.forEach(review => {
-        ReviewMatchGraphQL(review)
-        review.imgs = []
-      })
-      //Grouping Reviews
-      let reviewArray: ReviewReturnType.ItemReviewInfo[][] = MakeGroups(reviewResult, "postId")
-      //Add Review Group to Post
-      AssignGroupsToParent(postResult, reviewArray, "FK_postId", "reviews")
-
-      //CHECK IF QUERY FOR Image IS NEEDED
-      let imgFlag = false
-      let itemFlag = false
-      let reviewIndex = selectionSet.indexOf("reviews")
-      if (Array.isArray(selectionSet[reviewIndex + 1])) if (selectionSet[reviewIndex + 1].includes("imgs")) imgFlag = true
-      if (Array.isArray(selectionSet[reviewIndex + 1])) if (selectionSet[reviewIndex + 1].includes("itemInfo")) itemFlag = true
-
-      if (imgFlag) {
-        let reviewIdList = ExtractFieldFromList(reviewResult, "id")
-        let imgSql = `
-        SELECT 
-          img.*, 
-          rank() OVER (PARTITION BY imgs."FK_reviewId") 
-        FROM "ITEM_REVIEW_IMAGE" AS imgs 
-        WHERE imgs."FK_reviewId" IN (${ConvertListToString(reviewIdList)})`
-        queryResult = await RunSingleSQL(imgSql)
-
-        let imgResult: any = queryResult
-        if (imgResult.length == 0) {
-          return postResult
-        }
-        imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
-        //Grouping Images
-        let imgArray: ReviewReturnType.ItemReviewImgInfo[][] = MakeGroups(imgResult, "reviewId")
-        AssignGroupsToParent(reviewResult, imgArray, "FK_reviewId", "imgs")
-      }
-    }
-    */

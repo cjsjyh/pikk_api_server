@@ -1,3 +1,6 @@
+//-------------------------------
+// Mutation
+//-------------------------------
 export type MutationArgInfo = {
   itemInfoInput: ItemInfoInput
 }
@@ -27,10 +30,12 @@ type VariationInfo = {
 }
 
 //-------------------------------
-
+// Query
+//-------------------------------
 export type QueryArgInfo = {
   itemOption: ItemQuery
   pickkItemOption: PickkItemQuery
+  itemRankingOption: ItemRankingFilter
 }
 
 type ItemFilterGeneral = {
@@ -45,6 +50,12 @@ export type ItemQueryFilter = {
   itemMinorType: string
   itemFinalType: string
   itemId: number
+}
+
+export type ItemRankingFilter = {
+  itemMajorType: string
+  itemMinorType: string
+  itemFinalType: string
 }
 
 export interface ItemQuery {

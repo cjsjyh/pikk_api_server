@@ -26,10 +26,14 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         let brandId
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
-          queryResult = RunSingleSQL(`INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`)
+          queryResult = RunSingleSQL(
+            `INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`
+          )
           brandId = queryResult.id
         } else {
-          queryResult = RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"=${arg.groupInfo.brand} OR "nameKor"=${arg.groupInfo.brand}`)
+          queryResult = RunSingleSQL(
+            `SELECT id FROM "BRAND" WHERE "nameEng"=${arg.groupInfo.brand} OR "nameKor"=${arg.groupInfo.brand}`
+          )
           brandId = queryResult.id
         }
 
@@ -43,7 +47,9 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         groupId = queryResult.id
       } else {
         //Find Group Id of this Item
-        queryResult = RunSingleSQL(`SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`)
+        queryResult = RunSingleSQL(
+          `SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`
+        )
         groupId = queryResult.id
       }
 
@@ -145,11 +151,11 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   (
     SELECT 
       item_var.*,
-      item_group."itemMinorType",
-      item_group."itemMajorType",
-      item_group."itemFinalType",
-      item_group."originalPrice",
-      item_group."FK_brandId",
+      item_gr."itemMinorType",
+      item_gr."itemMajorType",
+      item_gr."itemFinalType",
+      item_gr."originalPrice",
+      item_gr."FK_brandId",
       COALESCE(
         (
           SELECT AVG(r.score)
@@ -164,7 +170,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
       )
     FROM 
     "ITEM_VARIATION" item_var
-    INNER JOIN "ITEM_GROUP" as item_group ON item_var."FK_itemGroupId" = item_group.id ${filterSql}
+    INNER JOIN "ITEM_GROUP" as item_gr ON item_var."FK_itemGroupId" = item_gr.id ${filterSql}
   ) as item_full
   INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId" ${formatSql}
   `
@@ -173,7 +179,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   return itemInfo
 }
 
-export async function GetItemIdInRanking(): Promise<ReturnType.ItemInfo[]> {
+export async function GetItemIdInRanking(filterSql: string): Promise<ReturnType.ItemInfo[]> {
   let reviewScore = 10
   let purchaseScore = 10
   let detailPageClickScore = 0.5
@@ -181,19 +187,33 @@ export async function GetItemIdInRanking(): Promise<ReturnType.ItemInfo[]> {
   let followScore = 1
 
   let querySql = `
-  WITH review_score as
+  WITH items as (
+    SELECT
+      item_var.*,
+      item_gr."itemMajorType",
+      item_gr."itemMinorType",
+      item_gr."itemFinalType"
+    FROM "ITEM_VARIATION" item_var
+    INNER JOIN "ITEM_GROUP" item_gr
+    ON item_gr.id = item_var."FK_itemGroupId"
+    ${filterSql}
+  ),
+  review_score as
   (
     SELECT 
-      review."FK_itemId" as "itemId",
+      items.id as "itemId",
+      items."itemMinorType",
+      items."itemMajorType",
+      items."itemFinalType",
       COUNT(review.score)*${reviewScore} as reviewer_score,
       SUM(review."detailPageClickCount")*${detailPageClickScore} as detail_click,
       SUM(review."urlClickCount")*${purchaseLinkClikcScore} as purchase_click,
       SUM(review."purchaseCount")*${purchaseScore} as purchase_count
-    FROM "ITEM_VARIATION" item_var
+    FROM items
     INNER JOIN "ITEM_REVIEW" review
-    ON item_var.id = review."FK_itemId"
+    ON items.id = review."FK_itemId"
     WHERE review.score >= 4
-    GROUP BY review."FK_itemId"
+    GROUP BY items.id, items."itemMinorType",items."itemMajorType",items."itemFinalType"
   )
   SELECT 
     review_score."itemId" as id,
@@ -202,6 +222,7 @@ export async function GetItemIdInRanking(): Promise<ReturnType.ItemInfo[]> {
      ) as final_score
   FROM review_score ORDER BY final_score DESC LIMIT 100
   `
+
   let ItemRank = await RunSingleSQL(querySql)
 
   return ItemRank

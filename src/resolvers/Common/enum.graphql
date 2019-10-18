@@ -64,6 +64,7 @@ enum ProviderType {
 }
 
 enum ItemMajorType {
+  ALL
   OUTER
   TOP
   BOTTOM
@@ -73,6 +74,7 @@ enum ItemMajorType {
 }
 
 enum ItemMinorType {
+  ALL
   JACKET
   JUMPER
   VEST
@@ -113,6 +115,7 @@ enum ItemMinorType {
 }
 
 enum ItemFinalType {
+  ALL
   DENIM_JACKET
   LEATHER_JACKET
   BLAZER

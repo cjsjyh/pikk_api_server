@@ -55,9 +55,7 @@ module.exports = {
     },
 
     getItemRanking: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
-      let arg = {}
-      if (Object.prototype.hasOwnProperty.call(args, "itemRankingOption"))
-        arg = args.itemRankingOption
+      let arg: ArgType.ItemRankingFilter = args.itemRankingOption
       let filterSql = GetItemFilterSql(arg)
       let rankList = await GetItemIdInRanking(filterSql)
       let itemIdList = ExtractFieldFromList(rankList, "id")
@@ -91,26 +89,32 @@ function GetItemFilterSql(filter: any): string {
   let filterSql: string = ""
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemMajorType")) {
-    filterSql = ` where item_gr."itemMajorType"='${filter.itemMajorType}'`
-    multipleQuery = true
+    if (filter.itemMajorType != "ALL") {
+      filterSql = ` where item_gr."itemMajorType"='${filter.itemMajorType}'`
+      multipleQuery = true
+    }
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemMinorType")) {
-    filterSql = MakeMultipleQuery(
-      multipleQuery,
-      filterSql,
-      ` item_gr."itemMinorType"='${filter.itemMinorType}'`
-    )
-    multipleQuery = true
+    if (filter.itemMinorType != "ALL") {
+      filterSql = MakeMultipleQuery(
+        multipleQuery,
+        filterSql,
+        ` item_gr."itemMinorType"='${filter.itemMinorType}'`
+      )
+      multipleQuery = true
+    }
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemFinalType")) {
-    filterSql = MakeMultipleQuery(
-      multipleQuery,
-      filterSql,
-      ` item_gr."itemFinalType"='${filter.itemFinalType}'`
-    )
-    multipleQuery = true
+    if (filter.itemFinalType != "ALL") {
+      filterSql = MakeMultipleQuery(
+        multipleQuery,
+        filterSql,
+        ` item_gr."itemFinalType"='${filter.itemFinalType}'`
+      )
+      multipleQuery = true
+    }
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {

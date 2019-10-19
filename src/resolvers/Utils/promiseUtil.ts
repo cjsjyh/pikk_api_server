@@ -110,6 +110,17 @@ export function ExtractSelectionSet(info: any): any {
   return result
 }
 
+export async function UploadImageWrapper(imgObj: any): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let url = await UploadImage(imgObj.img)
+      resolve(url)
+    } catch (e) {
+      reject(0)
+    }
+  })
+}
+
 export async function UploadImage(itemImg: any): Promise<string> {
   console.log(itemImg)
   const { createReadStream, filename, mimetype, encoding } = await itemImg

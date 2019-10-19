@@ -58,7 +58,7 @@ type ItemReviewInfo {
   recommendReason: RecommendReason!
   shortReview: String!
   review: String!
-  score: Int!
+  score: Float!
   imgs: [ItemReviewImgInfo!]
 
   itemInfo: ItemInfo

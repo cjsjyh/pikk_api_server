@@ -6,7 +6,8 @@ import {
   ExtractFieldFromList,
   SequentialPromiseValue,
   MakeGroups,
-  AssignGroupsToParent
+  AssignGroupsToParent,
+  UploadImageWrapper
 } from "../Utils/promiseUtil"
 import { ConvertListToString, ConvertListToOrderedPair } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
@@ -109,9 +110,7 @@ export function InsertItemReview(
       )
       let reviewId = insertResult[0].id
       if (itemReview.imgs === undefined) resolve(reviewId)
-      console.log(itemReview)
-      console.log(itemReview.imgs)
-      let imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImage)
+      let imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImageWrapper)
       console.log(imgUrlList)
       let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`)
       console.log(imgPairs)

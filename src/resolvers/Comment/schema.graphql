@@ -7,6 +7,10 @@ type Mutation {
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
   createComment(commentInfo: CommentInfoInput!): Boolean!
+  """
+  ONLY INSERT targetId, targetType
+  """
+  deleteComment(commentInfo: CommentDeleteInput!): Boolean!
 }
 
 #--------------
@@ -38,6 +42,11 @@ input CommentInfoInput {
   targetId: Int!
   targetType: PostType!
   content: String!
+}
+
+input CommentDeleteInput {
+  targetId: Int!
+  targetType: PostType!
 }
 
 #---------------

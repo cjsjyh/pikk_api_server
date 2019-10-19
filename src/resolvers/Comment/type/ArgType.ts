@@ -9,6 +9,11 @@ export type CommentInfoInput = {
   content: string
 }
 
+export type CommentDeleteInput = {
+  targetId: number
+  targetType: string
+}
+
 export type QueryArgInfo = {
   commentOption: CommentQuery
 }

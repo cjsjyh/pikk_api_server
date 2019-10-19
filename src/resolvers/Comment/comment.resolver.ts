@@ -5,6 +5,7 @@ import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertToTableName, GetBoardName } from "./util"
+import { CloudWatchEvents } from "aws-sdk"
 
 module.exports = {
   Query: {
@@ -34,12 +35,12 @@ module.exports = {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.CommentInfoInput = args.commentInfo
 
-      let querySql =
-        `INSERT INTO ` +
-        ConvertToTableName(arg.targetType) +
-        `("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${arg.accountId},'${arg.content}')`
-
       try {
+        let querySql = `INSERT INTO ${ConvertToTableName(
+          arg.targetType
+        )} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${arg.accountId},'${
+          arg.content
+        }')`
         let rows = await RunSingleSQL(querySql)
         console.log(
           `Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`
@@ -47,6 +48,23 @@ module.exports = {
         return true
       } catch (e) {
         console.log("[Error] Failed to create Comment")
+        return false
+      }
+    },
+
+    deleteComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
+      let arg: ArgType.CommentDeleteInput = args.commentInfo
+
+      try {
+        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${
+          arg.targetId
+        }`
+        let rows = await RunSingleSQL(querySql)
+        console.log(`Comment on Post${arg.targetType} id ${arg.targetId}`)
+        return true
+      } catch (e) {
+        console.log(e)
         return false
       }
     }

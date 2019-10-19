@@ -26,39 +26,35 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         let brandId
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
-          queryResult = RunSingleSQL(
-            `INSERT INTO "BRAND"("nameEng") VALUE('${arg.groupInfo.brand}') RETURNING id`
+          queryResult = await RunSingleSQL(
+            `INSERT INTO "BRAND"("nameEng") VALUES ('${arg.groupInfo.brand}') RETURNING id`
           )
-          brandId = queryResult.id
+          brandId = queryResult[0].id
         } else {
-          queryResult = RunSingleSQL(
-            `SELECT id FROM "BRAND" WHERE "nameEng"=${arg.groupInfo.brand} OR "nameKor"=${arg.groupInfo.brand}`
+          queryResult = await RunSingleSQL(
+            `SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`
           )
-          brandId = queryResult.id
+          brandId = queryResult[0].id
         }
-
         //Create new Group and save Id
-        queryResult = RunSingleSQL(`
-          INSERT INTO "ITEM_GROUP" ("itemMinorType","itemMajorType","originalPrice","sourceWebsite","FK_brandId") 
-          VALUES ('
-          ${arg.groupInfo.itemMinorType}','${arg.groupInfo.itemMajorType}',
+        queryResult = await RunSingleSQL(`
+          INSERT INTO "ITEM_GROUP" ("itemFinalType","itemMinorType","itemMajorType","originalPrice","sourceWebsite","FK_brandId") 
+          VALUES (
+          '${arg.groupInfo.itemFinalType}','${arg.groupInfo.itemMinorType}','${arg.groupInfo.itemMajorType}',
           ${arg.groupInfo.originalPrice},'${arg.groupInfo.sourceWebsite}',${brandId})
           RETURNING id`)
-        groupId = queryResult.id
+        groupId = queryResult[0].id
       } else {
         //Find Group Id of this Item
-        queryResult = RunSingleSQL(
-          `SELECT id FROM "ITEM_GROUP" WHERE id = ${arg.variationInfo.groupId}`
-        )
-        groupId = queryResult.id
+        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId"))
+          throw new Error("[Error] groupId not inserted!")
+        groupId = arg.variationInfo.groupId
       }
-
       //Insert Variation
-      queryResult = RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
-        VALUES('${arg.variationInfo.name}','${arg.variationInfo.imageUrl}','${arg.variationInfo.purchaseUrl}','${arg.variationInfo.salePrice}','${groupId}') RETURNING id`)
-
-      console.log(`Item ${arg.variationInfo.name} created`)
-      resolve(queryResult.id)
+      if (arg.variationInfo.salePrice === undefined) arg.variationInfo.salePrice = null
+      queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
+        VALUES ('${arg.variationInfo.name}','${arg.variationInfo.imageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
+      resolve(queryResult[0].id)
     } catch (e) {
       console.log("[Error] Failed to Insert into ITEM_VARIATION")
       console.log(e)

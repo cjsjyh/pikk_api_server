@@ -76,6 +76,7 @@ module.exports = {
 
       try {
         let queryResult = await InsertItem(arg)
+        console.log(`createItem Success! itemId: ${queryResult}`)
         return true
       } catch (e) {
         throw new Error("[Error] Failed to create Item!")

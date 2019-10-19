@@ -9,7 +9,7 @@ type Mutation {
   """
   Return >  [true] : DB save successful  [false] : DB save unsuccessful
   """
-  createItem(itemInfo: ItemInfoInput!): Boolean!
+  createItem(itemInfoInput: ItemInfoInput!): Boolean!
 }
 
 enum ItemSortableField {
@@ -78,7 +78,7 @@ input GroupInfo {
 }
 
 input VariationInfo {
-  groupId: Int!
+  groupId: Int
   name: String!
   salePrice: Int
   imageUrl: String!

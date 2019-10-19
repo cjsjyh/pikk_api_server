@@ -209,7 +209,7 @@ export async function GetItemIdInRanking(filterSql: string): Promise<ReturnType.
       items."itemMinorType",
       items."itemMajorType",
       items."itemFinalType",
-      COUNT(review.score)*${reviewScore} as reviewer_score,
+      (SELECT COUNT(review_temp.score) FROM "ITEM_REVIEW" review_temp INNER JOIN items ON items.id = review_temp."FK_itemId" WHERE review_temp.score >=4)*${reviewScore} as reviewer_score,
       SUM(review."detailPageClickCount")*${detailPageClickScore} as detail_click,
       SUM(review."urlClickCount")*${purchaseLinkClikcScore} as purchase_click,
       SUM(review."purchaseCount")*${purchaseScore} as purchase_count

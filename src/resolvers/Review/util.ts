@@ -109,6 +109,8 @@ export function InsertItemReview(
       )
       let reviewId = insertResult[0].id
       if (itemReview.imgs === undefined) resolve(reviewId)
+      console.log(itemReview)
+      console.log(itemReview.imgs)
       let imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImage)
       let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`)
       await RunSingleSQL(

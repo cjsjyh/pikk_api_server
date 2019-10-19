@@ -4,7 +4,11 @@ const { S3 } = require("../../database/aws_s3")
 import * as AWS from "aws-sdk"
 import { getFormatDate, getFormatHour } from "./stringUtil"
 
-export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<{}> {
+export async function SequentialPromiseValue<T, U>(
+  arr: T[],
+  func: Function,
+  args: Array<U> = []
+): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       let resultArr = new Array<T>(arr.length)
@@ -41,7 +45,13 @@ export function MakeGroups(data: any, groupBy: string): any {
   return resultArray
 }
 
-export function AssignGroupsToParent(parentsGroup: any, groups: any, parentId: string, parentField: string, depth: number) {
+export function AssignGroupsToParent(
+  parentsGroup: any,
+  groups: any,
+  parentId: string,
+  parentField: string,
+  depth: number
+) {
   groups.forEach(item => {
     if (depth == 2) {
       parentsGroup.forEach(parents => {
@@ -101,6 +111,7 @@ export function ExtractSelectionSet(info: any): any {
 }
 
 export async function UploadImage(itemImg: any): Promise<string> {
+  console.log(itemImg)
   const { createReadStream, filename, mimetype, encoding } = await itemImg
 
   let date = getFormatDate(new Date())

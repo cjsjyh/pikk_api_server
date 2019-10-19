@@ -30,13 +30,13 @@ input ReviewQuery {
 
 # Mutation
 input ItemReviewInfoInput {
-  itemId: Int
+  #itemId: Int
   item: ItemInfoInput!
   recommendReason: RecommendReason!
   shortReview: String!
   review: String!
   score: Int!
-  imgs: [ItemReviewImgInfoInput!]!
+  imgs: [ItemReviewImgInfoInput!]
 }
 
 input ItemReviewImgInfoInput {

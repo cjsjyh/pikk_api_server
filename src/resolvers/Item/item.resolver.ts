@@ -65,6 +65,7 @@ module.exports = {
         ${ConvertListToOrderedPair(itemIdList)}
         ) AS x (id,ordering) ON item_var.id = x.id
       `
+      if (itemIdList.length == 0) return []
       let itemList = await GetItemsById(itemIdList, "", customFilterSql)
       return itemList
     }

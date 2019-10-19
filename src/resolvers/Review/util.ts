@@ -112,7 +112,7 @@ export function InsertItemReview(
       if (itemReview.imgs === undefined) resolve(reviewId)
       let imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImageWrapper)
       console.log(imgUrlList)
-      let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`)
+      let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
       console.log(imgPairs)
       await RunSingleSQL(
         `INSERT INTO "ITEM_REVIEW_IMAGE ("imgUrl","order","FK_reviewId") 

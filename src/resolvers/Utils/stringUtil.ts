@@ -45,11 +45,16 @@ export function ConvertListToString(list: any): string {
   return result
 }
 
-export function ConvertListToOrderedPair(list: any, append: string = ""): string {
+export function ConvertListToOrderedPair(
+  list: any,
+  append: string = "",
+  isNumber: boolean = true
+): string {
   let result = ""
   list.forEach((item, index) => {
     if (index != 0) result += ","
-    result += `(${item},${index + 1}${append}) `
+    if (isNumber) result += `(${item},${index + 1}${append}) `
+    else result += `('${item}',${index + 1}${append}) `
   })
   return result
 }

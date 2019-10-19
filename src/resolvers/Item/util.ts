@@ -27,7 +27,7 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
           queryResult = await RunSingleSQL(
-            `INSERT INTO "BRAND"("nameEng") VALUES ('${arg.groupInfo.brand}') RETURNING id`
+            `INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`
           )
           brandId = queryResult[0].id
         } else {

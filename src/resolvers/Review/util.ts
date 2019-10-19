@@ -102,7 +102,7 @@ export function InsertItemReview(
         VALUES (${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.review}','${itemReview.shortReview}' ,${itemReview.score}) RETURNING id`
       )
       let reviewId = insertResult[0].id
-
+      if (itemReview.imgs === undefined) resolve(reviewId)
       let imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImage)
       let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`)
       await RunSingleSQL(
@@ -110,39 +110,11 @@ export function InsertItemReview(
         VALUES ${imgPairs}
         `
       )
-
       console.log(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
       resolve(reviewId)
     } catch (e) {
       console.log(e)
       reject(e)
-    }
-  })
-}
-
-export function InsertItemReviewImage(
-  arg: ReviewArgType.ItemReviewImgInfoInput,
-  reviewId: number
-): Promise<{}> {
-  return new Promise(async (resolve, reject) => {
-    let imageUrl = null
-    if (Object.prototype.hasOwnProperty.call(arg, "img")) {
-      imageUrl = await UploadImage(arg.img)
-      if (imageUrl == null) {
-        throw new Error("[Error] Image Upload Failed!")
-      }
-    }
-
-    try {
-      let imgId = await RunSingleSQL(`
-      INSERT INTO "ITEM_REVIEW_IMAGE"("FK_reviewId","imgUrl") 
-      VALUES (${reviewId},'${imageUrl}') RETURNING id`)
-      console.log(`Inserted ImageId: ${imgId[0].id} for ReviewId: ${reviewId}`)
-      resolve(imgId[0].id)
-    } catch (e) {
-      console.log("[Error] Failed to Insert into ITEM_REVIEW_IMAGE")
-      console.log(e)
-      reject()
     }
   })
 }

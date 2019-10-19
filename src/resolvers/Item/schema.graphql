@@ -103,7 +103,7 @@ type ItemInfo {
   id: Int!
   name: String!
   brandKor: String!
-  brandEng: String!
+  brandEng: String
   originalPrice: Int!
   salePrice: Int
   itemMinorType: ItemMinorType

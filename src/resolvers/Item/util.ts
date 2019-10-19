@@ -57,7 +57,9 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
       }
       //Insert Variation
       if (arg.variationInfo.salePrice === undefined) arg.variationInfo.salePrice = null
-      let imageUrl = await UploadImage(arg.variationInfo.image)
+      let imageUrl = ""
+      if (Object.prototype.hasOwnProperty.call(arg.variationInfo, "image"))
+        imageUrl = await UploadImage(arg.variationInfo.image)
       queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
         VALUES ('${arg.variationInfo.name}','${imageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
       resolve(queryResult[0].id)

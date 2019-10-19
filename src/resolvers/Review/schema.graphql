@@ -35,7 +35,7 @@ input ItemReviewInfoInput {
   recommendReason: RecommendReason!
   shortReview: String!
   review: String!
-  score: Int!
+  score: Float!
   imgs: [ItemReviewImgInfoInput!]
 }
 

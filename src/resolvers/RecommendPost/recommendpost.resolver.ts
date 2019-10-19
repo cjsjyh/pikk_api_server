@@ -51,6 +51,7 @@ module.exports = {
         WHERE post."pickCount" >= ${arg.postFilter.minimumPickCount}
         ${formatSql}
         `
+        console.log(postSql)
         let postResult = await GetRecommendPostList(postSql, info)
 
         return postResult

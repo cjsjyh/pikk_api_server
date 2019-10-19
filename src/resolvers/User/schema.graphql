@@ -9,6 +9,7 @@ type Mutation {
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
   createUserInfo(userInfo: UserInfoInput!): Boolean!
+  updateUserInfo(userInfo: UserInfoInput!): Boolean!
 
   isDuplicateName(name: String!): Boolean!
 }

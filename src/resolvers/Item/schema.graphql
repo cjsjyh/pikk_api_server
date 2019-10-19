@@ -81,7 +81,7 @@ input VariationInfo {
   groupId: Int
   name: String!
   salePrice: Int
-  image: Upload!
+  image: Upload
   purchaseUrl: String!
 }
 

@@ -115,6 +115,57 @@ module.exports = {
       }
     },
 
+    updateUserInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      let arg: ArgType.UserInfoInput = args.userInfo
+
+      //Make UserCredential
+      try {
+        let profileImgUrl = null
+        if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
+          profileImgUrl = await UploadImage(arg.profileImg)
+          if (profileImgUrl == null) {
+            throw new Error("[Error] Image Upload Failed!")
+          }
+        }
+
+        let qResult
+        if (profileImgUrl != null) {
+          qResult = await RunSingleSQL(
+            `UPDATE "USER_INFO" SET
+            "name" = '${arg.name}',
+            "email" = '${arg.email}',
+            "age" = ${arg.age},
+            "height" = ${arg.height},
+            "weight" = ${arg.weight},
+            "profileImgUrl"='${profileImgUrl}',
+            "phoneNum"='${arg.phoneNum}',
+            "address"='${arg.address}'
+            WHERE "FK_accountId" = ${arg.id}
+            `
+          )
+        } else {
+          qResult = await RunSingleSQL(
+            `UPDATE "USER_INFO" SET
+            "name" = '${arg.name}',
+            "email" = '${arg.email}',
+            "age" = ${arg.age},
+            "height" = ${arg.height},
+            "weight" = ${arg.weight},
+            "phoneNum"='${arg.phoneNum}',
+            "address"='${arg.address}'
+            WHERE "FK_accountId" = ${arg.id}
+            `
+          )
+        }
+        console.log(`User Info for User ${arg.id} updated`)
+        return true
+      } catch (e) {
+        console.log("[Error] Failed to update USER_INFO")
+        console.log(e)
+        return false
+      }
+    },
+
     isDuplicateName: async (parent: void, args: any): Promise<Boolean> => {
       try {
         let query = `SELECT * FROM "USER_INFO" WHERE name='${args.name}'`

@@ -133,11 +133,14 @@ export async function UploadImage(itemImg: any): Promise<string> {
           reject(err)
         }
         let imageUrl = data.Location
+        console.log("image Upload properly done")
         resolve(imageUrl)
       })
     })
+    console.log("image uploade not done yet")
     return imageUrl
   } catch (e) {
+    console.log(e)
     return null
   }
 }

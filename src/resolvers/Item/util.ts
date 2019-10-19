@@ -216,7 +216,6 @@ export async function GetItemIdInRanking(filterSql: string): Promise<ReturnType.
     FROM items
     INNER JOIN "ITEM_REVIEW" review
     ON items.id = review."FK_itemId"
-    WHERE review.score >= 4
     GROUP BY items.id, items."itemMinorType",items."itemMajorType",items."itemFinalType"
   )
   SELECT 
@@ -226,7 +225,7 @@ export async function GetItemIdInRanking(filterSql: string): Promise<ReturnType.
      ) as final_score
   FROM review_score ORDER BY final_score DESC LIMIT 100
   `
-
+  console.log(querySql)
   let ItemRank = await RunSingleSQL(querySql)
 
   return ItemRank

@@ -115,7 +115,7 @@ export function InsertItemReview(
       let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
       console.log(imgPairs)
       await RunSingleSQL(
-        `INSERT INTO "ITEM_REVIEW_IMAGE ("imgUrl","order","FK_reviewId") 
+        `INSERT INTO "ITEM_REVIEW_IMAGE" ("imgUrl","order","FK_reviewId") 
         VALUES ${imgPairs}
         `
       )

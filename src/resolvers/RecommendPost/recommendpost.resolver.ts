@@ -106,19 +106,17 @@ module.exports = {
     ): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
-      let imageUrl = null
-      if (arg.titleType == "IMAGE") {
-        if (!Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
-          throw new Error("[Error] title type IMAGE but no image sent!")
-        }
-        imageUrl = await UploadImage(arg.titleImg)
-        if (imageUrl == null) {
-          throw new Error("[Error] Image Upload Failed!")
-        }
-      }
 
       let recommendPostId: number
       try {
+        let imageUrl = null
+        if (arg.titleType == "IMAGE") {
+          if (!Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
+            throw new Error("[Error] title type IMAGE but no image sent!")
+          }
+          imageUrl = await UploadImage(arg.titleImg)
+        }
+
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(
           `INSERT INTO "RECOMMEND_POST"

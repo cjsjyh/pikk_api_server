@@ -1,6 +1,6 @@
 import { RunSingleSQL } from "../Utils/promiseUtil"
 
-function IncrementViewCountFunc(postType: string, postId: number): Promise<Boolean> {
+export function IncrementViewCountFunc(postType: string, postId: number): Promise<Boolean> {
   return new Promise(async (resolve, reject) => {
     try {
       let query = `UPDATE "${postType}_POST" SET "viewCount" = "viewCount" + 1 WHERE id = ${postId}`

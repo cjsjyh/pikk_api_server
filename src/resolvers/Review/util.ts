@@ -12,12 +12,18 @@ import { ConvertListToString, ConvertListToOrderedPair } from "../Utils/stringUt
 import { GraphQLResolveInfo } from "graphql"
 import { FetchItemsForReview } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
+import { IncrementViewCountFunc } from "../Common/util"
 
 export async function GetReviewsByPostList(postResult: any, info: GraphQLResolveInfo) {
   try {
     let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
     //CHECK IF QUERY FOR REVIEW IS NEEDED
     if (selectionSet.includes("reviews")) {
+      await Promise.all(
+        postResult.map(async post => {
+          return IncrementViewCountFunc("RECOMMEND", post.id)
+        })
+      )
       let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews")
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)

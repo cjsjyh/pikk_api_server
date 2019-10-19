@@ -25,7 +25,7 @@ type VariationInfo = {
   groupId: number
   name: string
   salePrice: number
-  imageUrl: string
+  image: any
   purchaseUrl: string
 }
 

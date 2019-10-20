@@ -145,6 +145,56 @@ module.exports = {
       }
     },
 
+    editRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
+      let arg: ArgType.RecommendPostEditInfoInput = args.recommendPostEditInfo
+
+      try {
+        await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" where id=${arg.originalPostId}`)
+      } catch (e) {
+        console.log("[ERROR] Failed to delete original Post")
+        console.log(e)
+      }
+
+      let recommendPostId: number
+      try {
+        let imageUrl = null
+        if (arg.titleType == "IMAGE") {
+          if (!Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
+            throw new Error("[Error] title type IMAGE but no image sent!")
+          }
+          imageUrl = await UploadImage(arg.titleImg)
+        }
+
+        if (arg.styleType === undefined) arg.styleType = "NONE"
+        let insertResult = await RunSingleSQL(
+          `INSERT INTO "RECOMMEND_POST"
+          ("id","FK_accountId","title","content","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") 
+          VALUES (${arg.originalPostId},${arg.accountId}, '${arg.title}', '${arg.content}', '${arg.postType}', '${arg.styleType}', 
+          '${arg.titleType}', '${arg.titleYoutubeUrl}', '${imageUrl}') RETURNING id`
+        )
+        recommendPostId = insertResult[0].id
+      } catch (e) {
+        console.log("[Error] Failed to Insert into RECOMMEND_POST")
+        console.log(e)
+        return false
+      }
+
+      try {
+        let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
+        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [
+          recommendPostId
+        ])
+        console.log(`Recommend Post created by User${arg.accountId}`)
+        return true
+      } catch (e) {
+        console.log("[Error] Failed to create RecommendPost")
+        console.log(e)
+        await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
+        return false
+      }
+    },
+
     deleteRecommendPost: async (parent: void, args: any): Promise<Boolean> => {
       try {
         let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`

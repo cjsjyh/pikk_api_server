@@ -60,8 +60,10 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
       let imageUrl = ""
 
       try {
-        if (Object.prototype.hasOwnProperty.call(arg.variationInfo, "image"))
+        if (Object.prototype.hasOwnProperty.call(arg.variationInfo, "image")) {
+          console.log("Image Exists!")
           imageUrl = await UploadImage(arg.variationInfo.image)
+        } else console.log("Image Doesn't Exist!")
         console.log("imageUrl:" + imageUrl)
       } catch (e) {
         console.log("Failed to upload image")

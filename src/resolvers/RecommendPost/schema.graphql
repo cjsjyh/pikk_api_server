@@ -1,7 +1,9 @@
 type Query {
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata: Int!
-  getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
+  getUserPickkRecommendPost(
+    pickkRecommendPostOption: PickkRecommendPostQuery!
+  ): [RecommendPostInfo!]
 }
 
 type Mutation {
@@ -9,7 +11,7 @@ type Mutation {
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
   createRecommendPost(recommendPostInfo: RecommendPostInfoInput!): Boolean!
-
+  editRecommendPost(recommendPostEditInfo: RecommendPostEditInfoInput!): Boolean!
   deleteRecommendPost(postId: Int!): Boolean
 }
 
@@ -52,7 +54,22 @@ input PickkRecommendPostQuery {
 }
 
 # Mutation
+
 input RecommendPostInfoInput {
+  accountId: Int!
+  title: String!
+  content: String!
+  postType: RecommendPostType!
+  styleType: StyleType
+  saleEndDate: Date
+  titleType: RecommendTitleType!
+  titleImg: Upload
+  titleYoutubeUrl: String
+  reviews: [ItemReviewInfoInput!]!
+}
+
+input RecommendPostEditInfoInput {
+  originalPostId: Int!
   accountId: Int!
   title: String!
   content: String!

@@ -79,37 +79,6 @@ module.exports = {
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
 
       try {
-        /*
-      let profileImgUrl = null
-      if (Object.prototype.hasOwnProperty.call(arg, "img")) {
-        arg.img.forEach(async item => {
-          const { createReadStream, filename, mimetype, encoding } = await item
-
-          let date = getFormatDate(new Date())
-          let hour = getFormatHour(new Date())
-
-          var param = {
-            Bucket: "fashiondogam-images",
-            Key: "image/" + date + hour + filename,
-            ACL: "public-read",
-            Body: createReadStream(),
-            ContentType: mimetype
-          }
-
-          await new Promise((resolve, reject) => {
-            S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-              if (err) {
-                console.log(err)
-                reject(err)
-              }
-              console.log(data)
-              imageUrl = data.Location
-              resolve()
-            })
-          })
-        })
-      }
-      */
         await RunSingleSQL(
           'INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content","postType","qnaType") VALUES ($1,$2,$3,$4,$5,$6)',
           [arg.accountId, arg.channelId, arg.title, arg.content, arg.postType, arg.qnaType]

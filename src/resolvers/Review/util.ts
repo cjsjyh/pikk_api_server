@@ -81,14 +81,9 @@ export async function GetSubField(
   FROM "${tableName}" AS subfield 
   WHERE subfield."${filterBy}" IN (${ConvertListToString(parentIdList)}) ${formatSql}`
 
-  console.log(assignTo)
-  console.log(querySql)
-
   let queryResult
   if (customSql == "") queryResult = await RunSingleSQL(querySql)
   else queryResult = await RunSingleSQL(customSql)
-
-  console.log(queryResult)
 
   if (queryResult.length == 0) {
     return queryResult
@@ -97,12 +92,6 @@ export async function GetSubField(
   let groupedSubfield = MakeGroups(queryResult, filterBy)
   //Add Review Group to Post
   AssignGroupsToParent(parentList, groupedSubfield, filterBy, assignTo, depth)
-
-  console.log("group -------")
-  console.log(groupedSubfield)
-
-  console.log("parent---------")
-  console.log(parentList)
 
   return groupedSubfield
 }
@@ -120,30 +109,34 @@ export function InsertItemReview(
         VALUES (${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.review}','${itemReview.shortReview}' ,${itemReview.score}) RETURNING id`
       )
       let reviewId = insertResult[0].id
-      if (itemReview.imgs === undefined) resolve(reviewId)
+      if (!Object.prototype.hasOwnProperty.call(itemReview, "imgs")) {
+        console.log("No Images Inserted!")
+        resolve(reviewId)
+      } else {
+        console.log("Image Inserted!")
+        let imgUrlList
+        try {
+          imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImageWrapper)
+        } catch (e) {
+          console.log("Failed to upload Images")
+          console.log(e)
+        }
 
-      let imgUrlList
-      try {
-        imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImageWrapper)
-      } catch (e) {
-        console.log("Failed to upload Images")
-        console.log(e)
-      }
-
-      try {
-        let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
-        await RunSingleSQL(
-          `INSERT INTO "ITEM_REVIEW_IMAGE" ("imgUrl","order","FK_reviewId") 
+        try {
+          let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
+          await RunSingleSQL(
+            `INSERT INTO "ITEM_REVIEW_IMAGE" ("imgUrl","order","FK_reviewId") 
         VALUES ${imgPairs}
         `
-        )
-      } catch (e) {
-        console.log("Failed to Insert into ITEM_REVIEW_IMAGE")
-        console.log(e)
-      }
+          )
+        } catch (e) {
+          console.log("Failed to Insert into ITEM_REVIEW_IMAGE")
+          console.log(e)
+        }
 
-      console.log(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
-      resolve(reviewId)
+        console.log(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
+        resolve(reviewId)
+      }
     } catch (e) {
       console.log(e)
       reject(e)

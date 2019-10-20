@@ -3,24 +3,7 @@ import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 
 module.exports = {
-  Mutation: {
-    FollowTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<number> => {
-      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
-      let arg: ReturnType.FollowInfo = args.followInfo
-
-      try {
-        let query = `SELECT toggle" + arg.targetType + "Follow(${arg.accountId},${arg.targetId})`
-        let result = await RunSingleSQL(query)
-        result = Object.values(result[0])
-        console.log(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)
-        return result[0]
-      } catch (e) {
-        console.log("[Error] Failed to Insert into FOLLOWER")
-        console.log(e)
-        throw new Error("[Error] Failed to Insert into FOLLOWER")
-      }
-    },
-
+  Query: {
     isFollowingTarget: async (parent: void, args: MutationArgInfo): Promise<Boolean> => {
       let arg: ReturnType.FollowInfo = args.followInfo
 
@@ -46,6 +29,25 @@ module.exports = {
         console.log("[Error] Failed to check following status")
         console.log(e)
         throw new Error("[Error] Failed to check following status")
+      }
+    }
+  },
+
+  Mutation: {
+    FollowTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<number> => {
+      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
+      let arg: ReturnType.FollowInfo = args.followInfo
+
+      try {
+        let query = `SELECT toggle" + arg.targetType + "Follow(${arg.accountId},${arg.targetId})`
+        let result = await RunSingleSQL(query)
+        result = Object.values(result[0])
+        console.log(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)
+        return result[0]
+      } catch (e) {
+        console.log("[Error] Failed to Insert into FOLLOWER")
+        console.log(e)
+        throw new Error("[Error] Failed to Insert into FOLLOWER")
       }
     },
 

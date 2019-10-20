@@ -1,10 +1,12 @@
 scalar Upload
 scalar Date
 
+type Query {
+  isFollowingTarget(followInfo: FollowInfoInput!): Boolean!
+}
+
 type Mutation {
   FollowTarget(followInfo: FollowInfoInput!): Int!
-  isFollowingTarget(followInfo: FollowInfoInput!): Boolean!
-
   IncrementViewCount(postType: PostType!, postId: Int!): Boolean!
 }
 

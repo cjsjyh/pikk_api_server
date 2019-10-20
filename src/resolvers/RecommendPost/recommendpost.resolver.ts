@@ -53,7 +53,6 @@ module.exports = {
         `
         console.log(postSql)
         let postResult = await GetRecommendPostList(postSql, info)
-
         return postResult
       } catch (e) {
         console.log(e)

@@ -10,6 +10,7 @@ type Mutation {
   """
   createUserInfo(userInfo: UserInfoInput!): Boolean!
   updateUserInfo(userInfo: UserInfoInput!): Boolean!
+  updateUserChannelInfo(userChannelInfo: UserChannelInfoInput!): Boolean!
 
   isDuplicateName(name: String!): Boolean!
 }
@@ -61,6 +62,13 @@ input UserInfoInput {
   phoneNum: String
   address: String
   rank: Int
+}
+
+input UserChannelInfoInput {
+  id: Int!
+  channel_snsUrl: String
+  channel_titleImg: Upload
+  channel_description: String
 }
 
 #---------------

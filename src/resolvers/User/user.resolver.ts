@@ -115,6 +115,46 @@ module.exports = {
       }
     },
 
+    updateUserChannelInfo: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
+      let arg: ArgType.UserChannelInfoInput = args.userChannelInfo
+      try {
+        let setSql = ""
+        let isFirst = true
+        if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImg")) {
+          let imgUrl = await UploadImage(arg.channel_titleImg)
+          setSql += `"channel_titleImgUrl"='${imgUrl}'`
+          isFirst = false
+        }
+
+        if (Object.prototype.hasOwnProperty.call(arg, "channel_snsUrl")) {
+          if (!isFirst) setSql += ", "
+          isFirst = false
+          setSql += `"channel_snsUrl"='${arg.channel_snsUrl}'`
+        }
+
+        if (Object.prototype.hasOwnProperty.call(arg, "channel_description")) {
+          if (!isFirst) setSql += ", "
+          isFirst = false
+          setSql += `"channel_description"='${arg.channel_description}'`
+        }
+
+        await RunSingleSQL(`
+          UPDATE "USER_INFO" SET
+          ${setSql}
+          WHERE "FK_accountId"=${arg.id}
+        `)
+        return true
+      } catch (e) {
+        console.log("[Error] Failed to update user channel info")
+        console.log(e)
+        return false
+      }
+    },
+
     updateUserInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.UserInfoInput = args.userInfo
 

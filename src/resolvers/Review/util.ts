@@ -82,6 +82,9 @@ export async function GetSubField(
   FROM "${tableName}" AS subfield 
   WHERE subfield."${filterBy}" IN (${ConvertListToString(parentIdList)}) ${formatSql}`
 
+  console.log(assignTo)
+  console.log(querySql)
+
   let queryResult
   if (customSql == "") queryResult = await RunSingleSQL(querySql)
   else queryResult = await RunSingleSQL(customSql)

@@ -122,7 +122,9 @@ export async function UploadImageWrapper(imgObj: any): Promise<string> {
 }
 
 export async function UploadImage(itemImg: any): Promise<string> {
+  console.log("Uploading____")
   console.log(itemImg)
+  console.log("_____________")
   const { createReadStream, filename, mimetype, encoding } = await itemImg
 
   let date = getFormatDate(new Date())
@@ -151,6 +153,7 @@ export async function UploadImage(itemImg: any): Promise<string> {
     console.log("image uploade not done yet")
     return imageUrl
   } catch (e) {
+    console.log("Failed to Upload Image")
     console.log(e)
     return null
   }

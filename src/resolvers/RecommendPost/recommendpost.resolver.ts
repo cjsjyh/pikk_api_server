@@ -141,6 +141,7 @@ module.exports = {
       } catch (e) {
         console.log("[Error] Failed to create RecommendPost")
         console.log(e)
+        await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
         return false
       }
     },

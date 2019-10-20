@@ -37,8 +37,7 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           "FK_reviewId",
           "imgs",
           2,
-          "",
-          `ORDER BY "order" ASC`
+          ""
         )
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
@@ -89,6 +88,8 @@ export async function GetSubField(
   if (customSql == "") queryResult = await RunSingleSQL(querySql)
   else queryResult = await RunSingleSQL(customSql)
 
+  console.log(queryResult)
+
   if (queryResult.length == 0) {
     return queryResult
   }
@@ -96,6 +97,13 @@ export async function GetSubField(
   let groupedSubfield = MakeGroups(queryResult, filterBy)
   //Add Review Group to Post
   AssignGroupsToParent(parentList, groupedSubfield, filterBy, assignTo, depth)
+
+  console.log("group -------")
+  console.log(groupedSubfield)
+
+  console.log("parent---------")
+  console.log(parentList)
+
   return groupedSubfield
 }
 

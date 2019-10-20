@@ -150,7 +150,6 @@ export async function UploadImage(itemImg: any): Promise<string> {
         resolve(imageUrl)
       })
     })
-    console.log("image uploade not done yet")
     return imageUrl
   } catch (e) {
     console.log("Failed to Upload Image")

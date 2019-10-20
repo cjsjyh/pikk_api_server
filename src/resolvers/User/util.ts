@@ -36,6 +36,7 @@ export async function FetchUserForReview(reviewInfo: any): Promise<{}> {
         `SELECT "FK_accountId" FROM "RECOMMEND_POST" WHERE id = ${reviewInfo.FK_postId}`
       )
       queryResult = await GetUserInfoByIdList(ExtractFieldFromList(queryResult, "FK_accountId"))
+      queryResult[0].id = queryResult[0].FK_accountId
       reviewInfo.userInfo = queryResult[0]
       resolve()
     } catch (e) {

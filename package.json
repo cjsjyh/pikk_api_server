@@ -42,7 +42,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
-    "express-status-monitor": "^1.2.6",
+    "express-status-monitor": "^1.2.7",
     "glob": "^7.1.4",
     "graphql": "^14.4.2",
     "graphql-depth-limit": "^1.1.0",
@@ -51,6 +51,8 @@
     "lodash": "^4.17.15",
     "merge-graphql-schemas": "^1.7.0",
     "ncp": "^2.0.0",
-    "pg": "^7.12.1"
+    "pg": "^7.12.1",
+    "rate-limiter-flexible": "^1.1.6",
+    "redis": "^2.8.0"
   }
 }

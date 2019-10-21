@@ -7,6 +7,7 @@ import cors from "cors"
 const path = require("path")
 var jwt = require("jsonwebtoken")
 require("dotenv").config()
+const rateLimiterRedisMiddleware = require("./database/rateLimiter")
 
 //IMPORT GRAPHQL RELATED PACKAGES
 import depthLimit from "graphql-depth-limit"
@@ -38,13 +39,14 @@ var corsOptions = {
       if (whitelist.indexOf(origin) !== -1) {
         callback(null, true)
       } else {
+        console.log(`[CORS] ${origin} Not allowed by CORS`)
         callback(new Error("Not allowed by CORS"))
       }
     }
   }
 }
-
 app.use("*", cors(corsOptions))
+//app.use(rateLimiterRedisMiddleware)
 app.use(require("express-status-monitor")())
 app.use(compression())
 

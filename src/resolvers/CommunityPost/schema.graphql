@@ -39,7 +39,7 @@ input CommunityPostQueryFilter {
 }
 
 input CommunityPostQuery {
-  filterGeneral: CommunityPostFilterGeneral!
+  filterGeneral: CommunityPostFilterGeneral
   postFilter: CommunityPostQueryFilter!
 }
 
@@ -78,5 +78,4 @@ type CommunityPostInfo {
   imageUrl: [String]
   postType: String!
   qnaType: String
-  
 }

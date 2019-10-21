@@ -208,6 +208,7 @@ module.exports = {
         let formatSql = GetFormatSql(arg)
         let postSql = `SELECT "FK_channelId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
         let followingChannelList = await RunSingleSQL(postSql)
+        if (followingChannelList.length == 0) return []
 
         let channelIdList = ExtractFieldFromList(followingChannelList, "FK_channelId")
         let requestSql = UserInfoSelectionField(info)

@@ -1,9 +1,7 @@
 type Query {
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata: Int!
-  getUserPickkRecommendPost(
-    pickkRecommendPostOption: PickkRecommendPostQuery!
-  ): [RecommendPostInfo!]
+  getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
 }
 
 type Mutation {
@@ -44,12 +42,12 @@ input RecommendPostQueryFilter {
 }
 
 input RecommendPostQuery {
-  filterGeneral: RecommendPostFilterGeneral!
+  filterGeneral: RecommendPostFilterGeneral
   postFilter: RecommendPostQueryFilter!
 }
 
 input PickkRecommendPostQuery {
-  filterGeneral: RecommendPostFilterGeneral!
+  filterGeneral: RecommendPostFilterGeneral
   userId: Int!
 }
 

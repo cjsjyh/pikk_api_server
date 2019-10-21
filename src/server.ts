@@ -7,7 +7,7 @@ import cors from "cors"
 const path = require("path")
 var jwt = require("jsonwebtoken")
 require("dotenv").config()
-const rateLimiterRedisMiddleware = require("./database/rateLimiter")
+//const rateLimiterRedisMiddleware = require("./database/rateLimiter")
 
 //IMPORT GRAPHQL RELATED PACKAGES
 import depthLimit from "graphql-depth-limit"

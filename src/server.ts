@@ -7,7 +7,6 @@ import cors from "cors"
 const path = require("path")
 var jwt = require("jsonwebtoken")
 require("dotenv").config()
-const rateLimiterRedisMiddleware = require("./database/rateLimiter")
 
 //IMPORT GRAPHQL RELATED PACKAGES
 import depthLimit from "graphql-depth-limit"
@@ -46,7 +45,11 @@ var corsOptions = {
   }
 }
 app.use("*", cors(corsOptions))
-app.use(rateLimiterRedisMiddleware)
+
+if (process.env.MODE != "DEVELOPMENT") {
+  const rateLimiterRedisMiddleware = require("./database/rateLimiter")
+  app.use(rateLimiterRedisMiddleware)
+}
 app.use(require("express-status-monitor")())
 app.use(compression())
 
@@ -57,9 +60,13 @@ const server = new ApolloServer({
     if (process.env.MODE == "DEVELOPMENT") return { IsVerified: true }
 
     const header: any = req.headers
-    if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid"))
+    if (
+      !Object.prototype.hasOwnProperty.call(header, "authorizationtoken") ||
+      !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")
+    )
       return { IsVerified: false }
-    else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined") return { IsVerified: false }
+    else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined")
+      return { IsVerified: false }
 
     try {
       var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
@@ -82,4 +89,6 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 80 }, (): void => console.log(`GraphQL is now running on http://localhost:80/graphql`))
+httpServer.listen({ port: 80 }, (): void =>
+  console.log(`GraphQL is now running on http://localhost:80/graphql`)
+)

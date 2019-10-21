@@ -132,9 +132,14 @@ module.exports = {
 
       try {
         let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
+        for (let index = 0; index < arg.reviews.length; index++) {
+          await InsertItemReview(arg.reviews[index], [recommendPostId])
+        }
+        /*
         let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [
           recommendPostId
         ])
+        */
         console.log(`Recommend Post created by User${arg.accountId}`)
         return true
       } catch (e) {

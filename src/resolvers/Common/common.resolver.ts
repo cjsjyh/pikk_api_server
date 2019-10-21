@@ -10,7 +10,7 @@ module.exports = {
       let tableName
       let variableName
       if (arg.targetType == "ITEM") {
-        tableName = "ITEM_VARIATION"
+        tableName = "ITEM"
         variableName = "itemId"
       } else if (arg.targetType == "RECOMMENDPOST") {
         tableName = "RECOMMEND_POST"
@@ -27,7 +27,9 @@ module.exports = {
         else return true
       } catch (e) {
         console.log("[Error] Failed to check following status")
+        console.log("-----")
         console.log(e)
+        console.log("-----")
         throw new Error("[Error] Failed to check following status")
       }
     }

@@ -39,7 +39,7 @@ module.exports = {
       let arg: ReturnType.FollowInfo = args.followInfo
 
       try {
-        let query = `SELECT toggle" + arg.targetType + "Follow(${arg.accountId},${arg.targetId})`
+        let query = `SELECT toggle${arg.targetType}Follow(${arg.accountId},${arg.targetId})`
         let result = await RunSingleSQL(query)
         result = Object.values(result[0])
         console.log(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)

@@ -1,11 +1,21 @@
 const redis = require("redis")
 const { RateLimiterRedis } = require("rate-limiter-flexible")
 
-const redisClient = redis.createClient({
-  host: "api-redis.rt04yt.ng.0001.apn2.cache.amazonaws.com",
-  port: 6379,
-  enable_offline_queue: false
-})
+let redisClient
+
+if (process.env.MODE == "DEVELOPMENT") {
+  redisClient = redis.createClient({
+    host: process.env.REDIS_HOST_DEVELOPMENT,
+    port: 6379,
+    enable_offline_queue: false
+  })
+} else {
+  redisClient = redis.createClient({
+    host: process.env.REDIS_HOST_DEPLOY,
+    port: 6379,
+    enable_offline_queue: false
+  })
+}
 
 const rateLimiter = new RateLimiterRedis({
   redis: redisClient,

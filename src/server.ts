@@ -26,7 +26,7 @@ app.use(function(req, res, next) {
 })
 var whitelist = [
   "https://pickk.one",
-  "http://pickk.one",
+  "https://www.pickk.one",
   "https://pickkapiserver.online",
   "http://pickkapiserver.online",
   "pickkapiserver.online",
@@ -58,8 +58,6 @@ app.use(compression())
 const server = new ApolloServer({
   schema,
   context: ({ req }) => {
-    if (process.env.MODE == "DEVELOPMENT") return { IsVerified: true }
-
     const header: any = req.headers
     if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid"))
       return { IsVerified: false }

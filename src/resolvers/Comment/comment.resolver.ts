@@ -14,7 +14,9 @@ module.exports = {
 
       try {
         let boardName = GetBoardName(arg.boardType)
-        let queryResult = await RunSingleSQL(`SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`)
+        let querySql = `SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`
+        console.log(querySql)
+        let queryResult = await RunSingleSQL(querySql)
         let commentResults: ReturnType.CommentInfo[] = queryResult
         commentResults.forEach(comment => {
           comment.postId = comment.FK_postId
@@ -23,6 +25,7 @@ module.exports = {
 
         return commentResults
       } catch (e) {
+        console.log("[Error] Failed to Fetch comments")
         console.log(e)
         throw new Error("[Error] Failed to fetch comments")
       }
@@ -52,12 +55,14 @@ module.exports = {
 
       try {
         let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId} and "FK_accountId" = ${ctx.userId}`
+        console.log(querySql)
         let rows = await RunSingleSQL(querySql)
         if (rows.length == 0) throw new Error(`[Error] Unauthorized User trying to delete Comment`)
 
         console.log(`Comment on Post${arg.targetType} id ${arg.targetId}`)
         return true
       } catch (e) {
+        console.log("[Error] Failed to delete Comment")
         console.log(e)
         return false
       }

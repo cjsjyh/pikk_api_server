@@ -66,7 +66,7 @@ module.exports = {
   },
   Mutation: {
     createItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
+      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.ItemInfoInput = args.itemInfoInput
 
       try {

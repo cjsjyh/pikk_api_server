@@ -14,9 +14,7 @@ module.exports = {
 
       try {
         let boardName = GetBoardName(arg.boardType)
-        let queryResult = await RunSingleSQL(
-          `SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`
-        )
+        let queryResult = await RunSingleSQL(`SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`)
         let commentResults: ReturnType.CommentInfo[] = queryResult
         commentResults.forEach(comment => {
           comment.postId = comment.FK_postId
@@ -32,19 +30,15 @@ module.exports = {
   },
   Mutation: {
     createComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
+      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.CommentInfoInput = args.commentInfo
 
       try {
-        let querySql = `INSERT INTO ${ConvertToTableName(
-          arg.targetType
-        )} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${arg.accountId},'${
-          arg.content
-        }')`
+        let querySql = `INSERT INTO ${ConvertToTableName(arg.targetType)} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${
+          arg.accountId
+        },'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
-        console.log(
-          `Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`
-        )
+        console.log(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
         return true
       } catch (e) {
         console.log("[Error] Failed to create Comment")
@@ -53,14 +47,14 @@ module.exports = {
     },
 
     deleteComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
+      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.CommentDeleteInput = args.commentInfo
 
       try {
-        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${
-          arg.targetId
-        }`
+        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId} and "FK_accountId" = ${ctx.userId}`
         let rows = await RunSingleSQL(querySql)
+        if (rows.length == 0) throw new Error(`[Error] Unauthorized User trying to delete Comment`)
+
         console.log(`Comment on Post${arg.targetType} id ${arg.targetId}`)
         return true
       } catch (e) {

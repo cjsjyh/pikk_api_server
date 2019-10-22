@@ -69,8 +69,7 @@ export async function GetSubField(
 
   let querySql = `
   SELECT 
-    subfield.*, 
-    rank() OVER (PARTITION BY subfield."${filterBy}") 
+    subfield.* 
   FROM "${tableName}" AS subfield 
   WHERE subfield."${filterBy}" IN (${ConvertListToString(parentIdList)}) ${formatSql}`
 

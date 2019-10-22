@@ -4,12 +4,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import {
-  GetMetaData,
-  SequentialPromiseValue,
-  RunSingleSQL,
-  UploadImage
-} from "../Utils/promiseUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
 import { GetFormatSql, MakeMultipleQuery } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview } from "../Review/util"
@@ -18,12 +13,7 @@ import { GetRecommendPostList } from "./util"
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: any,
-      info: GraphQLResolveInfo
-    ): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
       try {
         let filterSql: string = ""
@@ -98,12 +88,8 @@ module.exports = {
     }
   },
   Mutation: {
-    createRecommendPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
+    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
 
       let recommendPostId: number
@@ -151,7 +137,7 @@ module.exports = {
     },
 
     editRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
+      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.RecommendPostEditInfoInput = args.recommendPostEditInfo
 
       try {
@@ -187,9 +173,7 @@ module.exports = {
 
       try {
         let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
-        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [
-          recommendPostId
-        ])
+        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [recommendPostId])
         console.log(`Recommend Post created by User${arg.accountId}`)
         return true
       } catch (e) {
@@ -200,10 +184,14 @@ module.exports = {
       }
     },
 
-    deleteRecommendPost: async (parent: void, args: any): Promise<Boolean> => {
+    deleteRecommendPost: async (parent: void, args: any, ctx: any): Promise<Boolean> => {
+      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
+
       try {
-        let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`
+        let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId} AND "FK_accountId"=${ctx.userId} RETURNING id`
         let result = await RunSingleSQL(query)
+        if (result.length == 0) throw new Error(`[Error] Unauthorized User trying to delete RecommendPost`)
+
         console.log(`DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`)
         return true
       } catch (e) {
@@ -244,9 +232,7 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(
-        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
-      )
+      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       if (rows.length == 0) return null
 
       let postIdSql = ""

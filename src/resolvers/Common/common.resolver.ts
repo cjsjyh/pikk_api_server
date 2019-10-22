@@ -37,7 +37,7 @@ module.exports = {
 
   Mutation: {
     FollowTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<number> => {
-      if (!ctx.IsVerified) throw new Error("USER NOT LOGGED IN!")
+      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ReturnType.FollowInfo = args.followInfo
 
       try {

@@ -130,8 +130,7 @@ async function GetSimpleItemInfoByPostId(postList: any) {
   "BRAND"."nameKor" as "brandKor",
   "BRAND"."nameEng"as "brandEng",
   gr."imageUrl",
-	  gr."postId",
-    rank() OVER (PARTITION BY gr."postId")
+	  gr."postId"
     FROM gr
     INNER JOIN "BRAND" ON "BRAND".id = gr."FK_brandId"
     `

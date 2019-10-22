@@ -25,13 +25,28 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           return IncrementViewCountFunc("RECOMMEND", post.id)
         })
       )
-      let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", "ORDER BY id ASC")
+      let reviewResult = await GetSubField(
+        postResult,
+        "ITEM_REVIEW",
+        "FK_postId",
+        "reviews",
+        1,
+        "",
+        "ORDER BY id ASC"
+      )
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
         review.imgs = []
       })
       if (IsSubFieldRequired(selectionSet, "reviews", "imgs")) {
-        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs", 2, "")
+        let imgResult = await GetSubField(
+          reviewResult,
+          "ITEM_REVIEW_IMAGE",
+          "FK_reviewId",
+          "imgs",
+          2,
+          ""
+        )
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
@@ -80,6 +95,7 @@ export async function GetSubField(
   if (queryResult.length == 0) {
     return queryResult
   }
+
   //Grouping Reviews
   let groupedSubfield = MakeGroups(queryResult, filterBy, parentIdList)
   //Add Review Group to Post
@@ -88,7 +104,10 @@ export async function GetSubField(
   return groupedSubfield
 }
 
-export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, args: Array<number>): Promise<{}> {
+export function InsertItemReview(
+  itemReview: ReviewArgType.ItemReviewInfoInput,
+  args: Array<number>
+): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       let postId = args[0]

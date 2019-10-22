@@ -115,9 +115,6 @@ export async function UploadImageWrapper(imgObj: any): Promise<string> {
 }
 
 export async function UploadImage(itemImg: any): Promise<string> {
-  console.log("Uploading____")
-  console.log(itemImg)
-  console.log("_____________")
   const { createReadStream, filename, mimetype, encoding } = await itemImg
 
   let date = getFormatDate(new Date())

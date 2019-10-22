@@ -4,11 +4,7 @@ const { S3 } = require("../../database/aws_s3")
 import * as AWS from "aws-sdk"
 import { getFormatDate, getFormatHour } from "./stringUtil"
 
-export async function SequentialPromiseValue<T, U>(
-  arr: T[],
-  func: Function,
-  args: Array<U> = []
-): Promise<{}> {
+export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       let resultArr = new Array<T>(arr.length)
@@ -32,26 +28,22 @@ export async function SequentialPromiseValue<T, U>(
   })
 }
 
-export function MakeGroups(data: any, groupBy: string): any {
-  let resultArray = [[]]
-  let currentId = -1
-  data.forEach(datum => {
-    if (datum[groupBy] != currentId) {
-      if (currentId != -1) resultArray.push([])
-      currentId = datum[groupBy]
-    }
-    resultArray[resultArray.length - 1].push(datum)
+export function MakeGroups(data: any, groupBy: string, groupIdList: number[]): any {
+  let resultArray = []
+  groupIdList.forEach(groupId => {
+    let currentArray = []
+    data.forEach(datum => {
+      if (datum[groupBy] == groupId) {
+        currentArray.push(datum)
+      }
+    })
+    resultArray.push(currentArray)
   })
+
   return resultArray
 }
 
-export function AssignGroupsToParent(
-  parentsGroup: any,
-  groups: any,
-  parentId: string,
-  parentField: string,
-  depth: number
-) {
+export function AssignGroupsToParent(parentsGroup: any, groups: any, parentId: string, parentField: string, depth: number) {
   groups.forEach(item => {
     if (depth == 2) {
       parentsGroup.forEach(parents => {

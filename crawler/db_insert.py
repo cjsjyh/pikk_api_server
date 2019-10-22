@@ -6,6 +6,34 @@ def convertStringPriceToInt(price):
   result = "".join(result)
   return result
 
+def FollowPost():
+  password = input("db password: ")
+  conn = pg2.connect("host=52.79.246.136 dbname=postgres user=postgres password="+password)
+  conn.autocommit = True
+  curs = conn.cursor()
+
+  for i in range(1,8):
+    curs.execute("""INSERT INTO "RECOMMEND_POST_FOLLOWER"("FK_accountId", "FK_postId") VALUES (%d,198)""" %(i))
+
+def InsertUsers():
+  password = input("db password: ")
+  conn = pg2.connect("host=52.79.246.136 dbname=postgres user=postgres password="+password)
+  conn.autocommit = True
+  curs = conn.cursor()
+
+  for i in range(5,40):
+    curs.execute("""INSERT INTO "USER_CONFIDENTIAL"(id,"providerType","providerId") VALUES (%s,'FACEBOOK','fb%s')""" %(str(i),str(i)))
+
+def InsertUserInfo():
+  password = input("db password: ")
+  conn = pg2.connect("host=52.79.246.136 dbname=postgres user=postgres password="+password)
+  conn.autocommit = True
+  curs = conn.cursor()
+
+  for i in range(1,40):
+    curs.execute("""INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight") VALUES (%d,'name','email',1,1,1)""" %(i))
+
+
 def InsertFinalCategory():
   try:
     categoryList = open("major_category.txt","r")
@@ -131,7 +159,10 @@ def InsertBrands():
   conn.close()
 
 def main():
-  InsertFinalCategory()
+  FollowPost()
+  #InsertUserInfo()
+  #InsertUsers()
+  #InsertFinalCategory()
   #InsertItems()
   #InsertBrands()
 

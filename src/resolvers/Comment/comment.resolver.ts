@@ -15,7 +15,6 @@ module.exports = {
       try {
         let boardName = GetBoardName(arg.boardType)
         let querySql = `SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`
-        console.log(querySql)
         let queryResult = await RunSingleSQL(querySql)
         let commentResults: ReturnType.CommentInfo[] = queryResult
         commentResults.forEach(comment => {
@@ -54,8 +53,7 @@ module.exports = {
       let arg: ArgType.CommentDeleteInput = args.commentInfo
 
       try {
-        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId} and "FK_accountId" = ${ctx.userId}`
-        console.log(querySql)
+        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId} and "FK_accountId" = ${ctx.userId} RETURNING id`
         let rows = await RunSingleSQL(querySql)
         if (rows.length == 0) throw new Error(`[Error] Unauthorized User trying to delete Comment`)
 

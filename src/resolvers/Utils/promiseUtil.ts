@@ -45,6 +45,7 @@ export function MakeGroups(data: any, groupBy: string, groupIdList: number[]): a
 
 export function AssignGroupsToParent(parentsGroup: any, groups: any, parentId: string, parentField: string, depth: number) {
   groups.forEach(item => {
+    if (item.length == 0) return
     if (depth == 2) {
       parentsGroup.forEach(parents => {
         parents.forEach(parent => {

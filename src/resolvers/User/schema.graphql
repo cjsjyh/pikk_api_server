@@ -10,7 +10,7 @@ type Mutation {
   Return > [true] : DB save successful  [false] : DB save unsuccessful
   """
   createUserInfo(userInfo: UserInfoInput!): Boolean!
-  updateUserInfo(userInfo: UserInfoInput!): Boolean!
+  updateUserInfo(userEditInfo: UserEditInfoInput!): Boolean!
   updateUserChannelInfo(userChannelInfo: UserChannelInfoInput!): Boolean!
 
   isDuplicateName(name: String!): Boolean!
@@ -59,6 +59,19 @@ input UserInfoInput {
   age: Int!
   height: Int!
   weight: Int!
+  profileImg: Upload
+  phoneNum: String
+  address: String
+  rank: Int
+}
+
+input UserEditInfoInput {
+  id: Int!
+  name: String
+  email: String
+  age: Int
+  height: Int
+  weight: Int
   profileImg: Upload
   phoneNum: String
   address: String

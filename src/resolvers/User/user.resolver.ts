@@ -122,47 +122,14 @@ module.exports = {
     },
 
     updateUserInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      let arg: ArgType.UserInfoInput = args.userInfo
-
+      let arg: ArgType.UserEditInfoInput = args.userEditInfo
       //Make UserCredential
       try {
-        let profileImgUrl = null
-        if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
-          profileImgUrl = await UploadImage(arg.profileImg)
-          if (profileImgUrl == null) {
-            throw new Error("[Error] Image Upload Failed!")
-          }
-        }
-
-        let qResult
-        if (profileImgUrl != null) {
-          qResult = await RunSingleSQL(
-            `UPDATE "USER_INFO" SET
-            "name" = '${arg.name}',
-            "email" = '${arg.email}',
-            "age" = ${arg.age},
-            "height" = ${arg.height},
-            "weight" = ${arg.weight},
-            "profileImgUrl"='${profileImgUrl}',
-            "phoneNum"='${arg.phoneNum}',
-            "address"='${arg.address}'
-            WHERE "FK_accountId" = ${arg.id}
-            `
-          )
-        } else {
-          qResult = await RunSingleSQL(
-            `UPDATE "USER_INFO" SET
-            "name" = '${arg.name}',
-            "email" = '${arg.email}',
-            "age" = ${arg.age},
-            "height" = ${arg.height},
-            "weight" = ${arg.weight},
-            "phoneNum"='${arg.phoneNum}',
-            "address"='${arg.address}'
-            WHERE "FK_accountId" = ${arg.id}
-            `
-          )
-        }
+        let querySql = `UPDATE "USER_INFO" SET
+        ${await GetUpdateUserInfoSql(arg)}
+        WHERE "FK_accountId" = ${arg.id}
+        `
+        let qResult = await RunSingleSQL(querySql)
         console.log(`User Info for User ${arg.id} updated`)
         return true
       } catch (e) {
@@ -271,4 +238,64 @@ function UserInfoSelectionField(info: GraphQLResolveInfo) {
   } catch (e) {
     console.log(e)
   }
+}
+
+async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<string> {
+  let resultSql = ""
+  let isMultiple = false
+
+  let profileImgUrl = null
+  if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
+    try {
+      profileImgUrl = await UploadImage(arg.profileImg)
+      resultSql += `"profileImgUrl"='${profileImgUrl}'`
+      isMultiple = true
+    } catch (e) {
+      throw new Error("[Error] Image Upload Failed!")
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "name")) {
+    if (isMultiple) resultSql += " ,"
+    resultSql += `"name" = '${arg.name}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "email")) {
+    if (isMultiple) resultSql += " ,"
+    resultSql += `"email" = '${arg.email}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "age")) {
+    if (isMultiple) resultSql += " ,"
+    resultSql += `"age" = ${arg.age}`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "height")) {
+    if (isMultiple) resultSql += " ,"
+    resultSql += `"height" = ${arg.height}`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "weight")) {
+    if (isMultiple) resultSql += " ,"
+    resultSql += `"weight" = ${arg.weight}`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "phoneNum")) {
+    if (isMultiple) resultSql += " ,"
+    resultSql += `"phoneNum"='${arg.phoneNum}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "address")) {
+    if (isMultiple) resultSql += " ,"
+    resultSql += `"address"='${arg.address}'`
+    isMultiple = true
+  }
+
+  return resultSql
 }

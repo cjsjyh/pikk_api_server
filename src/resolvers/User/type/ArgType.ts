@@ -4,6 +4,7 @@
 export type MutationArgInfo = {
   userAccountInfo: UserCredentialInput
   userInfo: UserInfoInput
+  userEditInfo: UserEditInfoInput
   userChannelInfo: UserChannelInfoInput
 }
 
@@ -13,6 +14,20 @@ export type UserCredentialInput = {
 }
 
 export type UserInfoInput = {
+  id: number
+  name: string
+  email: string
+  age: number
+  height: number
+  weight: number
+  profileImg: any
+  profileImgUrl: string
+  phoneNum: number
+  address: string
+  rank: number
+}
+
+export type UserEditInfoInput = {
   id: number
   name: string
   email: string

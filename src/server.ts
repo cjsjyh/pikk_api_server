@@ -29,7 +29,8 @@ var whitelist = [
   "http://pickk.one",
   "https://pickkapiserver.online",
   "http://pickkapiserver.online",
-  "https://pickkcli.greatsumini.now.sh"
+  "pickkapiserver.online",
+  "https://pikkcli.greatsumini.now.sh"
 ]
 var corsOptions = {
   origin: function(origin, callback) {
@@ -71,10 +72,10 @@ const server = new ApolloServer({
       return { IsVerified: false }
     }
     let isVerified = false
-    if (decoded == header.authorizationuserid) isVerified = true
+    if (decoded.id == header.authorizationuserid) isVerified = true
     return {
       IsVerified: isVerified,
-      userId: decoded
+      userId: decoded.id
     }
   },
   validationRules: [depthLimit(5)]

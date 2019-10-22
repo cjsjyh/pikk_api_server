@@ -73,8 +73,6 @@ export async function GetSubField(
   FROM "${tableName}" AS subfield 
   WHERE subfield."${filterBy}" IN (${ConvertListToString(parentIdList)}) ${formatSql}`
 
-  console.log(querySql)
-
   let queryResult
   if (customSql == "") queryResult = await RunSingleSQL(querySql)
   else queryResult = await RunSingleSQL(customSql)
@@ -84,10 +82,8 @@ export async function GetSubField(
   }
   //Grouping Reviews
   let groupedSubfield = MakeGroups(queryResult, filterBy, parentIdList)
-  console.log("MakeGroups done")
   //Add Review Group to Post
   AssignGroupsToParent(parentList, groupedSubfield, filterBy, assignTo, depth)
-  console.log("assign to parent done")
 
   return groupedSubfield
 }

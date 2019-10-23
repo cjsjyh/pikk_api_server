@@ -6,6 +6,7 @@ import { MutationArgInfo } from "./type/ArgType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertToTableName, GetBoardName } from "./util"
 import { CloudWatchEvents } from "aws-sdk"
+import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Query: {
@@ -32,8 +33,8 @@ module.exports = {
   },
   Mutation: {
     createComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.CommentInfoInput = args.commentInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
         let querySql = `INSERT INTO ${ConvertToTableName(arg.targetType)} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${
@@ -49,13 +50,12 @@ module.exports = {
     },
 
     deleteComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.CommentDeleteInput = args.commentInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId} and "FK_accountId" = ${ctx.userId} RETURNING id`
+        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)
-        if (rows.length == 0) throw new Error(`[Error] Unauthorized User trying to delete Comment`)
 
         console.log(`Comment on Post${arg.targetType} id ${arg.targetId}`)
         return true

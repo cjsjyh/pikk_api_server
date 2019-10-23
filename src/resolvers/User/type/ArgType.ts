@@ -14,7 +14,7 @@ export type UserCredentialInput = {
 }
 
 export type UserInfoInput = {
-  id: number
+  accountId: number
   name: string
   email: string
   age: number
@@ -28,7 +28,7 @@ export type UserInfoInput = {
 }
 
 export type UserEditInfoInput = {
-  id: number
+  accountId: number
   name: string
   email: string
   age: number
@@ -42,7 +42,7 @@ export type UserEditInfoInput = {
 }
 
 export type UserChannelInfoInput = {
-  id: number
+  accountId: number
   channel_snsUrl: string
   channel_titleImg: any
   channel_description: string

@@ -10,7 +10,7 @@ export function GetRedisClient() {
     })
   } else if (process.env.Mode == "DEPLOY") {
     redisConnection = redis.createClient({
-      host: process.env.REDIS_HOST_DEPLOY,
+      host: process.env.REDIS_HOST_DEVEOPMENT,
       port: 6379,
       enable_offline_queue: false
     })

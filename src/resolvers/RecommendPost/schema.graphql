@@ -10,7 +10,7 @@ type Mutation {
   """
   createRecommendPost(recommendPostInfo: RecommendPostInfoInput!): Boolean!
   editRecommendPost(recommendPostEditInfo: RecommendPostEditInfoInput!): Boolean!
-  deleteRecommendPost(postId: Int!): Boolean
+  deleteRecommendPost(recommendPostDeleteInfo: RecommendPostDeleteInfo!): Boolean
 }
 
 enum RecPostSortableField {
@@ -67,19 +67,22 @@ input RecommendPostInfoInput {
 }
 
 input RecommendPostEditInfoInput {
-  originalPostId: Int!
+  postId: Int!
   accountId: Int!
-  title: String!
-  content: String!
-  postType: RecommendPostType!
+  title: String
+  content: String
+  postType: RecommendPostType
   styleType: StyleType
   saleEndDate: Date
-  titleType: RecommendTitleType!
+  titleType: RecommendTitleType
   titleImg: Upload
   titleYoutubeUrl: String
-  reviews: [ItemReviewInfoInput!]!
 }
 
+input RecommendPostDeleteInfoInput {
+  postId: Int!
+  accountId: Int!
+}
 #---------------
 #   Return
 #---------------

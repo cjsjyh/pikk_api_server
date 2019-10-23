@@ -6,6 +6,7 @@ import { ItemReviewInfoInput } from "../../Review/type/ArgType"
 export type MutationArgInfo = {
   recommendPostInfo: RecommendPostInfoInput
   recommendPostEditInfo: RecommendPostEditInfoInput
+  recommendPostDeleteInfo: RecommendPostDeleteInfoInput
 }
 
 export type RecommendPostInfoInput = {
@@ -22,7 +23,7 @@ export type RecommendPostInfoInput = {
 }
 
 export type RecommendPostEditInfoInput = {
-  originalPostId: number
+  postId: number
   accountId: number
   title: string
   content: string
@@ -32,7 +33,11 @@ export type RecommendPostEditInfoInput = {
   titleType: string
   titleImg: any
   titleYoutubeUrl: string
-  reviews: ItemReviewInfoInput[]
+}
+
+export type RecommendPostDeleteInfoInput = {
+  postId: number
+  accountId: number
 }
 
 //-------------

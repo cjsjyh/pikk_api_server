@@ -45,6 +45,7 @@ input CommentInfoInput {
 }
 
 input CommentDeleteInput {
+  accountId: Int!
   targetId: Int!
   targetType: PostType!
 }

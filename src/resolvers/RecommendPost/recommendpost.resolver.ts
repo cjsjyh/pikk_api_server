@@ -4,26 +4,17 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import {
-  GetMetaData,
-  SequentialPromiseValue,
-  RunSingleSQL,
-  UploadImage
-} from "../Utils/promiseUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
 import { GetFormatSql, MakeMultipleQuery } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview } from "../Review/util"
 import { performance } from "perf_hooks"
 import { GetRecommendPostList } from "./util"
+import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: any,
-      info: GraphQLResolveInfo
-    ): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
       try {
         let filterSql: string = ""
@@ -71,7 +62,7 @@ module.exports = {
       info: GraphQLResolveInfo
     ): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
-
+      if (!ValidateUser(ctx, arg.userId)) throw new Error(`[Error] Unauthorized User`)
       try {
         let formatSql = GetFormatSql(arg)
         let postSql = `
@@ -99,13 +90,9 @@ module.exports = {
     }
   },
   Mutation: {
-    createRecommendPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
+    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       let recommendPostId: number
       try {
@@ -136,11 +123,6 @@ module.exports = {
         for (let index = 0; index < arg.reviews.length; index++) {
           await InsertItemReview(arg.reviews[index], [recommendPostId])
         }
-        /*
-        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [
-          recommendPostId
-        ])
-        */
         console.log(`Recommend Post created by User${arg.accountId}`)
         return true
       } catch (e) {
@@ -152,70 +134,37 @@ module.exports = {
     },
 
     editRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.RecommendPostEditInfoInput = args.recommendPostEditInfo
-
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       try {
-        await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" where id=${arg.originalPostId}`)
+        let setSql = await GetEditSql(arg)
+        await RunSingleSQL(`
+          UPDATE "RECOMMEND_POST" SET
+          ${setSql}
+          WHERE "id"=${arg.postId}
+        `)
+        console.log(`Edited RecommendPost ${arg.postId}`)
       } catch (e) {
-        console.log("[ERROR] Failed to delete original Post")
+        console.log("[Error] Failed to Edit RecommendPost")
         console.log(e)
-      }
-
-      let recommendPostId: number
-      try {
-        let imageUrl = null
-        if (arg.titleType == "IMAGE") {
-          if (!Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
-            throw new Error("[Error] title type IMAGE but no image sent!")
-          }
-          imageUrl = await UploadImage(arg.titleImg)
-        }
-
-        if (arg.styleType === undefined) arg.styleType = "NONE"
-        let insertResult = await RunSingleSQL(
-          `INSERT INTO "RECOMMEND_POST"
-          ("id","FK_accountId","title","content","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") 
-          VALUES (${arg.originalPostId},${arg.accountId}, '${arg.title}', '${arg.content}', '${arg.postType}', '${arg.styleType}', 
-          '${arg.titleType}', '${arg.titleYoutubeUrl}', '${imageUrl}') RETURNING id`
-        )
-        recommendPostId = insertResult[0].id
-      } catch (e) {
-        console.log("[Error] Failed to Insert into RECOMMEND_POST")
-        console.log(e)
-        return false
-      }
-
-      try {
-        let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
-        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [
-          recommendPostId
-        ])
-        console.log(`Recommend Post created by User${arg.accountId}`)
-        return true
-      } catch (e) {
-        console.log("[Error] Failed to create RecommendPost")
-        console.log(e)
-        await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
         return false
       }
     },
 
-    deleteRecommendPost: async (parent: void, args: any, ctx: any): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
+    deleteRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      let arg: ArgType.RecommendPostDeleteInfoInput = args.recommendPostDeleteInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId} AND "FK_accountId"=${ctx.userId} RETURNING id`
+        let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`
         let result = await RunSingleSQL(query)
-        if (result.length == 0)
-          throw new Error(`[Error] Unauthorized User trying to delete RecommendPost`)
 
-        console.log(`DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`)
+        console.log(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)
         return true
       } catch (e) {
-        console.log(`[Error] Delete RecommendPost id: ${args.postId} Failed!`)
+        console.log(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
         console.log(e)
-        throw new Error(`[Error] Delete RecommendPost id: ${args.postId} Failed!`)
+        throw new Error(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
       }
     }
   }
@@ -250,9 +199,7 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(
-        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
-      )
+      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       if (rows.length == 0) return null
 
       let postIdSql = ""
@@ -269,4 +216,54 @@ async function GetPostFilterSql(filter: any): Promise<string> {
   }
 
   return filterSql
+}
+
+async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<string> {
+  let isMultiple = false
+  let resultSql = ""
+
+  if (Object.prototype.hasOwnProperty.call(filter, "title")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"title" = '${filter.title}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "content")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"content" = '${filter.content}'`
+    isMultiple = true
+  }
+  if (Object.prototype.hasOwnProperty.call(filter, "postType")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"postType"='${filter.postType}'`
+    isMultiple = true
+  }
+  if (Object.prototype.hasOwnProperty.call(filter, "styleType")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"styleType"='${filter.styleType}'`
+    isMultiple = true
+  }
+  if (Object.prototype.hasOwnProperty.call(filter, "saleEndDate")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"saleEndDate"='${filter.saleEndDate}'`
+    isMultiple = true
+  }
+  if (Object.prototype.hasOwnProperty.call(filter, "titleType")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"titleType"='${filter.titleType}'`
+    isMultiple = true
+  }
+  if (Object.prototype.hasOwnProperty.call(filter, "titleImg")) {
+    if (isMultiple) resultSql += ", "
+    let imageUrl = await UploadImage(filter.titleImg)
+    resultSql += `"titleImageUrl = '${imageUrl}'`
+    isMultiple = true
+  }
+  if (Object.prototype.hasOwnProperty.call(filter, "titleYoutubeUrl")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"titleYoutubeUrl"='${filter.titleYoutubeUrl}'`
+    isMultiple = true
+  }
+
+  return resultSql
 }

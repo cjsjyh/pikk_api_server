@@ -11,6 +11,7 @@ import { RunSingleSQL, UploadImage, ExtractSelectionSet, ExtractFieldFromList } 
 import { GetFormatSql, ConvertListToOrderedPair } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
+import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Mutation: {
@@ -53,7 +54,7 @@ module.exports = {
 
     createUserInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.UserInfoInput = args.userInfo
-
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       //Make UserCredential
       try {
         let profileImgUrl = null
@@ -68,15 +69,15 @@ module.exports = {
         if (profileImgUrl != null) {
           qResult = await RunSingleSQL(
             'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-            [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
+            [arg.accountId, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
           )
         } else {
           qResult = await RunSingleSQL(
             'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-            [arg.id, arg.name, arg.email, arg.age, arg.height, arg.weight, arg.phoneNum, arg.address]
+            [arg.accountId, arg.name, arg.email, arg.age, arg.height, arg.weight, arg.phoneNum, arg.address]
           )
         }
-        console.log(`User Info for User ${arg.id} created`)
+        console.log(`User Info for User ${arg.accountId} created`)
         return true
       } catch (e) {
         console.log("[Error] Failed to Insert into USER_INFO")
@@ -87,6 +88,7 @@ module.exports = {
 
     updateUserChannelInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.UserChannelInfoInput = args.userChannelInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       try {
         let setSql = ""
         let isFirst = true
@@ -111,7 +113,7 @@ module.exports = {
         await RunSingleSQL(`
           UPDATE "USER_INFO" SET
           ${setSql}
-          WHERE "FK_accountId"=${arg.id}
+          WHERE "FK_accountId"=${arg.accountId}
         `)
         return true
       } catch (e) {
@@ -123,14 +125,15 @@ module.exports = {
 
     updateUserInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.UserEditInfoInput = args.userEditInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       //Make UserCredential
       try {
         let querySql = `UPDATE "USER_INFO" SET
         ${await GetUpdateUserInfoSql(arg)}
-        WHERE "FK_accountId" = ${arg.id}
+        WHERE "FK_accountId" = ${arg.accountId}
         `
         let qResult = await RunSingleSQL(querySql)
-        console.log(`User Info for User ${arg.id} updated`)
+        console.log(`User Info for User ${arg.accountId} updated`)
         return true
       } catch (e) {
         console.log("[Error] Failed to update USER_INFO")

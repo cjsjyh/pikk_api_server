@@ -1,3 +1,7 @@
+//----------------
+// Mutation
+//----------------
+
 export type MutationArgInfo = {
   commentInfo: CommentInfoInput
 }
@@ -10,9 +14,14 @@ export type CommentInfoInput = {
 }
 
 export type CommentDeleteInput = {
+  accountId: number
   targetId: number
   targetType: string
 }
+
+//----------------
+// Query
+//----------------
 
 export type QueryArgInfo = {
   commentOption: CommentQuery

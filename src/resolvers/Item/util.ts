@@ -1,4 +1,9 @@
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, UploadImage } from "../Utils/promiseUtil"
+import {
+  RunSingleSQL,
+  ExtractSelectionSet,
+  ExtractFieldFromList,
+  UploadImage
+} from "../Utils/promiseUtil"
 import { ConvertListToString } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput } from "./type/ArgType"
@@ -26,10 +31,14 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         let brandId
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
-          queryResult = await RunSingleSQL(`INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`)
+          queryResult = await RunSingleSQL(
+            `INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`
+          )
           brandId = queryResult[0].id
         } else {
-          queryResult = await RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`)
+          queryResult = await RunSingleSQL(
+            `SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`
+          )
           brandId = queryResult[0].id
         }
         //Create new Group and save Id
@@ -42,7 +51,8 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         groupId = queryResult[0].id
       } else {
         //Find Group Id of this Item
-        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId")) throw new Error("[Error] groupId not inserted!")
+        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId"))
+          throw new Error("[Error] groupId not inserted!")
         groupId = arg.variationInfo.groupId
       }
       //Insert Variation
@@ -99,39 +109,43 @@ async function GetSimpleItemInfoByPostId(postList: any) {
   let querySql = `
   WITH review as
   (
-    SELECT 
-      "ITEM_REVIEW"."FK_itemId",
-      "ITEM_REVIEW"."FK_postId" as "postId"
-    FROM "ITEM_REVIEW" 
-    WHERE "ITEM_REVIEW"."FK_postId" in (${ConvertListToString(postIdList)})
-    ORDER BY id ASC
-    ),
+  SELECT
+    "ITEM_REVIEW".id,
+    "ITEM_REVIEW"."FK_itemId",
+    "ITEM_REVIEW"."FK_postId" as "postId"
+  FROM "ITEM_REVIEW"
+  WHERE "ITEM_REVIEW"."FK_postId" in (${ConvertListToString(postIdList)})
+  ),
   item as
   (
-    SELECT 
-      item_var."imageUrl", 
-      item_var."FK_itemGroupId",
-      review."postId"
-    FROM review
-    INNER JOIN "ITEM_VARIATION" item_var ON item_var.id = review."FK_itemId"
+  SELECT
+    item_var."imageUrl",
+    item_var."FK_itemGroupId",
+    review."postId",
+    review.id
+  FROM review
+  INNER JOIN "ITEM_VARIATION" item_var ON item_var.id = review."FK_itemId"
   ),
   gr as
   (
-    SELECT 
-      item."imageUrl",
-      item."postId",
-      item_gr."FK_brandId"
-    FROM item
-    INNER JOIN "ITEM_GROUP" item_gr ON item."FK_itemGroupId" = item_gr.id
-    )
   SELECT
-  "BRAND"."nameKor" as "brandKor",
-  "BRAND"."nameEng"as "brandEng",
-  gr."imageUrl",
-	  gr."postId"
-    FROM gr
-    INNER JOIN "BRAND" ON "BRAND".id = gr."FK_brandId"
-    `
+    item."imageUrl",
+    item."postId",
+    item.id,
+    item_gr."FK_brandId"
+  FROM item
+  INNER JOIN "ITEM_GROUP" item_gr ON item."FK_itemGroupId" = item_gr.id
+  )
+  SELECT
+    "BRAND"."nameKor" as "brandKor",
+    "BRAND"."nameEng"as "brandEng",
+    gr."imageUrl",
+    gr."postId"
+  FROM gr
+  INNER JOIN "BRAND" ON "BRAND".id = gr."FK_brandId"
+  ORDER BY gr.id ASC
+  `
+
   await GetSubField(postList, "", "postId", "simpleItemList", 1, querySql)
 }
 

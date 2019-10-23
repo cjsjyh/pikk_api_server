@@ -4,7 +4,12 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
+import {
+  GetMetaData,
+  SequentialPromiseValue,
+  RunSingleSQL,
+  UploadImage
+} from "../Utils/promiseUtil"
 import { GetFormatSql, MakeMultipleQuery } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview } from "../Review/util"
@@ -13,7 +18,12 @@ import { GetRecommendPostList } from "./util"
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
       try {
         let filterSql: string = ""
@@ -42,6 +52,7 @@ module.exports = {
         ${formatSql}
         `
         let postResult = await GetRecommendPostList(postSql, info)
+        console.log(`allRecommendPosts Called`)
         return postResult
       } catch (e) {
         console.log(e)
@@ -79,7 +90,7 @@ module.exports = {
           INNER JOIN "USER_INFO" user_info ON user_info."FK_accountId" = post."FK_accountId"
           ${formatSql}`
         let postResult = await GetRecommendPostList(postSql, info)
-
+        console.log(`userPickkRecommendPost Called`)
         return postResult
       } catch (e) {
         console.log(e)
@@ -88,7 +99,11 @@ module.exports = {
     }
   },
   Mutation: {
-    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createRecommendPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
 
@@ -173,7 +188,9 @@ module.exports = {
 
       try {
         let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
-        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [recommendPostId])
+        let ReviewResult = await SequentialPromiseValue(arg.reviews, InsertItemReview, [
+          recommendPostId
+        ])
         console.log(`Recommend Post created by User${arg.accountId}`)
         return true
       } catch (e) {
@@ -190,7 +207,8 @@ module.exports = {
       try {
         let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId} AND "FK_accountId"=${ctx.userId} RETURNING id`
         let result = await RunSingleSQL(query)
-        if (result.length == 0) throw new Error(`[Error] Unauthorized User trying to delete RecommendPost`)
+        if (result.length == 0)
+          throw new Error(`[Error] Unauthorized User trying to delete RecommendPost`)
 
         console.log(`DELETE FROM "RECOMMEND_POST" WHERE id=${args.postId}`)
         return true
@@ -232,7 +250,9 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
+      let rows = await RunSingleSQL(
+        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
+      )
       if (rows.length == 0) return null
 
       let postIdSql = ""

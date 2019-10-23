@@ -59,9 +59,13 @@ const server = new ApolloServer({
   schema,
   context: ({ req }) => {
     const header: any = req.headers
-    if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid"))
+    if (
+      !Object.prototype.hasOwnProperty.call(header, "authorizationtoken") ||
+      !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")
+    )
       return { IsVerified: false }
-    else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined") return { IsVerified: false }
+    else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined")
+      return { IsVerified: false }
 
     try {
       var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
@@ -87,4 +91,6 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 80 }, (): void => console.log(`GraphQL is now running on http://localhost:80/graphql`))
+httpServer.listen({ port: 80 }, (): void =>
+  console.log(`GraphQL is now running on http://localhost:80/graphql`)
+)

@@ -121,7 +121,7 @@ module.exports = {
       try {
         let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
         for (let index = 0; index < arg.reviews.length; index++) {
-          await InsertItemReview(arg.reviews[index], [recommendPostId])
+          await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId])
         }
         console.log(`Recommend Post created by User${arg.accountId}`)
         return true
@@ -144,6 +144,7 @@ module.exports = {
           WHERE "id"=${arg.postId}
         `)
         console.log(`Edited RecommendPost ${arg.postId}`)
+        return true
       } catch (e) {
         console.log("[Error] Failed to Edit RecommendPost")
         console.log(e)

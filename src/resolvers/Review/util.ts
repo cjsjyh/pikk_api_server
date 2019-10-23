@@ -25,28 +25,13 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           return IncrementViewCountFunc("RECOMMEND", post.id)
         })
       )
-      let reviewResult = await GetSubField(
-        postResult,
-        "ITEM_REVIEW",
-        "FK_postId",
-        "reviews",
-        1,
-        "",
-        "ORDER BY id ASC"
-      )
+      let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", "ORDER BY id ASC")
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
         review.imgs = []
       })
       if (IsSubFieldRequired(selectionSet, "reviews", "imgs")) {
-        let imgResult = await GetSubField(
-          reviewResult,
-          "ITEM_REVIEW_IMAGE",
-          "FK_reviewId",
-          "imgs",
-          2,
-          ""
-        )
+        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs", 2, "")
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
@@ -104,17 +89,15 @@ export async function GetSubField(
   return groupedSubfield
 }
 
-export function InsertItemReview(
-  itemReview: ReviewArgType.ItemReviewInfoInput,
-  args: Array<number>
-): Promise<{}> {
+export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, args: Array<number>): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       let postId = args[0]
+      let accountId = args[1]
       let insertResult = await RunSingleSQL(
         `INSERT INTO "ITEM_REVIEW"
-        ("FK_itemId","FK_postId","recommendReason","review","shortReview","score") 
-        VALUES (${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.review}','${itemReview.shortReview}' ,${itemReview.score}) RETURNING id`
+        ("FK_accountId","FK_itemId","FK_postId","recommendReason","review","shortReview","score") 
+        VALUES (${accountId}, ${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.review}','${itemReview.shortReview}' ,${itemReview.score}) RETURNING id`
       )
       let reviewId = insertResult[0].id
       if (!Object.prototype.hasOwnProperty.call(itemReview, "imgs")) {

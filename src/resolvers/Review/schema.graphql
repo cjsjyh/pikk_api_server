@@ -48,6 +48,15 @@ input IncrementReviewCount {
   type: IncrementField!
 }
 
+input ItemReviewEditInfoInput {
+  reviewId: Int!
+  accountId: Int!
+  recommendReason: RecommendReason
+  shortReview: String
+  review: String
+  score: Float
+}
+
 #---------------
 #   Return
 #---------------

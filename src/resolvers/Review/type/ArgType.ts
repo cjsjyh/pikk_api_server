@@ -1,11 +1,12 @@
 import { ItemInfoInput } from "../../Item/type/ArgType"
 
-export type QueryArgInfo = {
-  reviewOption: ReviewQuery
-  incrementOption: IncrementReviewCount
-}
-
+//--------------
 //Mutation
+//--------------
+
+export type MutationArgInfo = {
+  itemReviewEditInfo: ItemReviewEditInfoInput
+}
 
 export type ItemReviewInfoInput = {
   itemId: number
@@ -26,7 +27,22 @@ export type IncrementReviewCount = {
   type: string
 }
 
+export type ItemReviewEditInfoInput = {
+  reviewId: number
+  accountId: number
+  recommendReason: string
+  shortReview: string
+  review: string
+  score: number
+}
+
+//--------------
 //Query
+//--------------
+export type QueryArgInfo = {
+  reviewOption: ReviewQuery
+  incrementOption: IncrementReviewCount
+}
 type ReviewFilterGeneral = {
   start: number
   first: number

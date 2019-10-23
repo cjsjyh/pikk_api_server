@@ -1,5 +1,6 @@
 import { GraphQLResolveInfo } from "graphql"
-import { QueryArgInfo, ReviewQuery } from "./type/ArgType"
+import { QueryArgInfo, MutationArgInfo, ReviewQuery } from "./type/ArgType"
+import * as ArgType from "./type/ArgType"
 import { ItemReviewInfo } from "./type/ReturnType"
 import { ExtractSelectionSet } from "../Utils/promiseUtil"
 import { RunSingleSQL, SequentialPromiseValue } from "../Utils/promiseUtil"
@@ -7,15 +8,11 @@ import { GetFormatSql } from "../Utils/stringUtil"
 import { ReviewMatchGraphQL, GetSubField } from "./util"
 import { FetchItemsForReview } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
+import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Query: {
-    allItemReviews: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<ItemReviewInfo[]> => {
+    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReviewInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       let filterSql = GetReviewFilterSql(arg)
@@ -53,10 +50,25 @@ module.exports = {
         let result = await RunSingleSQL(query)
         return true
       } catch (e) {
-        console.log(
-          `[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`
-        )
+        console.log(`[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`)
         console.log(e)
+        return false
+      }
+    },
+
+    editReview: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      let arg: ArgType.ItemReviewEditInfoInput = args.itemReviewEditInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+
+      try {
+        let setSql = GetEditSql(arg)
+        await RunSingleSQL(`
+          UPDATE "ITEM_REVIEW" SET
+          ${setSql}
+          WHERE "id"=${arg.reviewId}
+        `)
+        return true
+      } catch (e) {
         return false
       }
     }
@@ -102,4 +114,11 @@ function OverrideReviewSql(filter: ReviewQuery): string {
   }
 
   return overrideSql
+}
+
+function GetEditSql(filter: ArgType.ItemReviewEditInfoInput): string {
+  let isMultiple = false
+  let resultSql = ""
+
+  return resultSql
 }

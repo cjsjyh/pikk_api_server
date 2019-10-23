@@ -34,7 +34,7 @@ var whitelist = [
 ]
 var corsOptions = {
   origin: function(origin, callback) {
-    if (process.env.MODE == "DEVELOPMENT") callback(null, true)
+    if (process.env.MODE != "DEPLOY") callback(null, true)
     else {
       if (whitelist.indexOf(origin) !== -1) {
         callback(null, true)
@@ -47,7 +47,7 @@ var corsOptions = {
 }
 app.use("*", cors(corsOptions))
 
-if (process.env.MODE != "DEVELOPMENT") {
+if (process.env.MODE == "DEPLOY") {
   const rateLimiterRedisMiddleware = require("./database/rateLimiter")
   app.use(rateLimiterRedisMiddleware)
 }

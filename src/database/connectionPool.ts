@@ -1,7 +1,7 @@
 const { Pool } = require("pg")
 
 var pool
-if (process.env.MODE == "DEVELOPMENT") {
+if (process.env.MODE == "DEPLOY") {
   pool = new Pool({
     user: process.env.RDS_USERNAME,
     host: process.env.DBEC2_HOST,

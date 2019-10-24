@@ -24,31 +24,12 @@ app.use(function(req, res, next) {
   req.headers.origin = req.headers.origin || req.headers.host
   next()
 })
-var whitelist = [
-  "https://pickk.one",
-  "https://www.pickk.one",
-  "https://pickkapiserver.online",
-  "http://pickkapiserver.online",
-  "pickkapiserver.online",
-  "https://pikkcli.greatsumini.now.sh"
-]
-var corsOptions = {
-  origin: function(origin, callback) {
-    if (process.env.MODE != "DEPLOY") callback(null, true)
-    else {
-      if (whitelist.indexOf(origin) !== -1) {
-        callback(null, true)
-      } else {
-        console.log(`[CORS] ${origin} Not allowed by CORS`)
-        callback(new Error("Not allowed by CORS"))
-      }
-    }
-  }
-}
+
+const corsOptions = require("./middleware/cors")
 app.use("*", cors(corsOptions))
 
 if (process.env.MODE == "DEPLOY") {
-  const rateLimiterRedisMiddleware = require("./database/rateLimiter")
+  const rateLimiterRedisMiddleware = require("./middleware/rateLimiter")
   app.use(rateLimiterRedisMiddleware)
 }
 app.use(require("express-status-monitor")())

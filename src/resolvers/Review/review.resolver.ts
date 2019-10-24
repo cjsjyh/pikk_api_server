@@ -120,5 +120,29 @@ function GetEditSql(filter: ArgType.ItemReviewEditInfoInput): string {
   let isMultiple = false
   let resultSql = ""
 
+  if (Object.prototype.hasOwnProperty.call(filter, "review")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "review" = '${filter.review}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "score")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "score"= ${filter.score}`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "recommendReason")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "recommendReason"= '${filter.recommendReason}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "shortReview")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "shortReview" = '${filter.shortReview}'`
+    isMultiple = true
+  }
+
   return resultSql
 }

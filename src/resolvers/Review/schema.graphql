@@ -3,6 +3,7 @@ type Query {
 }
 type Mutation {
   incrementReviewCount(incrementOption: IncrementReviewCount!): Boolean!
+  editReview(itemReviewEditInfo: ItemReviewEditInfoInput!): Boolean!
 }
 
 #--------------

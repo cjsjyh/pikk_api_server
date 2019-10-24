@@ -10,7 +10,7 @@ type Mutation {
   """
   createRecommendPost(recommendPostInfo: RecommendPostInfoInput!): Boolean!
   editRecommendPost(recommendPostEditInfo: RecommendPostEditInfoInput!): Boolean!
-  deleteRecommendPost(recommendPostDeleteInfo: RecommendPostDeleteInfo!): Boolean
+  deleteRecommendPost(recommendPostDeleteInfo: RecommendPostDeleteInfoInput!): Boolean
 }
 
 enum RecPostSortableField {

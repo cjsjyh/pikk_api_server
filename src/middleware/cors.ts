@@ -1,11 +1,14 @@
-var whitelist = [
-  "https://pickk.one",
-  "https://www.pickk.one",
-  "https://pickkapiserver.online",
-  "http://pickkapiserver.online",
-  "pickkapiserver.online",
-  "https://pikkcli.greatsumini.now.sh"
-]
+if (process.env.MODE == "DEPLOY") {
+  var whitelist = [
+    "https://pickk.one",
+    "https://www.pickk.one",
+    "pickk.one",
+    "https://pickkapiserver.online",
+    "http://pickkapiserver.online",
+    "pickkapiserver.online"
+  ]
+}
+
 var corsOptions = {
   origin: function(origin, callback) {
     if (process.env.MODE != "DEPLOY") callback(null, true)

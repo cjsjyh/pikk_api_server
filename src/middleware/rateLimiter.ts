@@ -1,6 +1,5 @@
 const { RateLimiterRedis } = require("rate-limiter-flexible")
-
-const { GetRedisClient } = require("./redisConnect")
+const { GetRedisClient } = require("../database/redisConnect")
 
 const rateLimiter = new RateLimiterRedis({
   redis: GetRedisClient(),

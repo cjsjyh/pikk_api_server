@@ -3,7 +3,7 @@ dist/
 .git/
 crawler/*.txt
 config.json
-*.env
+*.env*
 *.yaml
 *.pem
 *.ppk

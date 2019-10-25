@@ -23,7 +23,11 @@ export function getFormatHour(secs) {
 export function GetFormatSql(filter: any): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
-    filterSql += ` ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} NULLS LAST`
+    if (
+      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") &&
+      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")
+    )
+      filterSql += ` ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} NULLS LAST`
     if (filter.filterGeneral.first > 30) filter.filterGeneral.first = 30
     filterSql += " LIMIT " + filter.filterGeneral.first + " OFFSET " + filter.filterGeneral.start
   } else {
@@ -45,7 +49,11 @@ export function ConvertListToString(list: any): string {
   return result
 }
 
-export function ConvertListToOrderedPair(list: any, append: string = "", isNumber: boolean = true): string {
+export function ConvertListToOrderedPair(
+  list: any,
+  append: string = "",
+  isNumber: boolean = true
+): string {
   let result = ""
   list.forEach((item, index) => {
     if (index != 0) result += ","

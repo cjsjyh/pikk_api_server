@@ -51,7 +51,8 @@ module.exports = {
     getItemRanking: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.ItemRankingFilter = args.itemRankingOption
       let filterSql = GetItemFilterSql(arg)
-      let rankList = await GetItemIdInRanking(filterSql)
+      let formatSql = GetFormatSql(arg)
+      let rankList = await GetItemIdInRanking(filterSql, formatSql)
       let itemIdList = ExtractFieldFromList(rankList, "id")
       let customFilterSql = `
         JOIN (

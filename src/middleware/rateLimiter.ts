@@ -3,8 +3,8 @@ const { GetRedisClient } = require("../database/redisConnect")
 
 const rateLimiter = new RateLimiterRedis({
   redis: GetRedisClient(),
-  keyPrefix: "middleware",
-  points: 10, // 10 requests
+  keyPrefix: "ratelimiter",
+  points: 30, // 10 requests
   duration: 1 // per 1 second by IP
 })
 

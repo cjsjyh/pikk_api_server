@@ -1,9 +1,4 @@
-import {
-  RunSingleSQL,
-  ExtractSelectionSet,
-  ExtractFieldFromList,
-  UploadImage
-} from "../Utils/promiseUtil"
+import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, UploadImage } from "../Utils/promiseUtil"
 import { ConvertListToString } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput } from "./type/ArgType"
@@ -31,14 +26,10 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         let brandId
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
-          queryResult = await RunSingleSQL(
-            `INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`
-          )
+          queryResult = await RunSingleSQL(`INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`)
           brandId = queryResult[0].id
         } else {
-          queryResult = await RunSingleSQL(
-            `SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`
-          )
+          queryResult = await RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`)
           brandId = queryResult[0].id
         }
         //Create new Group and save Id
@@ -51,8 +42,7 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         groupId = queryResult[0].id
       } else {
         //Find Group Id of this Item
-        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId"))
-          throw new Error("[Error] groupId not inserted!")
+        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId")) throw new Error("[Error] groupId not inserted!")
         groupId = arg.variationInfo.groupId
       }
       //Insert Variation
@@ -194,7 +184,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   return itemInfo
 }
 
-export async function GetItemIdInRanking(filterSql: string): Promise<ReturnType.ItemInfo[]> {
+export async function GetItemIdInRanking(filterSql: string, formatSql: string): Promise<ReturnType.ItemInfo[]> {
   let reviewScore = 10
   let purchaseScore = 10
   let detailPageClickScore = 0.5
@@ -234,7 +224,7 @@ export async function GetItemIdInRanking(filterSql: string): Promise<ReturnType.
     (review_score.reviewer_score + review_score.detail_click + review_score.purchase_click + review_score.purchase_count +
     (SELECT COUNT(*) as follow_count FROM "ITEM_FOLLOWER" follow WHERE follow."FK_itemId" = review_score."itemId")*${followScore}
      ) as final_score
-  FROM review_score ORDER BY final_score DESC LIMIT 100
+  FROM review_score ORDER BY final_score DESC ${formatSql}
   `
   let ItemRank = await RunSingleSQL(querySql)
 

@@ -56,6 +56,8 @@ export type ItemRankingFilter = {
   itemMajorType: string
   itemMinorType: string
   itemFinalType: string
+  start: number
+  first: number
 }
 
 export interface ItemQuery {

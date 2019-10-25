@@ -37,6 +37,11 @@ input ItemFilterGeneral {
   sortBy: ItemSortableField = averageScore
 }
 
+input ItemSimpleFilterGeneral {
+  start: Int = 0
+  first: Int = 50
+}
+
 input ItemQueryFilter {
   itemMajorType: ItemMajorType
   itemMinorType: ItemMinorType
@@ -53,6 +58,7 @@ input ItemRankingFilter {
   itemMajorType: ItemMajorType
   itemMinorType: ItemMinorType
   itemFinalType: ItemFinalType
+  filterGeneral: ItemSimpleFilterGeneral
 }
 
 # Mutation

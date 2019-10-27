@@ -5,7 +5,9 @@ if (process.env.MODE == "DEPLOY") {
     "pickk.one",
     "https://pickkapiserver.online",
     "http://pickkapiserver.online",
-    "pickkapiserver.online"
+    "pickkapiserver.online",
+    "15.165.26.117",
+    "52.78.116.92"
   ]
 }
 

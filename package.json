@@ -29,6 +29,7 @@
     "@types/graphql-upload": "^8.0.3",
     "@types/node": "^12.6.9",
     "@types/pg": "^7.11.0",
+    "copyfiles": "^2.1.1",
     "graphql-import": "^0.7.1",
     "graphql-import-node": "0.0.4",
     "nodemon": "^1.19.1",

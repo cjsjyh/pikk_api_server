@@ -1,13 +1,13 @@
-export function getFormatDate(date) {
+export function getFormatDate(date, delimiter = "") {
   var year = date.getFullYear() //yyyy
   var month = 1 + date.getMonth() //M
   month = month >= 10 ? month : "0" + month //month 두자리로 저장
   var day = date.getDate() //d
   day = day >= 10 ? day : "0" + day //day 두자리로 저장
-  return year + "" + month + "" + day
+  return year + delimiter + month + delimiter + day
 }
 
-export function getFormatHour(secs) {
+export function getFormatHour(secs, delimiter = "") {
   secs = Math.round(secs)
   var hours = Math.floor(secs / (60 * 60))
 
@@ -17,7 +17,7 @@ export function getFormatHour(secs) {
   var divisor_for_seconds = divisor_for_minutes % 60
   var seconds = Math.ceil(divisor_for_seconds)
 
-  return hours + "" + minutes + "" + seconds
+  return hours + delimiter + minutes + delimiter + seconds
 }
 
 export function GetFormatSql(filter: any): string {

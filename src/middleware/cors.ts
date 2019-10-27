@@ -7,7 +7,9 @@ if (process.env.MODE == "DEPLOY") {
     "http://pickkapiserver.online",
     "pickkapiserver.online",
     "15.165.26.117",
-    "52.78.116.92"
+    "15.165.26.117:80",
+    "52.78.116.92",
+    "52.78.116.92:80"
   ]
 }
 

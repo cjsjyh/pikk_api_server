@@ -7,6 +7,7 @@ import { RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertToTableName, GetBoardName } from "./util"
 import { CloudWatchEvents } from "aws-sdk"
 import { ValidateUser } from "../Utils/securityUtil"
+import { logWithDate } from "../Utils/stringUtil"
 
 module.exports = {
   Query: {
@@ -25,8 +26,8 @@ module.exports = {
 
         return commentResults
       } catch (e) {
-        console.log("[Error] Failed to Fetch comments")
-        console.log(e)
+        logWithDate("[Error] Failed to Fetch comments")
+        logWithDate(e)
         throw new Error("[Error] Failed to fetch comments")
       }
     }
@@ -37,14 +38,18 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `INSERT INTO ${ConvertToTableName(arg.targetType)} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${
-          arg.accountId
-        },'${arg.content}')`
+        let querySql = `INSERT INTO ${ConvertToTableName(
+          arg.targetType
+        )} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${arg.accountId},'${
+          arg.content
+        }')`
         let rows = await RunSingleSQL(querySql)
-        console.log(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
+        logWithDate(
+          `Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`
+        )
         return true
       } catch (e) {
-        console.log("[Error] Failed to create Comment")
+        logWithDate("[Error] Failed to create Comment")
         return false
       }
     },
@@ -54,14 +59,16 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId}`
+        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${
+          arg.targetId
+        }`
         let rows = await RunSingleSQL(querySql)
 
-        console.log(`Comment on Post${arg.targetType} id ${arg.targetId}`)
+        logWithDate(`Comment on Post${arg.targetType} id ${arg.targetId}`)
         return true
       } catch (e) {
-        console.log("[Error] Failed to delete Comment")
-        console.log(e)
+        logWithDate("[Error] Failed to delete Comment")
+        logWithDate(e)
         return false
       }
     }

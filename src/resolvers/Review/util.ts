@@ -9,7 +9,7 @@ import {
   AssignGroupsToParent,
   UploadImageWrapper
 } from "../Utils/promiseUtil"
-import { ConvertListToString, ConvertListToOrderedPair } from "../Utils/stringUtil"
+import { ConvertListToString, ConvertListToOrderedPair, logWithDate } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { FetchItemsForReview } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
@@ -25,13 +25,28 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           return IncrementViewCountFunc("RECOMMEND", post.id)
         })
       )
-      let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", "ORDER BY id ASC")
+      let reviewResult = await GetSubField(
+        postResult,
+        "ITEM_REVIEW",
+        "FK_postId",
+        "reviews",
+        1,
+        "",
+        "ORDER BY id ASC"
+      )
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
         review.imgs = []
       })
       if (IsSubFieldRequired(selectionSet, "reviews", "imgs")) {
-        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs", 2, "")
+        let imgResult = await GetSubField(
+          reviewResult,
+          "ITEM_REVIEW_IMAGE",
+          "FK_reviewId",
+          "imgs",
+          2,
+          ""
+        )
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
@@ -50,7 +65,7 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
       }
     }
   } catch (e) {
-    console.log(e)
+    logWithDate(e)
     throw new Error("[Error] Failed to fetch review by post list from DB")
   }
 }
@@ -89,7 +104,10 @@ export async function GetSubField(
   return groupedSubfield
 }
 
-export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, args: Array<number>): Promise<{}> {
+export function InsertItemReview(
+  itemReview: ReviewArgType.ItemReviewInfoInput,
+  args: Array<number>
+): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       let postId = args[0]
@@ -101,16 +119,16 @@ export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, 
       )
       let reviewId = insertResult[0].id
       if (!Object.prototype.hasOwnProperty.call(itemReview, "imgs")) {
-        console.log("No Images Inserted!")
+        logWithDate("No Images Inserted!")
         resolve(reviewId)
       } else {
-        console.log("Image Inserted!")
+        logWithDate("Image Inserted!")
         let imgUrlList
         try {
           imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImageWrapper)
         } catch (e) {
-          console.log("Failed to upload Images")
-          console.log(e)
+          logWithDate("Failed to upload Images")
+          logWithDate(e)
         }
 
         try {
@@ -121,15 +139,15 @@ export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, 
         `
           )
         } catch (e) {
-          console.log("Failed to Insert into ITEM_REVIEW_IMAGE")
-          console.log(e)
+          logWithDate("Failed to Insert into ITEM_REVIEW_IMAGE")
+          logWithDate(e)
         }
 
-        console.log(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
+        logWithDate(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
         resolve(reviewId)
       }
     } catch (e) {
-      console.log(e)
+      logWithDate(e)
       reject(e)
     }
   })

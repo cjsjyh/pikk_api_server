@@ -1,3 +1,5 @@
+import { logWithDate } from "../resolvers/Utils/stringUtil"
+
 if (process.env.MODE == "DEPLOY") {
   var whitelist = [
     "https://pickk.one",
@@ -20,7 +22,7 @@ var corsOptions = {
       if (whitelist.indexOf(origin) !== -1) {
         callback(null, true)
       } else {
-        console.log(`[CORS] ${origin} Not allowed by CORS`)
+        logWithDate(`[CORS] ${origin} Not allowed by CORS`)
         callback(new Error("Not allowed by CORS"))
       }
     }

@@ -7,15 +7,24 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { RunSingleSQL, UploadImage, ExtractSelectionSet, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, ConvertListToOrderedPair } from "../Utils/stringUtil"
+import {
+  RunSingleSQL,
+  UploadImage,
+  ExtractSelectionSet,
+  ExtractFieldFromList
+} from "../Utils/promiseUtil"
+import { GetFormatSql, ConvertListToOrderedPair, logWithDate } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Mutation: {
-    createUser: async (parent: void, args: MutationArgInfo, ctx: any): Promise<ReturnType.UserCredentialInfo> => {
+    createUser: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<ReturnType.UserCredentialInfo> => {
       let arg: ArgType.UserCredentialInput = args.userAccountInfo
       //Make UserCredential
       try {
@@ -29,7 +38,9 @@ module.exports = {
             `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"='${arg.providerId}'`
           )
           userAccount = queryResult[0]
-          queryResult = await RunSingleSQL(`SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`)
+          queryResult = await RunSingleSQL(
+            `SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`
+          )
           //If user didn't insert user info yet
           if (queryResult.length == 0) userAccount.isNewUser = true
           else {
@@ -44,10 +55,10 @@ module.exports = {
           userAccount.isNewUser = true
           userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
         }
-        console.log(`User ${userAccount.id} Created`)
+        logWithDate(`User ${userAccount.id} Created`)
         return userAccount
       } catch (e) {
-        console.log(e)
+        logWithDate(e)
         throw new Error("[Error] Failed to create User")
       }
     },
@@ -69,24 +80,47 @@ module.exports = {
         if (profileImgUrl != null) {
           qResult = await RunSingleSQL(
             'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-            [arg.accountId, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
+            [
+              arg.accountId,
+              arg.name,
+              arg.email,
+              arg.age,
+              arg.height,
+              arg.weight,
+              profileImgUrl,
+              arg.phoneNum,
+              arg.address
+            ]
           )
         } else {
           qResult = await RunSingleSQL(
             'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-            [arg.accountId, arg.name, arg.email, arg.age, arg.height, arg.weight, arg.phoneNum, arg.address]
+            [
+              arg.accountId,
+              arg.name,
+              arg.email,
+              arg.age,
+              arg.height,
+              arg.weight,
+              arg.phoneNum,
+              arg.address
+            ]
           )
         }
-        console.log(`User Info for User ${arg.accountId} created`)
+        logWithDate(`User Info for User ${arg.accountId} created`)
         return true
       } catch (e) {
-        console.log("[Error] Failed to Insert into USER_INFO")
-        console.log(e)
+        logWithDate("[Error] Failed to Insert into USER_INFO")
+        logWithDate(e)
         return false
       }
     },
 
-    updateUserChannelInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    updateUserChannelInfo: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.UserChannelInfoInput = args.userChannelInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       try {
@@ -117,8 +151,8 @@ module.exports = {
         `)
         return true
       } catch (e) {
-        console.log("[Error] Failed to update user channel info")
-        console.log(e)
+        logWithDate("[Error] Failed to update user channel info")
+        logWithDate(e)
         return false
       }
     },
@@ -133,11 +167,11 @@ module.exports = {
         WHERE "FK_accountId" = ${arg.accountId}
         `
         let qResult = await RunSingleSQL(querySql)
-        console.log(`User Info for User ${arg.accountId} updated`)
+        logWithDate(`User Info for User ${arg.accountId} updated`)
         return true
       } catch (e) {
-        console.log("[Error] Failed to update USER_INFO")
-        console.log(e)
+        logWithDate("[Error] Failed to update USER_INFO")
+        logWithDate(e)
         return false
       }
     },
@@ -146,33 +180,43 @@ module.exports = {
       try {
         let query = `SELECT * FROM "USER_INFO" WHERE name='${args.name}'`
         let result = await RunSingleSQL(query)
-        console.log(`Checked DuplicateName ${args.name}`)
+        logWithDate(`Checked DuplicateName ${args.name}`)
 
         if (result.length != 0) return true
         return false
       } catch (e) {
-        console.log(`[Error] Failed to check Duplicate for ${args.name}`)
-        console.log(e)
+        logWithDate(`[Error] Failed to check Duplicate for ${args.name}`)
+        logWithDate(e)
         throw new Error(`[Error] Failed to check Duplicate for ${args.name}`)
       }
     }
   },
   Query: {
-    getUserInfo: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo> => {
+    getUserInfo: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.UserInfo> => {
       let arg: ArgType.UserQuery = args.userOption
       try {
         let requestSql = UserInfoSelectionField(info)
         let result: ReturnType.UserInfo[] = await GetUserInfoByIdList([arg.id], requestSql)
-        console.log(`Retrieve UserInfo for ${arg.id}`)
+        logWithDate(`Retrieve UserInfo for ${arg.id}`)
         return result[0]
       } catch (e) {
-        console.log("[Error] Failed to fetch UserInfo from DB")
-        console.log(e)
+        logWithDate("[Error] Failed to fetch UserInfo from DB")
+        logWithDate(e)
         throw new Error("[Error] Failed to fetch UserInfo from DB")
       }
     },
 
-    getUserPickkChannel: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo[]> => {
+    getUserPickkChannel: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.UserInfo[]> => {
       let arg: ArgType.PickkChannelQuery = args.pickkChannelOption
       try {
         let formatSql = GetFormatSql(arg)
@@ -185,13 +229,18 @@ module.exports = {
         let final_result = await GetUserInfoByIdList(channelIdList, requestSql, formatSql)
         return final_result
       } catch (e) {
-        console.log("[Error] Failed to fetch Picked UserInfo from DB")
-        console.log(e)
+        logWithDate("[Error] Failed to fetch Picked UserInfo from DB")
+        logWithDate(e)
         throw new Error("[Error] Failed to fetch UserInfo from DB")
       }
     },
 
-    getChannelRanking: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo[]> => {
+    getChannelRanking: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.UserInfo[]> => {
       try {
         let idList = await GetChannelRankingId()
         let orderSql = `
@@ -202,11 +251,11 @@ module.exports = {
         order by x.ordering
         `
         let userList = await GetUserInfoByIdList(idList, "", orderSql)
-        console.log("CHANNEL RANK FETCH DONE")
+        logWithDate("CHANNEL RANK FETCH DONE")
         return userList
       } catch (e) {
-        console.log("[Error] Faield to load Channel Ranking")
-        console.log(e)
+        logWithDate("[Error] Faield to load Channel Ranking")
+        logWithDate(e)
         throw new Error("[Error] Faield to load Channel Ranking")
       }
     }
@@ -239,7 +288,7 @@ function UserInfoSelectionField(info: GraphQLResolveInfo) {
     }
     return result
   } catch (e) {
-    console.log(e)
+    logWithDate(e)
   }
 }
 

@@ -4,8 +4,13 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery } from "../Utils/stringUtil"
+import {
+  GetMetaData,
+  SequentialPromiseValue,
+  RunSingleSQL,
+  UploadImage
+} from "../Utils/promiseUtil"
+import { GetFormatSql, MakeMultipleQuery, logWithDate } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview } from "../Review/util"
 import { performance } from "perf_hooks"
@@ -14,7 +19,12 @@ import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
       try {
         let filterSql: string = ""
@@ -43,10 +53,10 @@ module.exports = {
         ${formatSql}
         `
         let postResult = await GetRecommendPostList(postSql, info)
-        console.log(`allRecommendPosts Called`)
+        logWithDate(`allRecommendPosts Called`)
         return postResult
       } catch (e) {
-        console.log(e)
+        logWithDate(e)
         throw new Error("[Error] Failed to load RecommendPost data from DB")
       }
     },
@@ -81,16 +91,20 @@ module.exports = {
           INNER JOIN "USER_INFO" user_info ON user_info."FK_accountId" = post."FK_accountId"
           ${formatSql}`
         let postResult = await GetRecommendPostList(postSql, info)
-        console.log(`userPickkRecommendPost Called`)
+        logWithDate(`userPickkRecommendPost Called`)
         return postResult
       } catch (e) {
-        console.log(e)
+        logWithDate(e)
         throw new Error("[Error] Failed to load Picked RecommendPost data from DB")
       }
     }
   },
   Mutation: {
-    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createRecommendPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -113,8 +127,8 @@ module.exports = {
         )
         recommendPostId = insertResult[0].id
       } catch (e) {
-        console.log("[Error] Failed to Insert into RECOMMEND_POST")
-        console.log(e)
+        logWithDate("[Error] Failed to Insert into RECOMMEND_POST")
+        logWithDate(e)
         return false
       }
 
@@ -123,11 +137,11 @@ module.exports = {
         for (let index = 0; index < arg.reviews.length; index++) {
           await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId])
         }
-        console.log(`Recommend Post created by User${arg.accountId}`)
+        logWithDate(`Recommend Post created by User${arg.accountId}`)
         return true
       } catch (e) {
-        console.log("[Error] Failed to create RecommendPost")
-        console.log(e)
+        logWithDate("[Error] Failed to create RecommendPost")
+        logWithDate(e)
         await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
         return false
       }
@@ -143,16 +157,20 @@ module.exports = {
           ${setSql}
           WHERE "id"=${arg.postId}
         `)
-        console.log(`Edited RecommendPost ${arg.postId}`)
+        logWithDate(`Edited RecommendPost ${arg.postId}`)
         return true
       } catch (e) {
-        console.log("[Error] Failed to Edit RecommendPost")
-        console.log(e)
+        logWithDate("[Error] Failed to Edit RecommendPost")
+        logWithDate(e)
         return false
       }
     },
 
-    deleteRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    deleteRecommendPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.RecommendPostDeleteInfoInput = args.recommendPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -160,11 +178,11 @@ module.exports = {
         let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`
         let result = await RunSingleSQL(query)
 
-        console.log(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)
+        logWithDate(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)
         return true
       } catch (e) {
-        console.log(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
-        console.log(e)
+        logWithDate(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
+        logWithDate(e)
         throw new Error(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
       }
     }
@@ -200,7 +218,9 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
+      let rows = await RunSingleSQL(
+        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
+      )
       if (rows.length == 0) return null
 
       let postIdSql = ""

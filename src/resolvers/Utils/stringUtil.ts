@@ -1,3 +1,18 @@
+export function logWithDate(content: any) {
+  logWithDate(`[${getDateTime()}]` + content)
+}
+
+function getDateTime() {
+  /*
+  let today = new Date()
+  let date = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate()
+  let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds()
+  let dateTime = date + " " + time
+  */
+  let dateTime = ""
+  return dateTime
+}
+
 export function getFormatDate(date, delimiter = "") {
   var year = date.getFullYear() //yyyy
   var month = 1 + date.getMonth() //M

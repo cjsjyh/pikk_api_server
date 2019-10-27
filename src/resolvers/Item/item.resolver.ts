@@ -7,14 +7,24 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, ConvertListToOrderedPair } from "../Utils/stringUtil"
+import {
+  GetFormatSql,
+  MakeMultipleQuery,
+  ConvertListToOrderedPair,
+  logWithDate
+} from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertItem, GetItemsById, GetItemIdInRanking } from "./util"
 
 module.exports = {
   Query: {
-    allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.ItemInfo[]> => {
+    allItems: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.ItemQuery = args.itemOption
       try {
         let formatSql = GetFormatSql(arg)
@@ -26,7 +36,7 @@ module.exports = {
         let itemResult = await GetItemsById(idList, formatSql, filterSql)
         return itemResult
       } catch (e) {
-        console.log(e)
+        logWithDate(e)
         throw new Error("[Error] Failed to fetch Item data from DB")
       }
     },
@@ -39,12 +49,14 @@ module.exports = {
       let arg: ArgType.PickkItemQuery = args.pickkItemOption
 
       let formatSql = GetFormatSql(arg)
-      let queryResult = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
+      let queryResult = await RunSingleSQL(
+        `SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
+      )
       if (queryResult.length == 0) return []
       let idList = ExtractFieldFromList(queryResult, "FK_itemId")
 
       let itemResult = await GetItemsById(idList, formatSql)
-
+      logWithDate(`User ${arg.userId} queried PickItem`)
       return itemResult
     },
 
@@ -72,7 +84,7 @@ module.exports = {
 
       try {
         let queryResult = await InsertItem(arg)
-        console.log(`createItem Success! itemId: ${queryResult}`)
+        logWithDate(`createItem Success! itemId: ${queryResult}`)
         return true
       } catch (e) {
         throw new Error("[Error] Failed to create Item!")
@@ -94,14 +106,22 @@ function GetItemFilterSql(filter: any): string {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemMinorType")) {
     if (filter.itemMinorType != "ALL") {
-      filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` item_gr."itemMinorType"='${filter.itemMinorType}'`)
+      filterSql = MakeMultipleQuery(
+        multipleQuery,
+        filterSql,
+        ` item_gr."itemMinorType"='${filter.itemMinorType}'`
+      )
       multipleQuery = true
     }
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemFinalType")) {
     if (filter.itemFinalType != "ALL") {
-      filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` item_gr."itemFinalType"='${filter.itemFinalType}'`)
+      filterSql = MakeMultipleQuery(
+        multipleQuery,
+        filterSql,
+        ` item_gr."itemFinalType"='${filter.itemFinalType}'`
+      )
       multipleQuery = true
     }
   }

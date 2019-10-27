@@ -2,9 +2,13 @@ const { pool } = require("../../database/connectionPool")
 const { S3 } = require("../../database/aws_s3")
 
 import * as AWS from "aws-sdk"
-import { getFormatDate, getFormatHour } from "./stringUtil"
+import { getFormatDate, getFormatHour, logWithDate } from "./stringUtil"
 
-export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<{}> {
+export async function SequentialPromiseValue<T, U>(
+  arr: T[],
+  func: Function,
+  args: Array<U> = []
+): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       let resultArr = new Array<T>(arr.length)
@@ -43,7 +47,13 @@ export function MakeGroups(data: any, groupBy: string, groupIdList: number[]): a
   return resultArray
 }
 
-export function AssignGroupsToParent(parentsGroup: any, groups: any, parentId: string, parentField: string, depth: number) {
+export function AssignGroupsToParent(
+  parentsGroup: any,
+  groups: any,
+  parentId: string,
+  parentField: string,
+  depth: number
+) {
   groups.forEach(item => {
     if (item.length == 0) return
     if (depth == 2) {
@@ -78,7 +88,7 @@ export function RunSingleSQL(sql: string, args?: any): Promise<any> {
       resolve(queryResult.rows)
     } catch (e) {
       client.release()
-      console.log(e)
+      logWithDate(e)
       reject("Failed")
     }
   })
@@ -132,18 +142,18 @@ export async function UploadImage(itemImg: any): Promise<string> {
     let imageUrl: string = await new Promise((resolve, reject) => {
       S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
         if (err) {
-          console.log(err)
+          logWithDate(err)
           reject(err)
         }
         let imageUrl = data.Location
-        console.log("image Upload properly done")
+        logWithDate("image Upload properly done")
         resolve(imageUrl)
       })
     })
     return imageUrl
   } catch (e) {
-    console.log("Failed to Upload Image")
-    console.log(e)
+    logWithDate("Failed to Upload Image")
+    logWithDate(e)
     return null
   }
 }

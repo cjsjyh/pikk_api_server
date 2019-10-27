@@ -1,4 +1,5 @@
 import { RunSingleSQL } from "../Utils/promiseUtil"
+import { logWithDate } from "../Utils/stringUtil"
 
 export function IncrementViewCountFunc(postType: string, postId: number): Promise<Boolean> {
   return new Promise(async (resolve, reject) => {
@@ -7,8 +8,8 @@ export function IncrementViewCountFunc(postType: string, postId: number): Promis
       let result = await RunSingleSQL(query)
       resolve()
     } catch (e) {
-      console.log(`[Error] Failed to increase view count for ${postType} ${postId}`)
-      console.log(e)
+      logWithDate(`[Error] Failed to increase view count for ${postType} ${postId}`)
+      logWithDate(e)
       reject()
     }
   })

@@ -8,14 +8,24 @@ import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
-import { SequentialPromiseValue, GetMetaData, RunSingleSQL, ExtractSelectionSet } from "../Utils/promiseUtil"
-import { GetFormatSql } from "../Utils/stringUtil"
+import {
+  SequentialPromiseValue,
+  GetMetaData,
+  RunSingleSQL,
+  ExtractSelectionSet
+} from "../Utils/promiseUtil"
+import { GetFormatSql, logWithDate } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 
 module.exports = {
   Query: {
-    allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<PostReturnType.CommunityPostInfo[]> => {
+    allCommunityPosts: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<PostReturnType.CommunityPostInfo[]> => {
       let arg: ArgType.CommunityPostQuery = args.communityPostOption
 
       try {
@@ -50,7 +60,7 @@ module.exports = {
         })
         return postResult
       } catch (e) {
-        console.log(e)
+        logWithDate(e)
         throw new Error("[Error] Failed to fetch community post from DB")
       }
     },
@@ -60,7 +70,11 @@ module.exports = {
     }
   },
   Mutation: {
-    createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createCommunityPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
 
@@ -69,11 +83,11 @@ module.exports = {
           'INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content","postType","qnaType") VALUES ($1,$2,$3,$4,$5,$6)',
           [arg.accountId, arg.channelId, arg.title, arg.content, arg.postType, arg.qnaType]
         )
-        console.log(`Community Post has been created by User ${arg.accountId}`)
+        logWithDate(`Community Post has been created by User ${arg.accountId}`)
         return true
       } catch (e) {
-        console.log("[Error] Failed to Insert into COMMUNITY_POST")
-        console.log(e)
+        logWithDate("[Error] Failed to Insert into COMMUNITY_POST")
+        logWithDate(e)
         return false
       }
     },
@@ -84,8 +98,8 @@ module.exports = {
         let result = await RunSingleSQL(query)
         return true
       } catch (e) {
-        console.log(`[Error] Delete CommunityPost id: ${args.postId} Failed!`)
-        console.log(e)
+        logWithDate(`[Error] Delete CommunityPost id: ${args.postId} Failed!`)
+        logWithDate(e)
         throw new Error(`[Error] Delete CommunityPost id: ${args.postId} Failed!`)
       }
     }
@@ -108,6 +122,6 @@ function CommunityPostSelectionField(info: GraphQLResolveInfo) {
 
     return result
   } catch (e) {
-    console.log(e)
+    logWithDate(e)
   }
 }

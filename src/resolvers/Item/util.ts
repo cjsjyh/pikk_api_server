@@ -1,5 +1,10 @@
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, UploadImage } from "../Utils/promiseUtil"
-import { ConvertListToString } from "../Utils/stringUtil"
+import {
+  RunSingleSQL,
+  ExtractSelectionSet,
+  ExtractFieldFromList,
+  UploadImage
+} from "../Utils/promiseUtil"
+import { ConvertListToString, logWithDate } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput } from "./type/ArgType"
 import { ItemReviewInfoInput } from "../Review/type/ArgType"
@@ -26,10 +31,14 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         let brandId
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
-          queryResult = await RunSingleSQL(`INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`)
+          queryResult = await RunSingleSQL(
+            `INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`
+          )
           brandId = queryResult[0].id
         } else {
-          queryResult = await RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`)
+          queryResult = await RunSingleSQL(
+            `SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`
+          )
           brandId = queryResult[0].id
         }
         //Create new Group and save Id
@@ -42,7 +51,8 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         groupId = queryResult[0].id
       } else {
         //Find Group Id of this Item
-        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId")) throw new Error("[Error] groupId not inserted!")
+        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId"))
+          throw new Error("[Error] groupId not inserted!")
         groupId = arg.variationInfo.groupId
       }
       //Insert Variation
@@ -54,15 +64,15 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
           imageUrl = await UploadImage(arg.variationInfo.image)
         }
       } catch (e) {
-        console.log("Failed to upload image")
-        console.log(e)
+        logWithDate("Failed to upload image")
+        logWithDate(e)
       }
       queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
         VALUES ('${arg.variationInfo.name}','${imageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
       resolve(queryResult[0].id)
     } catch (e) {
-      console.log("[Error] Failed to Insert into ITEM_VARIATION")
-      console.log(e)
+      logWithDate("[Error] Failed to Insert into ITEM_VARIATION")
+      logWithDate(e)
       reject()
     }
   })
@@ -88,8 +98,8 @@ export async function GetSimpleItemListByPostList(postResult: any, info: GraphQL
       await GetSimpleItemInfoByPostId(postResult)
     }
   } catch (e) {
-    console.log("[ERROR] Failed to fetch simpleItemList")
-    console.log(e)
+    logWithDate("[ERROR] Failed to fetch simpleItemList")
+    logWithDate(e)
     throw new Error("[ERROR] Failed to fetch simpleItemList")
   }
 }
@@ -184,7 +194,10 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   return itemInfo
 }
 
-export async function GetItemIdInRanking(filterSql: string, formatSql: string): Promise<ReturnType.ItemInfo[]> {
+export async function GetItemIdInRanking(
+  filterSql: string,
+  formatSql: string
+): Promise<ReturnType.ItemInfo[]> {
   let reviewScore = 10
   let purchaseScore = 10
   let detailPageClickScore = 0.5

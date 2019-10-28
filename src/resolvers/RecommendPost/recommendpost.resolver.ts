@@ -4,27 +4,17 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import {
-  GetMetaData,
-  SequentialPromiseValue,
-  RunSingleSQL,
-  UploadImage
-} from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, logWithDate } from "../Utils/stringUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
+import { GetFormatSql, MakeMultipleQuery, logWithDate, ConvertListToString } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
-import { InsertItemReview } from "../Review/util"
+import { InsertItemReview, EditReview } from "../Review/util"
 import { performance } from "perf_hooks"
 import { GetRecommendPostList } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: any,
-      info: GraphQLResolveInfo
-    ): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
       try {
         let filterSql: string = ""
@@ -100,11 +90,7 @@ module.exports = {
     }
   },
   Mutation: {
-    createRecommendPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
+    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -152,11 +138,28 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       try {
         let setSql = await GetEditSql(arg)
+        //Edit others
         await RunSingleSQL(`
           UPDATE "RECOMMEND_POST" SET
           ${setSql}
           WHERE "id"=${arg.postId}
         `)
+        //Delete Images
+        if (Object.prototype.hasOwnProperty.call(arg, "deletedImageList")) {
+          let idList = ConvertListToString(arg.deletedImageList)
+          await RunSingleSQL(`
+            DELETE FROM "ITEM_REVIEW_IMAGE" WHERE id IN (${idList})
+          `)
+        }
+        //Edit Review
+        if (Object.prototype.hasOwnProperty.call(arg, "reviews")) {
+          await Promise.all(
+            arg.reviews.map(review => {
+              return EditReview(review)
+            })
+          )
+        }
+
         logWithDate(`Edited RecommendPost ${arg.postId}`)
         return true
       } catch (e) {
@@ -166,11 +169,7 @@ module.exports = {
       }
     },
 
-    deleteRecommendPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
+    deleteRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostDeleteInfoInput = args.recommendPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -218,9 +217,7 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(
-        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
-      )
+      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       if (rows.length == 0) return null
 
       let postIdSql = ""

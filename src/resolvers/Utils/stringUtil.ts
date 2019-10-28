@@ -1,15 +1,12 @@
 export function logWithDate(content: any) {
-  logWithDate(`[${getDateTime()}]` + content)
+  console.log(`[${getDateTime()}] ` + content)
 }
 
 function getDateTime() {
-  /*
   let today = new Date()
   let date = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate()
   let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds()
   let dateTime = date + " " + time
-  */
-  let dateTime = ""
   return dateTime
 }
 
@@ -38,10 +35,7 @@ export function getFormatHour(secs, delimiter = "") {
 export function GetFormatSql(filter: any): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
-    if (
-      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") &&
-      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")
-    )
+    if (Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") && Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort"))
       filterSql += ` ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} NULLS LAST`
     if (filter.filterGeneral.first > 30) filter.filterGeneral.first = 30
     filterSql += " LIMIT " + filter.filterGeneral.first + " OFFSET " + filter.filterGeneral.start
@@ -64,11 +58,7 @@ export function ConvertListToString(list: any): string {
   return result
 }
 
-export function ConvertListToOrderedPair(
-  list: any,
-  append: string = "",
-  isNumber: boolean = true
-): string {
+export function ConvertListToOrderedPair(list: any, append: string = "", isNumber: boolean = true): string {
   let result = ""
   list.forEach((item, index) => {
     if (index != 0) result += ","

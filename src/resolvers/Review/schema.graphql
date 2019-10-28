@@ -28,8 +28,21 @@ input ReviewQuery {
   filterGeneral: ReviewFilterGeneral
   reviewFilter: ReviewQueryFilter!
 }
-
+#-----------------
 # Mutation
+#-----------------
+
+input ItemReviewEditInfoInput {
+  reviewId: Int!
+  recommendReason: RecommendReason
+  shortReview: String
+  review: String
+  score: Float
+
+  item: ItemEditInfoInput
+  images: [ItemReviewImgEditInfoInput!]
+}
+
 input ItemReviewInfoInput {
   #itemId: Int
   item: ItemInfoInput!
@@ -40,6 +53,11 @@ input ItemReviewInfoInput {
   imgs: [ItemReviewImgInfoInput!]
 }
 
+input ItemReviewImgEditInfoInput {
+  imgId: Int!
+  imageUrl: String!
+}
+
 input ItemReviewImgInfoInput {
   img: Upload
 }
@@ -47,15 +65,6 @@ input ItemReviewImgInfoInput {
 input IncrementReviewCount {
   id: Int!
   type: IncrementField!
-}
-
-input ItemReviewEditInfoInput {
-  reviewId: Int!
-  accountId: Int!
-  recommendReason: RecommendReason
-  shortReview: String
-  review: String
-  score: Float
 }
 
 #---------------

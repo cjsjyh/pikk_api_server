@@ -8,10 +8,12 @@ if (process.env.MODE == "DEPLOY") {
     "https://pickkapiserver.online",
     "http://pickkapiserver.online",
     "pickkapiserver.online",
-    "15.165.26.117",
-    "15.165.26.117:80",
-    "52.78.116.92",
-    "52.78.116.92:80"
+    process.env.ELB_IP1,
+    process.env.ELB_IP2,
+    process.env.ELB_IP3,
+    process.env.ELB_IP1 + ":80",
+    process.env.ELB_IP2 + ":80",
+    process.env.ELB_IP3 + ":80"
   ]
 }
 

@@ -12,12 +12,7 @@ import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Query: {
-    allItemReviews: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<ItemReviewInfo[]> => {
+    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReviewInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       let filterSql = GetReviewFilterSql(arg)
@@ -55,27 +50,8 @@ module.exports = {
         let result = await RunSingleSQL(query)
         return true
       } catch (e) {
-        logWithDate(
-          `[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`
-        )
+        logWithDate(`[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`)
         logWithDate(e)
-        return false
-      }
-    },
-
-    editReview: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      let arg: ArgType.ItemReviewEditInfoInput = args.itemReviewEditInfo
-      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
-
-      try {
-        let setSql = GetEditSql(arg)
-        await RunSingleSQL(`
-          UPDATE "ITEM_REVIEW" SET
-          ${setSql}
-          WHERE "id"=${arg.reviewId}
-        `)
-        return true
-      } catch (e) {
         return false
       }
     }
@@ -121,35 +97,4 @@ function OverrideReviewSql(filter: ReviewQuery): string {
   }
 
   return overrideSql
-}
-
-function GetEditSql(filter: ArgType.ItemReviewEditInfoInput): string {
-  let isMultiple = false
-  let resultSql = ""
-
-  if (Object.prototype.hasOwnProperty.call(filter, "review")) {
-    if (isMultiple) resultSql += ", "
-    resultSql += ` "review" = '${filter.review}'`
-    isMultiple = true
-  }
-
-  if (Object.prototype.hasOwnProperty.call(filter, "score")) {
-    if (isMultiple) resultSql += ", "
-    resultSql += ` "score"= ${filter.score}`
-    isMultiple = true
-  }
-
-  if (Object.prototype.hasOwnProperty.call(filter, "recommendReason")) {
-    if (isMultiple) resultSql += ", "
-    resultSql += ` "recommendReason"= '${filter.recommendReason}'`
-    isMultiple = true
-  }
-
-  if (Object.prototype.hasOwnProperty.call(filter, "shortReview")) {
-    if (isMultiple) resultSql += ", "
-    resultSql += ` "shortReview" = '${filter.shortReview}'`
-    isMultiple = true
-  }
-
-  return resultSql
 }

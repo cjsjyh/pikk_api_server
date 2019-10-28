@@ -1,4 +1,4 @@
-import { ItemReviewInfoInput } from "../../Review/type/ArgType"
+import { ItemReviewInfoInput, ItemReviewEditInfoInput } from "../../Review/type/ArgType"
 //-------------
 //Mutation
 //-------------
@@ -33,6 +33,9 @@ export type RecommendPostEditInfoInput = {
   titleType: string
   titleImg: any
   titleYoutubeUrl: string
+
+  deletedImageList: number[]
+  reviews: ItemReviewEditInfoInput[]
 }
 
 export type RecommendPostDeleteInfoInput = {

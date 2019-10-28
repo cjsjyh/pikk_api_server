@@ -61,7 +61,10 @@ input ItemRankingFilter {
   filterGeneral: ItemSimpleFilterGeneral
 }
 
+#------------------
 # Mutation
+#------------------
+
 input ItemInfoInput {
   """
   If you want to add a variation to the group, only insert variationInfo.
@@ -71,6 +74,31 @@ input ItemInfoInput {
   createItemLevel: CreateItemLevel!
   groupInfo: GroupInfo
   variationInfo: VariationInfo!
+}
+
+input ItemEditInfoInput {
+  groupInfo: GroupEditInfo
+  variationInfo: VariationEditInfo
+}
+
+input GroupEditInfo {
+  brandId: Int
+  brand: String
+
+  groupId: Int!
+  originalPrice: Int
+  itemMinorType: String
+  itemMajorType: String
+  itemFinalType: String
+  sourceWebsite: String
+}
+
+input VariationEditInfo {
+  itemId: Int!
+  name: String
+  salePrice: Int
+  imageUrl: String
+  purchaseUrl: String
 }
 
 input GroupInfo {

@@ -11,6 +11,31 @@ export type ItemInfoInput = {
   variationInfo: VariationInfo
 }
 
+export type ItemEditInfoInput = {
+  groupInfo: GroupEditInfo
+  variationInfo: VariationEditInfo
+}
+
+export type GroupEditInfo = {
+  brandId: number
+  brand: string
+
+  groupId: number
+  originalPrice: number
+  itemMinorType: string
+  itemMajorType: string
+  itemFinalType: string
+  sourceWebsite: string
+}
+
+export type VariationEditInfo = {
+  itemId: number
+  name: string
+  salePrice: number
+  imageUrl: string
+  purchaseUrl: string
+}
+
 type GroupInfo = {
   brand: string
   isNewBrand: boolean

@@ -1,15 +1,34 @@
-import {
-  RunSingleSQL,
-  ExtractSelectionSet,
-  ExtractFieldFromList,
-  UploadImage
-} from "../Utils/promiseUtil"
+import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, UploadImage } from "../Utils/promiseUtil"
 import { ConvertListToString, logWithDate } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
-import { ItemInfoInput } from "./type/ArgType"
+import { ItemInfoInput, ItemEditInfoInput, GroupEditInfo, VariationEditInfo } from "./type/ArgType"
 import { ItemReviewInfoInput } from "../Review/type/ArgType"
 import { GraphQLResolveInfo } from "graphql"
 import { GetSubField } from "../Review/util"
+
+export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
+  try {
+    if (Object.prototype.hasOwnProperty.call(item, "groupInfo")) {
+      let groupSql = GetItemGroupEditSql(item.groupInfo)
+      await RunSingleSQL(`UPDATE "ITEM_GROUP" SET ${groupSql} WHERE id=${item.groupInfo.groupId}`)
+
+      if (Object.prototype.hasOwnProperty.call(item.groupInfo, "brandId")) {
+        let brandSql = GetBrandEditSql(item.groupInfo)
+        await RunSingleSQL(`UPDATE "BRAND" SET ${brandSql} WHERE id=${item.groupInfo.brandId}`)
+      }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(item, "variationInfo")) {
+      let variationSql = GetItemVariationEditSql(item.variationInfo)
+      await RunSingleSQL(`UPDATE "ITEM_VARIATION" SET ${variationSql} WHERE id=${item.variationInfo.itemId}`)
+    }
+    return true
+  } catch (e) {
+    logWithDate("[Error] Failed to Edit Item")
+    logWithDate(e)
+    return false
+  }
+}
 
 export function InsertItemForRecommendPost(argReview: ItemReviewInfoInput): Promise<{}> {
   return new Promise(async (resolve, reject) => {
@@ -31,14 +50,10 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         let brandId
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
-          queryResult = await RunSingleSQL(
-            `INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`
-          )
+          queryResult = await RunSingleSQL(`INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`)
           brandId = queryResult[0].id
         } else {
-          queryResult = await RunSingleSQL(
-            `SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`
-          )
+          queryResult = await RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`)
           brandId = queryResult[0].id
         }
         //Create new Group and save Id
@@ -51,8 +66,7 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
         groupId = queryResult[0].id
       } else {
         //Find Group Id of this Item
-        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId"))
-          throw new Error("[Error] groupId not inserted!")
+        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId")) throw new Error("[Error] groupId not inserted!")
         groupId = arg.variationInfo.groupId
       }
       //Insert Variation
@@ -194,10 +208,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   return itemInfo
 }
 
-export async function GetItemIdInRanking(
-  filterSql: string,
-  formatSql: string
-): Promise<ReturnType.ItemInfo[]> {
+export async function GetItemIdInRanking(filterSql: string, formatSql: string): Promise<ReturnType.ItemInfo[]> {
   let reviewScore = 10
   let purchaseScore = 10
   let detailPageClickScore = 0.5
@@ -242,4 +253,84 @@ export async function GetItemIdInRanking(
   let ItemRank = await RunSingleSQL(querySql)
 
   return ItemRank
+}
+
+function GetBrandEditSql(itemGroup: GroupEditInfo): string {
+  let isMultiple = false
+  let resultSql = ""
+
+  if (Object.prototype.hasOwnProperty.call(itemGroup, "brandId") && Object.prototype.hasOwnProperty.call(itemGroup, "brand")) {
+    resultSql += ` "nameKor" = '${itemGroup.brand}'`
+    isMultiple = true
+  }
+
+  return resultSql
+}
+
+function GetItemGroupEditSql(itemGroup: GroupEditInfo): string {
+  let isMultiple = false
+  let resultSql = ""
+
+  if (Object.prototype.hasOwnProperty.call(itemGroup, "originalPrice")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "originalPrice" = ${itemGroup.originalPrice}`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(itemGroup, "itemMinorType")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "itemMinorType" = '${itemGroup.itemMinorType}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(itemGroup, "itemMajorType")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "itemMajorType" = '${itemGroup.itemMajorType}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(itemGroup, "itemFinalType")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "itemFinalType" = '${itemGroup.itemFinalType}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(itemGroup, "sourceWebsite")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "sourceWebsite" = '${itemGroup.sourceWebsite}'`
+    isMultiple = true
+  }
+
+  return resultSql
+}
+
+function GetItemVariationEditSql(itemVar: VariationEditInfo): string {
+  let isMultiple = false
+  let resultSql = ""
+
+  if (Object.prototype.hasOwnProperty.call(itemVar, "name")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "" = '${itemVar.name}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(itemVar, "salePrice")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "" = ${itemVar.salePrice}`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(itemVar, "imageUrl")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "" = '${itemVar.imageUrl}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(itemVar, "purchaseUrl")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += ` "" = '${itemVar.purchaseUrl}'`
+    isMultiple = true
+  }
+
+  return resultSql
 }

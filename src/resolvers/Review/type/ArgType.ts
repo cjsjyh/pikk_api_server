@@ -1,4 +1,4 @@
-import { ItemInfoInput } from "../../Item/type/ArgType"
+import { ItemInfoInput, ItemEditInfoInput } from "../../Item/type/ArgType"
 
 //--------------
 //Mutation
@@ -18,6 +18,11 @@ export type ItemReviewInfoInput = {
   imgs: ItemReviewImgInfoInput[]
 }
 
+export type ItemReviewImgEditInfoInput = {
+  imgId: number
+  imageUrl: string
+}
+
 export type ItemReviewImgInfoInput = {
   img: any
 }
@@ -29,11 +34,13 @@ export type IncrementReviewCount = {
 
 export type ItemReviewEditInfoInput = {
   reviewId: number
-  accountId: number
   recommendReason: string
   shortReview: string
   review: string
   score: number
+
+  item: ItemEditInfoInput
+  images: ItemReviewImgEditInfoInput[]
 }
 
 //--------------

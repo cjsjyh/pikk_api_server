@@ -77,6 +77,9 @@ input RecommendPostEditInfoInput {
   titleType: RecommendTitleType
   titleImg: Upload
   titleYoutubeUrl: String
+
+  deletedImageList: [Int!]
+  reviews: [ItemReviewEditInfoInput!]
 }
 
 input RecommendPostDeleteInfoInput {

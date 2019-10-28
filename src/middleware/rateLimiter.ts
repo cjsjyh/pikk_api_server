@@ -3,8 +3,9 @@ import { logWithDate } from "../resolvers/Utils/stringUtil"
 const { RateLimiterRedis } = require("rate-limiter-flexible")
 const { GetRedisClient } = require("../database/redisConnect")
 
+const redisClient = GetRedisClient()
 const rateLimiter = new RateLimiterRedis({
-  redis: GetRedisClient(),
+  redis: redisClient,
   keyPrefix: "ratelimiter",
   points: 30, // 10 requests
   duration: 1 // per 1 second by IP

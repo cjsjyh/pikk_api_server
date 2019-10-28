@@ -1,4 +1,4 @@
-import { RunSingleSQL } from "../Utils/promiseUtil"
+import { RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { ValidateUser } from "../Utils/securityUtil"
@@ -37,6 +37,17 @@ module.exports = {
   },
 
   Mutation: {
+    UploadImage: async (parent: void, args: any, ctx: any): Promise<string> => {
+      try {
+        let imageUrl = await UploadImage(args.image)
+        return imageUrl
+      } catch (e) {
+        logWithDate("[Error] Failed to Upload Image")
+        logWithDate(e)
+        throw new Error("[Error] Failed to Upload Image")
+      }
+    },
+
     FollowTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<number> => {
       if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ReturnType.FollowInfo = args.followInfo

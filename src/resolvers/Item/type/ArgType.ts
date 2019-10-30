@@ -12,6 +12,7 @@ export type ItemInfoInput = {
 }
 
 export type ItemEditInfoInput = {
+  createItemLevel: string
   groupInfo: GroupEditInfo
   variationInfo: VariationEditInfo
 }
@@ -19,6 +20,7 @@ export type ItemEditInfoInput = {
 export type GroupEditInfo = {
   brandId: number
   brand: string
+  isNewBrand: boolean
 
   groupId: number
   originalPrice: number
@@ -30,6 +32,8 @@ export type GroupEditInfo = {
 
 export type VariationEditInfo = {
   itemId: number
+
+  groupId: number
   name: string
   salePrice: number
   imageUrl: string
@@ -39,6 +43,7 @@ export type VariationEditInfo = {
 type GroupInfo = {
   brand: string
   isNewBrand: boolean
+
   originalPrice: number
   itemMinorType: string
   itemMajorType: string
@@ -50,7 +55,7 @@ type VariationInfo = {
   groupId: number
   name: string
   salePrice: number
-  image: any
+  imageUrl: string
   purchaseUrl: string
 }
 

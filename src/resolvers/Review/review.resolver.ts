@@ -17,8 +17,7 @@ module.exports = {
       let arg: ReviewQuery = args.reviewOption
       let filterSql = GetReviewFilterSql(arg)
       let formatSql = GetFormatSql(arg)
-      let reviewSql = 'SELECT * FROM "ITEM_REVIEW" ' + filterSql + formatSql
-
+      let reviewSql = `SELECT * FROM "ITEM_REVIEW" ${filterSql} ${formatSql}`
       let overrideSql = OverrideReviewSql(arg)
       if (overrideSql != "") reviewSql = overrideSql + filterSql + formatSql
       let queryResult = await RunSingleSQL(reviewSql)
@@ -32,7 +31,7 @@ module.exports = {
         await SequentialPromiseValue(queryResult, FetchUserForReview)
       }
       if (selectionSet.includes("imgs")) {
-        let imgResult = await GetSubField(queryResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs")
+        let imgResult = await GetSubField(queryResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs", 1, "", `ORDER BY "order" ASC`)
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       queryResult.forEach(review => {
@@ -79,6 +78,7 @@ function OverrideReviewSql(filter: ReviewQuery): string {
       FROM "ITEM_REVIEW" review 
       INNER JOIN "RECOMMEND_POST" post 
       ON review."FK_postId" = post.id
+      ORDER BY review."order" ASC
       `
   }
 
@@ -92,7 +92,8 @@ function OverrideReviewSql(filter: ReviewQuery): string {
     )
     SELECT review.* 
     FROM "ITEM_REVIEW" review, post_id 
-    WHERE review."FK_postId" = post_id.id 
+    WHERE review."FK_postId" = post_id.id
+    ORDER BY review."order" ASC 
     `
   }
 

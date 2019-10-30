@@ -2,7 +2,7 @@ import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, UploadImage } 
 import { ConvertListToString, logWithDate } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput, ItemEditInfoInput, GroupEditInfo, VariationEditInfo } from "./type/ArgType"
-import { ItemReviewInfoInput } from "../Review/type/ArgType"
+import { ItemReviewInfoInput, ItemReviewEditInfoInput } from "../Review/type/ArgType"
 import { GraphQLResolveInfo } from "graphql"
 import { GetSubField } from "../Review/util"
 
@@ -30,7 +30,7 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
   }
 }
 
-export function InsertItemForRecommendPost(argReview: ItemReviewInfoInput): Promise<{}> {
+export function InsertItemForRecommendPost(argReview: ItemReviewInfoInput | ItemReviewEditInfoInput): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       argReview.itemId = await InsertItem(argReview.item)
@@ -41,7 +41,7 @@ export function InsertItemForRecommendPost(argReview: ItemReviewInfoInput): Prom
   })
 }
 
-export function InsertItem(arg: ItemInfoInput): Promise<number> {
+export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<number> {
   return new Promise(async (resolve, reject) => {
     try {
       let queryResult
@@ -71,18 +71,9 @@ export function InsertItem(arg: ItemInfoInput): Promise<number> {
       }
       //Insert Variation
       if (arg.variationInfo.salePrice === undefined) arg.variationInfo.salePrice = null
-      let imageUrl = ""
 
-      try {
-        if (Object.prototype.hasOwnProperty.call(arg.variationInfo, "image")) {
-          imageUrl = await UploadImage(arg.variationInfo.image)
-        }
-      } catch (e) {
-        logWithDate("Failed to upload image")
-        logWithDate(e)
-      }
       queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
-        VALUES ('${arg.variationInfo.name}','${imageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
+        VALUES ('${arg.variationInfo.name}','${arg.variationInfo.imageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
       resolve(queryResult[0].id)
     } catch (e) {
       logWithDate("[Error] Failed to Insert into ITEM_VARIATION")
@@ -248,7 +239,7 @@ export async function GetItemIdInRanking(filterSql: string, formatSql: string): 
     (review_score.reviewer_score + review_score.detail_click + review_score.purchase_click + review_score.purchase_count +
     (SELECT COUNT(*) as follow_count FROM "ITEM_FOLLOWER" follow WHERE follow."FK_itemId" = review_score."itemId")*${followScore}
      ) as final_score
-  FROM review_score ORDER BY final_score DESC ${formatSql}
+  FROM review_score ORDER BY final_score DESC, review_score."itemId" DESC ${formatSql}
   `
   let ItemRank = await RunSingleSQL(querySql)
 

@@ -24,7 +24,7 @@ var corsOptions = {
       if (whitelist.indexOf(origin) !== -1) {
         callback(null, true)
       } else {
-        logWithDate(`[CORS] ${origin} Not allowed by CORS`)
+        logWithDate(`[CORS] ${origin.strip()} Not allowed by CORS`)
         callback(new Error("Not allowed by CORS"))
       }
     }

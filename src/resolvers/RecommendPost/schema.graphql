@@ -63,11 +63,13 @@ input RecommendPostInfoInput {
   titleType: RecommendTitleType!
   titleImg: Upload
   titleYoutubeUrl: String
-  reviews: [ItemReviewInfoInput!]!
+
+  reviews: [ItemReviewInfoInput!]
 }
 
 input RecommendPostEditInfoInput {
   postId: Int!
+
   accountId: Int!
   title: String
   content: String

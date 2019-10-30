@@ -77,6 +77,7 @@ input ItemInfoInput {
 }
 
 input ItemEditInfoInput {
+  createItemLevel: CreateItemLevel
   groupInfo: GroupEditInfo
   variationInfo: VariationEditInfo
 }
@@ -84,17 +85,18 @@ input ItemEditInfoInput {
 input GroupEditInfo {
   brandId: Int
   brand: String
+  isNewBrand: Boolean
 
-  groupId: Int!
+  groupId: Int
   originalPrice: Int
-  itemMinorType: String
-  itemMajorType: String
-  itemFinalType: String
+  itemMinorType: ItemMinorType!
+  itemMajorType: ItemMajorType!
+  itemFinalType: ItemFinalType!
   sourceWebsite: String
 }
 
 input VariationEditInfo {
-  itemId: Int!
+  itemId: Int
   name: String
   salePrice: Int
   imageUrl: String
@@ -104,6 +106,7 @@ input VariationEditInfo {
 input GroupInfo {
   brand: String!
   isNewBrand: Boolean!
+
   originalPrice: Int!
   itemMinorType: ItemMinorType!
   itemMajorType: ItemMajorType!
@@ -115,7 +118,7 @@ input VariationInfo {
   groupId: Int
   name: String!
   salePrice: Int
-  image: Upload
+  imageUrl: String
   purchaseUrl: String!
 }
 

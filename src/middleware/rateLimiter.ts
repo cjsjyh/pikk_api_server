@@ -23,4 +23,7 @@ const rateLimiterMiddleware = (req, res, next) => {
     })
 }
 
-module.exports = rateLimiterMiddleware
+module.exports = {
+  rateLimiterMiddleware: rateLimiterMiddleware,
+  redisClient: redisClient
+}

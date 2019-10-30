@@ -10,21 +10,22 @@ export type MutationArgInfo = {
 
 export type ItemReviewInfoInput = {
   itemId: number
-  item: ItemInfoInput
   recommendReason: string
   shortReview: string
   review: string
   score: number
-  imgs: ItemReviewImgInfoInput[]
+
+  item: ItemInfoInput
+  images: ItemReviewImgInfoInput[]
 }
 
 export type ItemReviewImgEditInfoInput = {
-  imgId: number
+  imageId: number
   imageUrl: string
 }
 
 export type ItemReviewImgInfoInput = {
-  img: any
+  imageUrl: any
 }
 
 export type IncrementReviewCount = {
@@ -34,6 +35,8 @@ export type IncrementReviewCount = {
 
 export type ItemReviewEditInfoInput = {
   reviewId: number
+
+  itemId: number
   recommendReason: string
   shortReview: string
   review: string

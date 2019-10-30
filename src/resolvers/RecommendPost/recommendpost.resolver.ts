@@ -121,7 +121,7 @@ module.exports = {
       try {
         let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
         for (let index = 0; index < arg.reviews.length; index++) {
-          await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId])
+          await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId, index])
         }
         logWithDate(`Recommend Post created by User${arg.accountId}`)
         return true
@@ -154,8 +154,8 @@ module.exports = {
         //Edit Review
         if (Object.prototype.hasOwnProperty.call(arg, "reviews")) {
           await Promise.all(
-            arg.reviews.map(review => {
-              return EditReview(review)
+            arg.reviews.map((review, index) => {
+              return EditReview(review, [arg.postId, arg.accountId, index])
             })
           )
         }

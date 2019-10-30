@@ -1,41 +1,46 @@
 import * as ReviewArgType from "./type/ArgType"
 import {
   ExtractSelectionSet,
-  UploadImage,
   RunSingleSQL,
   ExtractFieldFromList,
   SequentialPromiseValue,
   MakeGroups,
-  AssignGroupsToParent,
-  UploadImageWrapper
+  AssignGroupsToParent
 } from "../Utils/promiseUtil"
 import { ConvertListToString, ConvertListToOrderedPair, logWithDate } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
-import { FetchItemsForReview, EditItem } from "../Item/util"
+import { FetchItemsForReview, EditItem, InsertItemForRecommendPost } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
 import { IncrementViewCountFunc } from "../Common/util"
 
-export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput): Promise<boolean> {
+export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, args: any): Promise<boolean> {
   try {
-    let setSql = GetEditSql(review)
-    await RunSingleSQL(`
-      UPDATE "ITEM_REVIEW" SET
-      ${setSql}
-      WHERE "id"=${review.reviewId}
-    `)
+    //Editing Review
+    if (Object.prototype.hasOwnProperty.call(review, "reviewId")) {
+      let setSql = GetEditSql(review)
+      await RunSingleSQL(`
+        UPDATE "ITEM_REVIEW" SET
+        ${setSql}
+        WHERE "id"=${review.reviewId}
+      `)
 
-    if (Object.prototype.hasOwnProperty.call(review, "images")) {
-      await Promise.all(
-        review.images.map(image => {
-          return EditReviewImages(image)
-        })
-      )
+      if (Object.prototype.hasOwnProperty.call(review, "images")) {
+        await Promise.all(
+          review.images.map((image, index) => {
+            return EditReviewImages(image, review.reviewId, index)
+          })
+        )
+      }
+
+      if (Object.prototype.hasOwnProperty.call(review, "item")) {
+        await EditItem(review.item)
+      }
     }
-
-    if (Object.prototype.hasOwnProperty.call(review, "item")) {
-      await EditItem(review.item)
+    //Creating New Review
+    else {
+      await InsertItemForRecommendPost(review)
+      await InsertItemReview(review, args)
     }
-
     return true
   } catch (e) {
     logWithDate(`[Error] Failed to edit Review`)
@@ -43,9 +48,16 @@ export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput):
   }
 }
 
-async function EditReviewImages(image: ReviewArgType.ItemReviewImgEditInfoInput): Promise<boolean> {
+async function EditReviewImages(image: ReviewArgType.ItemReviewImgEditInfoInput, reviewId: number, index: number): Promise<boolean> {
   try {
-    await RunSingleSQL(`UPDATE "ITEM_REVIEW_IMAGE" SET "imgUrl"='${image.imageUrl}' WHERE id=${image.imgId}`)
+    //Edit exsiting image
+    if (Object.prototype.hasOwnProperty.call(image, "imageId")) {
+      await RunSingleSQL(`UPDATE "ITEM_REVIEW_IMAGE" SET "imgUrl"='${image.imageUrl}', "order"=${index} WHERE id=${image.imageId}`)
+    }
+    //Insert new image
+    else {
+      await InsertItemReviewImage("", reviewId, image.imageUrl, index)
+    }
     return true
   } catch (e) {
     logWithDate("[Error] Failed to Edit Review Image")
@@ -128,25 +140,36 @@ export async function GetSubField(
   return groupedSubfield
 }
 
-export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, args: Array<number>): Promise<{}> {
+async function InsertItemReviewImage(multipleValues: string = "", reviewId?: number, url?: string, order?: number) {
+  let querySql
+  if (multipleValues == "") querySql = `INSERT INTO "ITEM_REVIEW_IMAGE"("imgUrl","order", "FK_reviewId") VALUES ('${url}', ${order},${reviewId})`
+  else querySql = `INSERT INTO "ITEM_REVIEW_IMAGE"("imgUrl","order", "FK_reviewId") VALUES ${multipleValues}`
+  await RunSingleSQL(querySql)
+}
+
+export function InsertItemReview(
+  itemReview: ReviewArgType.ItemReviewInfoInput | ReviewArgType.ItemReviewEditInfoInput,
+  args: Array<number>
+): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       let postId = args[0]
       let accountId = args[1]
+      let order = args[2]
       let insertResult = await RunSingleSQL(
         `INSERT INTO "ITEM_REVIEW"
-        ("FK_accountId","FK_itemId","FK_postId","recommendReason","review","shortReview","score") 
-        VALUES (${accountId}, ${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.review}','${itemReview.shortReview}' ,${itemReview.score}) RETURNING id`
+        ("FK_accountId","FK_itemId","FK_postId","recommendReason","review","shortReview","score","order") 
+        VALUES (${accountId}, ${itemReview.itemId}, ${postId}, '${itemReview.recommendReason}', '${itemReview.review}','${itemReview.shortReview}' ,${itemReview.score},${order}) RETURNING id`
       )
       let reviewId = insertResult[0].id
-      if (!Object.prototype.hasOwnProperty.call(itemReview, "imgs")) {
+      if (!Object.prototype.hasOwnProperty.call(itemReview, "images")) {
         logWithDate("No Images Inserted!")
         resolve(reviewId)
       } else {
         logWithDate("Image Inserted!")
         let imgUrlList
         try {
-          imgUrlList = await SequentialPromiseValue(itemReview.imgs, UploadImageWrapper)
+          imgUrlList = ExtractFieldFromList(itemReview.images, "imageUrl")
         } catch (e) {
           logWithDate("Failed to upload Images")
           logWithDate(e)
@@ -154,11 +177,7 @@ export function InsertItemReview(itemReview: ReviewArgType.ItemReviewInfoInput, 
 
         try {
           let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
-          await RunSingleSQL(
-            `INSERT INTO "ITEM_REVIEW_IMAGE" ("imgUrl","order","FK_reviewId") 
-        VALUES ${imgPairs}
-        `
-          )
+          await InsertItemReviewImage(imgPairs)
         } catch (e) {
           logWithDate("Failed to Insert into ITEM_REVIEW_IMAGE")
           logWithDate(e)
@@ -191,7 +210,7 @@ export function GetReviewForSinglePost(post: any) {
   return new Promise(async (resolve, reject) => {
     try {
       let reviewResult = await RunSingleSQL(`
-        SELECT * FROM "ITEM_REVIEW" WHERE "FK_postId"=${post.id}
+        SELECT * FROM "ITEM_REVIEW" WHERE "FK_postId"=${post.id} ORDER BY "order" ASC
       `)
 
       reviewResult.forEach(review => {
@@ -211,7 +230,7 @@ export function GetImagesForSingleReview(review: any) {
   return new Promise(async (resolve, reject) => {
     try {
       let imgsResult = await RunSingleSQL(`
-        SELECT * FROM "ITEM_REVIEW_IMAGE" WHERE "FK_reviewId"=${review.id}
+        SELECT * FROM "ITEM_REVIEW_IMAGE" WHERE "FK_reviewId"=${review.id} ORDER BY "order" ASC
       `)
       imgsResult.forEach(img => (img.reviewId = img.FK_reviewId))
       review.imgs = imgsResult

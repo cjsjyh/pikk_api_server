@@ -33,7 +33,11 @@ input ReviewQuery {
 #-----------------
 
 input ItemReviewEditInfoInput {
-  reviewId: Int!
+  """
+  Do not insert reviewId if it's a new review
+  """
+  reviewId: Int
+
   recommendReason: RecommendReason
   shortReview: String
   review: String
@@ -45,21 +49,25 @@ input ItemReviewEditInfoInput {
 
 input ItemReviewInfoInput {
   #itemId: Int
-  item: ItemInfoInput!
   recommendReason: RecommendReason!
   shortReview: String!
   review: String!
   score: Float!
-  imgs: [ItemReviewImgInfoInput!]
+
+  item: ItemInfoInput!
+  images: [ItemReviewImgInfoInput!]
 }
 
 input ItemReviewImgEditInfoInput {
-  imgId: Int!
+  """
+  Do not insert imageId if it's a new image
+  """
+  imageId: Int
   imageUrl: String!
 }
 
 input ItemReviewImgInfoInput {
-  img: Upload
+  imageUrl: String
 }
 
 input IncrementReviewCount {

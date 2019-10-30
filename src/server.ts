@@ -17,6 +17,7 @@ import schema from "./schema"
 //-------------------------------
 import * as fs from "fs"
 import { logWithDate } from "./resolvers/Utils/stringUtil"
+const { pool } = require("./database/connectionPool")
 
 //Create Express Server
 const app = express()
@@ -29,9 +30,10 @@ app.use(function(req, res, next) {
 const corsOptions = require("./middleware/cors")
 app.use("*", cors(corsOptions))
 
+let limiter
 if (process.env.MODE == "DEPLOY") {
-  const rateLimiterRedisMiddleware = require("./middleware/rateLimiter")
-  app.use(rateLimiterRedisMiddleware)
+  limiter = require("./middleware/rateLimiter")
+  app.use(limiter.rateLimiterRedisMiddleware)
 }
 app.use(require("express-status-monitor")())
 app.use(compression())
@@ -75,7 +77,11 @@ app.get("/", (req: express.Request, res: express.Response) => {
 const httpServer = createServer(app)
 httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))
 
-process.on("SIGINT", function() {
+process.on("SIGINT", async function() {
+  await pool.end()
+  if (process.env.MODE == "DEPLOY") {
+    limiter.redisClient.quit()
+  }
   httpServer.close(function() {
     process.exit(0)
   })

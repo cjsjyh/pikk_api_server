@@ -9,7 +9,7 @@ export function GetRedisClient() {
   return redisConnection
 }
 
-export function GetRedis(key: string) {
+export function GetRedis(key: string): any {
   return new Promise((resolve, reject) => {
     let client
     try {
@@ -31,7 +31,7 @@ export function GetRedis(key: string) {
   })
 }
 
-export function SetRedis(key: string, value: string, timer: number = 3600) {
+export function SetRedis(key: string, value: string, timer: number = 3600): any {
   return new Promise((resolve, reject) => {
     let client
     try {

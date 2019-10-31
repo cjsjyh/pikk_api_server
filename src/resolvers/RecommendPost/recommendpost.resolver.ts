@@ -11,11 +11,18 @@ import { InsertItemReview, EditReview } from "../Review/util"
 import { performance } from "perf_hooks"
 import { GetRecommendPostList } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
+import { GetRedis, SetRedis } from "../../database/redisConnect"
 
 module.exports = {
   Query: {
     allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
+
+      let recomPostCache: ReturnType.RecommendPostInfo[] = await GetRedis("allRecommendPosts_ALL")
+      if (recomPostCache != null) {
+        return recomPostCache
+      }
+
       try {
         let filterSql: string = ""
         if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
@@ -44,6 +51,7 @@ module.exports = {
         `
         let postResult = await GetRecommendPostList(postSql, info)
         logWithDate(`allRecommendPosts Called`)
+        await SetRedis("allRecommendPosts_ALL", JSON.stringify(postResult), 60)
         return postResult
       } catch (e) {
         logWithDate(e)

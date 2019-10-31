@@ -8,9 +8,11 @@ import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
 import { SequentialPromiseValue, GetMetaData, RunSingleSQL, ExtractSelectionSet } from "../Utils/promiseUtil"
-import { GetFormatSql, logWithDate } from "../Utils/stringUtil"
+import { GetFormatSql, logWithDate, ConvertListToOrderedPair, ConvertListToString } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
+import { InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
+import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Query: {
@@ -36,7 +38,6 @@ module.exports = {
         INNER JOIN "USER_INFO" user_info ON post."FK_accountId" = user_info."FK_accountId"
         `
         let postResult: PostReturnType.CommunityPostInfo[] = await RunSingleSQL(querySql)
-
         let imgResult = await SequentialPromiseValue(postResult, GetCommunityPostImage)
 
         postResult.forEach((post: PostReturnType.CommunityPostInfo, index: number) => {
@@ -49,6 +50,7 @@ module.exports = {
         })
         return postResult
       } catch (e) {
+        logWithDate("[Error] Failed to fetch community post from DB")
         logWithDate(e)
         throw new Error("[Error] Failed to fetch community post from DB")
       }
@@ -60,14 +62,19 @@ module.exports = {
   },
   Mutation: {
     createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
-      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        await RunSingleSQL(
-          'INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content","postType","qnaType") VALUES ($1,$2,$3,$4,$5,$6)',
-          [arg.accountId, arg.channelId, arg.title, arg.content, arg.postType, arg.qnaType]
+        if (arg.qnaType === undefined) arg.qnaType = "NONE"
+        let postId = await RunSingleSQL(
+          `INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content","postType","qnaType") 
+          VALUES (${arg.accountId}, ${arg.channelId}, '${arg.title}', '${arg.content}', '${arg.postType}', '${arg.qnaType}') RETURNING id`
         )
+        if (Object.prototype.hasOwnProperty.call(arg, "imageUrls")) {
+          let imgPairs = ConvertListToOrderedPair(arg.imageUrls, `,${String(postId[0].id)}`, false)
+          await InsertImageIntoTable(imgPairs, "COMMUNITY_POST_IMAGE", "FK_postId")
+        }
         logWithDate(`Community Post has been created by User ${arg.accountId}`)
         return true
       } catch (e) {
@@ -77,15 +84,50 @@ module.exports = {
       }
     },
 
-    deleteCommunityPost: async (parent: void, args: any): Promise<Boolean> => {
+    editCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      let arg: ArgType.CommunityPostEditInfoInput = args.communityPostEditInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       try {
-        let query = `DELETE FROM "COMMUNITY_POST" WHERE id=${args.postId}`
-        let result = await RunSingleSQL(query)
+        let querySql = GetCommunityPostEditSql(arg)
+        await RunSingleSQL(`UPDATE "COMMUNITY_POST" SET
+        ${querySql}
+        WHERE "id"=${arg.postId}
+        `)
+
+        if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {
+          let idList = ConvertListToString(arg.deletedImages)
+          await RunSingleSQL(`
+            DELETE FROM "ITEM_REVIEW_IMAGE" WHERE id IN (${idList})
+          `)
+        }
+
+        if (Object.prototype.hasOwnProperty.call(arg, "imageUrls")) {
+          await Promise.all(
+            arg.imageUrls.map((image, index) => {
+              return EditImageUrlInTable(image, "COMMUNITY_POST_IMAGE", "FK_postId", arg.postId, index)
+            })
+          )
+        }
+        logWithDate(`EditCommunityPost Done PostId:${arg.postId} userId:${arg.accountId}`)
         return true
       } catch (e) {
-        logWithDate(`[Error] Delete CommunityPost id: ${args.postId} Failed!`)
+        logWithDate("[Error] Failed to edit Community Post")
         logWithDate(e)
-        throw new Error(`[Error] Delete CommunityPost id: ${args.postId} Failed!`)
+        return false
+      }
+    },
+
+    deleteCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      let arg: ArgType.CommunityPostDeleteInfoInput = args.communityPostDeleteInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+      try {
+        let querySql = `DELETE FROM "COMMUNITY_POST" WHERE id=${arg.postId}`
+        let result = await RunSingleSQL(querySql)
+        return true
+      } catch (e) {
+        logWithDate(`[Error] Delete CommunityPost id: ${arg.postId} Failed!`)
+        logWithDate(e)
+        throw new Error(`[Error] Delete CommunityPost id: ${arg.postId} Failed!`)
       }
     }
   }
@@ -109,4 +151,35 @@ function CommunityPostSelectionField(info: GraphQLResolveInfo) {
   } catch (e) {
     logWithDate(e)
   }
+}
+
+function GetCommunityPostEditSql(arg: ArgType.CommunityPostEditInfoInput): string {
+  let isMultiple = false
+  let resultSql = ""
+
+  if (Object.prototype.hasOwnProperty.call(arg, "title")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"title"='${arg.title}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "content")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"content"='${arg.content}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "postType")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"postType"='${arg.postType}'`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "qnaType")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"qnaType"='${arg.qnaType}'`
+    isMultiple = true
+  }
+
+  return resultSql
 }

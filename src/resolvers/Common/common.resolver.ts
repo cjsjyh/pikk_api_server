@@ -9,6 +9,8 @@ module.exports = {
     isFollowingTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ReturnType.FollowInfo = args.followInfo
       try {
+        if (!ValidateUser(ctx, arg.accountId)) throw new Error("[Error] User not authorized!")
+
         let tableName
         let variableName
         if (arg.targetType == "ITEM") {
@@ -22,7 +24,6 @@ module.exports = {
           variableName = "channelId"
         }
 
-        if (!ValidateUser(ctx, arg.accountId)) throw new Error("[Error] User not authorized!")
         let query = `SELECT "FK_accountId" FROM "${tableName}_FOLLOWER" WHERE "FK_accountId"=${arg.accountId} and "FK_${variableName}"=${arg.targetId}`
         let result = await RunSingleSQL(query)
         if (result.length == 0) return false

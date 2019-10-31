@@ -11,7 +11,7 @@ import { ConvertListToString, ConvertListToOrderedPair, logWithDate } from "../U
 import { GraphQLResolveInfo } from "graphql"
 import { FetchItemsForReview, EditItem, InsertItemForRecommendPost } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
-import { IncrementViewCountFunc } from "../Common/util"
+import { IncrementViewCountFunc, InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
 
 export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, args: any): Promise<boolean> {
   try {
@@ -27,7 +27,7 @@ export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, 
       if (Object.prototype.hasOwnProperty.call(review, "images")) {
         await Promise.all(
           review.images.map((image, index) => {
-            return EditReviewImages(image, review.reviewId, index)
+            return EditImageUrlInTable(image, "ITEM_REVIEW_IMAGE", "FK_reviewId", review.reviewId, index)
           })
         )
       }
@@ -44,24 +44,6 @@ export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, 
     return true
   } catch (e) {
     logWithDate(`[Error] Failed to edit Review`)
-    throw new Error(e)
-  }
-}
-
-async function EditReviewImages(image: ReviewArgType.ItemReviewImgEditInfoInput, reviewId: number, index: number): Promise<boolean> {
-  try {
-    //Edit exsiting image
-    if (Object.prototype.hasOwnProperty.call(image, "imageId")) {
-      await RunSingleSQL(`UPDATE "ITEM_REVIEW_IMAGE" SET "imgUrl"='${image.imageUrl}', "order"=${index} WHERE id=${image.imageId}`)
-    }
-    //Insert new image
-    else {
-      await InsertItemReviewImage("", reviewId, image.imageUrl, index)
-    }
-    return true
-  } catch (e) {
-    logWithDate("[Error] Failed to Edit Review Image")
-    logWithDate(e)
     throw new Error(e)
   }
 }
@@ -140,13 +122,6 @@ export async function GetSubField(
   return groupedSubfield
 }
 
-async function InsertItemReviewImage(multipleValues: string = "", reviewId?: number, url?: string, order?: number) {
-  let querySql
-  if (multipleValues == "") querySql = `INSERT INTO "ITEM_REVIEW_IMAGE"("imgUrl","order", "FK_reviewId") VALUES ('${url}', ${order},${reviewId})`
-  else querySql = `INSERT INTO "ITEM_REVIEW_IMAGE"("imgUrl","order", "FK_reviewId") VALUES ${multipleValues}`
-  await RunSingleSQL(querySql)
-}
-
 export function InsertItemReview(
   itemReview: ReviewArgType.ItemReviewInfoInput | ReviewArgType.ItemReviewEditInfoInput,
   args: Array<number>
@@ -177,7 +152,7 @@ export function InsertItemReview(
 
         try {
           let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
-          await InsertItemReviewImage(imgPairs)
+          await InsertImageIntoTable(imgPairs, "ITEM_REVIEW_IMAGE", "FK_reviewId")
         } catch (e) {
           logWithDate("Failed to Insert into ITEM_REVIEW_IMAGE")
           logWithDate(e)

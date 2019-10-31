@@ -1,5 +1,11 @@
+//------------------
+//  MUTATION
+//------------------
+
 export type MutationArgInfo = {
   communityPostInfo: CommunityPostInfoInput
+  communityPostEditInfo: CommunityPostEditInfoInput
+  communityPostDeleteInfo: CommunityPostDeleteInfoInput
 }
 
 export type CommunityPostInfoInput = {
@@ -11,6 +17,31 @@ export type CommunityPostInfoInput = {
   qnaType: string
   imageUrls: string[]
 }
+
+export type CommunityPostEditInfoInput = {
+  accountId: number
+  postId: number
+  title: string
+  content: string
+  postType: string
+  qnaType: string
+  imageUrls: CommunityPostEditImageInfo[]
+
+  deletedImages: number[]
+}
+export type CommunityPostEditImageInfo = {
+  imageId: number
+  imageUrl: string
+}
+
+export type CommunityPostDeleteInfoInput = {
+  accountId: number
+  postId: number
+}
+
+//------------------
+//  QUERY
+//------------------
 
 export type QueryArgInfo = {
   communityPostOption: CommunityPostQuery

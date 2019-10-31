@@ -8,7 +8,7 @@ type Mutation {
   Return > [true] : DB save successful [false] : DB save unsuccessful
   """
   createCommunityPost(communityPostInfo: CommunityPostInfoInput!): Boolean!
-
+  editCommunityPost(communityPostEditInfo: CommunityPostEditInfoInput!): Boolean!
   deleteCommunityPost(postId: Int!): Boolean
 }
 
@@ -22,7 +22,10 @@ enum ComPostSortableField {
   viewCount
 }
 
+#------------------
 # Query
+#------------------
+
 input CommunityPostFilterGeneral {
   start: Int = 0
   first: Int = 50
@@ -43,7 +46,9 @@ input CommunityPostQuery {
   postFilter: CommunityPostQueryFilter!
 }
 
+#------------------
 # Mutation
+#------------------
 
 input CommunityPostInfoInput {
   accountId: Int!
@@ -56,6 +61,31 @@ input CommunityPostInfoInput {
   postType: CommunityPostType!
   qnaType: QNAType
   imageUrls: [String]
+}
+
+input CommunityPostEditInfoInput {
+  accountId: Int!
+  """
+  If belongs to a channel, insert UserId
+  """
+  postId: Int!
+  title: String
+  content: String
+  postType: CommunityPostType
+  qnaType: QNAType
+  imageUrls: [CommunityPostEditImageInfo!]
+
+  deletedImages: [Int!]
+}
+
+input CommunityPostEditImageInfo {
+  imageId: Int
+  imageUrl: String!
+}
+
+input CommunityPostDeleteInfoInput {
+  accountId: Int!
+  postId: Int!
 }
 
 #---------------

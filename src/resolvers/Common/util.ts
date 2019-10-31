@@ -26,8 +26,9 @@ export async function InsertImageIntoTable(
   order?: number
 ) {
   let querySql
-  if (multipleValues == "") querySql = `INSERT INTO "${tableName}"("imgUrl","order", "${foreignKeyName}") VALUES ('${url}', ${order},${foreignKeyId})`
-  else querySql = `INSERT INTO "${tableName}"("imgUrl","order", "${foreignKeyName}") VALUES ${multipleValues}`
+  if (multipleValues == "")
+    querySql = `INSERT INTO "${tableName}"("imageUrl","order", "${foreignKeyName}") VALUES ('${url}', ${order},${foreignKeyId})`
+  else querySql = `INSERT INTO "${tableName}"("imageUrl","order", "${foreignKeyName}") VALUES ${multipleValues}`
   await RunSingleSQL(querySql)
 }
 
@@ -41,7 +42,7 @@ export async function EditImageUrlInTable(
   try {
     //Edit exsiting image
     if (Object.prototype.hasOwnProperty.call(image, "imageId")) {
-      await RunSingleSQL(`UPDATE "${tableName}" SET "imgUrl"='${image.imageUrl}', "order"=${index} WHERE id=${image.imageId}`)
+      await RunSingleSQL(`UPDATE "${tableName}" SET "imageUrl"='${image.imageUrl}', "order"=${index} WHERE id=${image.imageId}`)
     }
     //Insert new image
     else {

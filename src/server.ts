@@ -76,7 +76,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 async function testfunc() {
-  let settest = await SetRedis("key6", { id: 40, age: 100 }, 30)
+  let settest = await SetRedis("key6", JSON.stringify({ id: 40, age: 100 }), 30)
   console.log(settest)
 
   let gettest = await GetRedis("key6")

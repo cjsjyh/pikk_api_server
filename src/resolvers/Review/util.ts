@@ -61,10 +61,10 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
       let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", "ORDER BY id ASC")
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
-        review.imgs = []
+        review.images = []
       })
-      if (IsSubFieldRequired(selectionSet, "reviews", "imgs")) {
-        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs", 2, "")
+      if (IsSubFieldRequired(selectionSet, "reviews", "images")) {
+        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 2, "")
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
@@ -190,7 +190,7 @@ export function GetReviewForSinglePost(post: any) {
 
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
-        review.imgs = []
+        review.images = []
       })
 
       post.reviews = reviewResult
@@ -208,7 +208,7 @@ export function GetImagesForSingleReview(review: any) {
         SELECT * FROM "ITEM_REVIEW_IMAGE" WHERE "FK_reviewId"=${review.id} ORDER BY "order" ASC
       `)
       imgsResult.forEach(img => (img.reviewId = img.FK_reviewId))
-      review.imgs = imgsResult
+      review.images = imgsResult
       resolve()
     } catch (e) {
       reject()

@@ -106,7 +106,7 @@ export function ExtractSelectionSet(info: any): any {
 export async function UploadImageWrapper(imgObj: any): Promise<string> {
   return new Promise(async (resolve, reject) => {
     try {
-      let url = await UploadImage(imgObj.img)
+      let url = await UploadImage(imgObj)
       resolve(url)
     } catch (e) {
       reject(0)

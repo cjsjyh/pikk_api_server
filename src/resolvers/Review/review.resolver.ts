@@ -32,7 +32,7 @@ module.exports = {
           await SequentialPromiseValue(queryResult, FetchUserForReview)
         }
         if (selectionSet.includes("images")) {
-          let imgResult = await GetSubField(queryResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "imgs", 1, "", `ORDER BY "order" ASC`)
+          let imgResult = await GetSubField(queryResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 1, "", `ORDER BY "order" ASC`)
           imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
         }
         queryResult.forEach(review => {

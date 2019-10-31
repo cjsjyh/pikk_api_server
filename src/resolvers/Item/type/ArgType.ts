@@ -75,6 +75,11 @@ type ItemFilterGeneral = {
   sortBy: string
 }
 
+export type ItemSimpleFilterGeneral = {
+  start: number
+  first: number
+}
+
 export type ItemQueryFilter = {
   itemMajorType: string
   itemMinorType: string
@@ -86,8 +91,7 @@ export type ItemRankingFilter = {
   itemMajorType: string
   itemMinorType: string
   itemFinalType: string
-  start: number
-  first: number
+  filterGeneral: ItemSimpleFilterGeneral
 }
 
 export interface ItemQuery {

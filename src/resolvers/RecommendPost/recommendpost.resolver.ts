@@ -5,7 +5,7 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, logWithDate, ConvertListToString } from "../Utils/stringUtil"
+import { GetFormatSql, MakeMultipleQuery, logWithDate, ConvertListToString, MakeCacheNameByObject } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, EditReview } from "../Review/util"
 import { performance } from "perf_hooks"
@@ -18,9 +18,12 @@ module.exports = {
     allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
 
-      let recomPostCache: ReturnType.RecommendPostInfo[] = await GetRedis("allRecommendPosts_ALL")
+      let cacheName = "allRecom"
+      cacheName += MakeCacheNameByObject(arg.filterGeneral)
+      cacheName += MakeCacheNameByObject(arg.postFilter)
+      let recomPostCache: any = await GetRedis(cacheName)
       if (recomPostCache != null) {
-        return recomPostCache
+        return JSON.parse(recomPostCache)
       }
 
       try {
@@ -51,7 +54,7 @@ module.exports = {
         `
         let postResult = await GetRecommendPostList(postSql, info)
         logWithDate(`allRecommendPosts Called`)
-        await SetRedis("allRecommendPosts_ALL", JSON.stringify(postResult), 60)
+        await SetRedis(cacheName, JSON.stringify(postResult), 60)
         return postResult
       } catch (e) {
         logWithDate(e)

@@ -75,3 +75,15 @@ export function MakeMultipleQuery(isMultiple: boolean, before: string, append: s
   result += append
   return result
 }
+
+export function MakeCacheNameByObject(obj: any): string {
+  if (obj == undefined) return ""
+
+  let result = ""
+  for (let [key, value] of Object.entries(obj)) {
+    if (typeof obj === "object") continue
+    result += String(value)
+  }
+
+  return result
+}

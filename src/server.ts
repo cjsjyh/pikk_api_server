@@ -75,6 +75,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
+/*
 async function testfunc() {
   let settest = await SetRedis("key6", JSON.stringify({ id: 40, age: 100 }), 30)
   console.log(settest)
@@ -84,6 +85,7 @@ async function testfunc() {
   if (gettest == null) console.log("Null!!!!")
 }
 testfunc()
+*/
 
 const httpServer = createServer(app)
 httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))

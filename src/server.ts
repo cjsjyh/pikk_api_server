@@ -17,6 +17,7 @@ import schema from "./schema"
 //-------------------------------
 import * as fs from "fs"
 import { logWithDate } from "./resolvers/Utils/stringUtil"
+import { GetRedis, SetRedis } from "./database/redisConnect"
 const { pool } = require("./database/connectionPool")
 
 //Create Express Server
@@ -73,6 +74,16 @@ server.applyMiddleware({ app, path: "/graphql" })
 app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
+
+async function testfunc() {
+  let settest = await SetRedis("key6", { id: 40, age: 100 }, 30)
+  console.log(settest)
+
+  let gettest = await GetRedis("key6")
+  console.log(gettest)
+  if (gettest == null) console.log("Null!!!!")
+}
+testfunc()
 
 const httpServer = createServer(app)
 httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))

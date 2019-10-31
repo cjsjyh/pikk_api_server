@@ -96,20 +96,12 @@ module.exports = {
 
       let recommendPostId: number
       try {
-        let imageUrl = null
-        if (arg.titleType == "IMAGE") {
-          if (!Object.prototype.hasOwnProperty.call(arg, "titleImage")) {
-            throw new Error("[Error] title type IMAGE but no image sent!")
-          }
-          imageUrl = await UploadImage(arg.titleImage)
-        }
-
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(
           `INSERT INTO "RECOMMEND_POST"
           ("FK_accountId","title","content","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") 
           VALUES (${arg.accountId}, '${arg.title}', '${arg.content}', '${arg.postType}', '${arg.styleType}', 
-          '${arg.titleType}', '${arg.titleYoutubeUrl}', '${imageUrl}') RETURNING id`
+          '${arg.titleType}', '${arg.titleYoutubeUrl}', '${arg.titleImageUrl}') RETURNING id`
         )
         recommendPostId = insertResult[0].id
       } catch (e) {
@@ -279,10 +271,9 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     resultSql += `"titleType"='${filter.titleType}'`
     isMultiple = true
   }
-  if (Object.prototype.hasOwnProperty.call(filter, "titleImage")) {
+  if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl")) {
     if (isMultiple) resultSql += ", "
-    let imageUrl = await UploadImage(filter.titleImage)
-    resultSql += `"titleImageUrl = '${imageUrl}'`
+    resultSql += `"titleImageUrl = '${filter.titleImageUrl}'`
     isMultiple = true
   }
   if (Object.prototype.hasOwnProperty.call(filter, "titleYoutubeUrl")) {

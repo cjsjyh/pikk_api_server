@@ -17,7 +17,7 @@ export type RecommendPostInfoInput = {
   styleType: string
   saleEndDate: string
   titleType: string
-  titleImage: any
+  titleImageUrl: string
   titleYoutubeUrl: string
   reviews: ItemReviewInfoInput[]
 }
@@ -31,7 +31,7 @@ export type RecommendPostEditInfoInput = {
   styleType: string
   saleEndDate: string
   titleType: string
-  titleImage: any
+  titleImageUrl: string
   titleYoutubeUrl: string
 
   deletedReviews: number[]

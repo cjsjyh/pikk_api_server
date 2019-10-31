@@ -9,3 +9,25 @@ export function GetRedisClient() {
 
   return redisConnection
 }
+
+export function FetchFromRedis(key: string) {
+  return new Promise((resolve, reject) => {
+    let client
+    try {
+      client = GetRedisClient()
+    } catch (e) {
+      reject(e)
+    }
+
+    try {
+      client.get(key, function(err, reply) {
+        if (err) reject(err)
+        client.end(true)
+        resolve(reply)
+      })
+    } catch (e) {
+      client.end(true)
+      reject(e)
+    }
+  })
+}

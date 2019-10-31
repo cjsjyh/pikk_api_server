@@ -61,7 +61,7 @@ input RecommendPostInfoInput {
   styleType: StyleType
   saleEndDate: Date
   titleType: RecommendTitleType!
-  titleImage: Upload
+  titleImageUrl: String
   titleYoutubeUrl: String
 
   reviews: [ItemReviewInfoInput!]
@@ -77,7 +77,7 @@ input RecommendPostEditInfoInput {
   styleType: StyleType
   saleEndDate: Date
   titleType: RecommendTitleType
-  titleImage: Upload
+  titleImageUrl: String
   titleYoutubeUrl: String
 
   deletedReviews: [Int!]

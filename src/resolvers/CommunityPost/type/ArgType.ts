@@ -9,7 +9,7 @@ export type CommunityPostInfoInput = {
   content: string
   postType: string
   qnaType: string
-  img: any[]
+  imageUrls: string[]
 }
 
 export type QueryArgInfo = {

@@ -1,4 +1,4 @@
-import { RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
+import { RunSingleSQL, UploadImage, SequentialPromiseValue, UploadImageWrapper } from "../Utils/promiseUtil"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { ValidateUser } from "../Utils/securityUtil"
@@ -8,21 +8,20 @@ module.exports = {
   Query: {
     isFollowingTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ReturnType.FollowInfo = args.followInfo
-
-      let tableName
-      let variableName
-      if (arg.targetType == "ITEM") {
-        tableName = "ITEM"
-        variableName = "itemId"
-      } else if (arg.targetType == "RECOMMENDPOST") {
-        tableName = "RECOMMEND_POST"
-        variableName = "postId"
-      } else if (arg.targetType == "CHANNEL") {
-        tableName = "CHANNEL"
-        variableName = "channelId"
-      }
-
       try {
+        let tableName
+        let variableName
+        if (arg.targetType == "ITEM") {
+          tableName = "ITEM"
+          variableName = "itemId"
+        } else if (arg.targetType == "RECOMMENDPOST") {
+          tableName = "RECOMMEND_POST"
+          variableName = "postId"
+        } else if (arg.targetType == "CHANNEL") {
+          tableName = "CHANNEL"
+          variableName = "channelId"
+        }
+
         if (!ValidateUser(ctx, arg.accountId)) throw new Error("[Error] User not authorized!")
         let query = `SELECT "FK_accountId" FROM "${tableName}_FOLLOWER" WHERE "FK_accountId"=${arg.accountId} and "FK_${variableName}"=${arg.targetId}`
         let result = await RunSingleSQL(query)
@@ -37,10 +36,10 @@ module.exports = {
   },
 
   Mutation: {
-    UploadImage: async (parent: void, args: any, ctx: any): Promise<string> => {
+    UploadImages: async (parent: void, args: any, ctx: any): Promise<string[]> => {
       try {
-        let imageUrl = await UploadImage(args.image)
-        return imageUrl
+        let imageUrls: string[] = await SequentialPromiseValue(args.images, UploadImageWrapper)
+        return imageUrls
       } catch (e) {
         logWithDate("[Error] Failed to Upload Image")
         logWithDate(e)

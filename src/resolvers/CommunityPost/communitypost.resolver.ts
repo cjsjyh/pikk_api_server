@@ -3,29 +3,18 @@ const _ = require("lodash")
 
 import * as ArgType from "./type/ArgType"
 import * as PostReturnType from "./type/ReturnType"
-import { GetUserInfoByIdList, FetchUserForCommunityPost } from "../User/util"
 import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
-import {
-  SequentialPromiseValue,
-  GetMetaData,
-  RunSingleSQL,
-  ExtractSelectionSet
-} from "../Utils/promiseUtil"
+import { SequentialPromiseValue, GetMetaData, RunSingleSQL, ExtractSelectionSet } from "../Utils/promiseUtil"
 import { GetFormatSql, logWithDate } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 
 module.exports = {
   Query: {
-    allCommunityPosts: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<PostReturnType.CommunityPostInfo[]> => {
+    allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<PostReturnType.CommunityPostInfo[]> => {
       let arg: ArgType.CommunityPostQuery = args.communityPostOption
 
       try {
@@ -53,9 +42,9 @@ module.exports = {
         postResult.forEach((post: PostReturnType.CommunityPostInfo, index: number) => {
           post.accountId = post.FK_accountId
           post.channelId = post.FK_channelId
-          post.imageUrl = []
+          post.imageUrls = []
           imgResult[index].forEach(image => {
-            post.imageUrl.push(image.imageUrl)
+            post.imageUrls.push(image.imageUrl)
           })
         })
         return postResult
@@ -70,11 +59,7 @@ module.exports = {
     }
   },
   Mutation: {
-    createCommunityPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
+    createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
 

@@ -13,7 +13,7 @@ export type ItemReviewInfo = {
   shortReview: string
   review: string
   score: number
-  imgs: ItemReviewImgInfo[]
+  images: ItemReviewImgInfo[]
 
   itemInfo: ItemInfo
   userInfo: UserInfo
@@ -25,5 +25,5 @@ export type ItemReviewImgInfo = {
   //Img
   id: number
   reviewId: number
-  imgUrl: string
+  imageUrl: string
 }

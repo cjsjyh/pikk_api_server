@@ -13,7 +13,7 @@ export type CommunityPostInfo = {
   content: string
   time: string
   viewcount: number
-  imageUrl: string[]
+  imageUrls: string[]
   postType: string
   qnaType: string
   commentCount: number

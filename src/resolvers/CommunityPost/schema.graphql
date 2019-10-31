@@ -55,7 +55,7 @@ input CommunityPostInfoInput {
   content: String!
   postType: CommunityPostType!
   qnaType: QNAType
-  img: [Upload]
+  imageUrls: [String]
 }
 
 #---------------
@@ -75,7 +75,7 @@ type CommunityPostInfo {
   content: String!
   time: String!
   viewCount: Int!
-  imageUrl: [String]
+  imageUrls: [String]
   postType: String!
   qnaType: String
 }

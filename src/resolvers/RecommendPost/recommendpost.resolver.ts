@@ -98,10 +98,10 @@ module.exports = {
       try {
         let imageUrl = null
         if (arg.titleType == "IMAGE") {
-          if (!Object.prototype.hasOwnProperty.call(arg, "titleImg")) {
+          if (!Object.prototype.hasOwnProperty.call(arg, "titleImage")) {
             throw new Error("[Error] title type IMAGE but no image sent!")
           }
-          imageUrl = await UploadImage(arg.titleImg)
+          imageUrl = await UploadImage(arg.titleImage)
         }
 
         if (arg.styleType === undefined) arg.styleType = "NONE"
@@ -145,12 +145,20 @@ module.exports = {
           WHERE "id"=${arg.postId}
         `)
         //Delete Images
-        if (Object.prototype.hasOwnProperty.call(arg, "deletedImageList")) {
-          let idList = ConvertListToString(arg.deletedImageList)
+        if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {
+          let idList = ConvertListToString(arg.deletedImages)
           await RunSingleSQL(`
             DELETE FROM "ITEM_REVIEW_IMAGE" WHERE id IN (${idList})
           `)
         }
+
+        if (Object.prototype.hasOwnProperty.call(arg, "deletedReviews")) {
+          let idList = ConvertListToString(arg.deletedReviews)
+          await RunSingleSQL(`
+            DELETE FROM "ITEM_REVIEW" WHERE id IN (${idList})
+          `)
+        }
+
         //Edit Review
         if (Object.prototype.hasOwnProperty.call(arg, "reviews")) {
           await Promise.all(
@@ -271,9 +279,9 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     resultSql += `"titleType"='${filter.titleType}'`
     isMultiple = true
   }
-  if (Object.prototype.hasOwnProperty.call(filter, "titleImg")) {
+  if (Object.prototype.hasOwnProperty.call(filter, "titleImage")) {
     if (isMultiple) resultSql += ", "
-    let imageUrl = await UploadImage(filter.titleImg)
+    let imageUrl = await UploadImage(filter.titleImage)
     resultSql += `"titleImageUrl = '${imageUrl}'`
     isMultiple = true
   }

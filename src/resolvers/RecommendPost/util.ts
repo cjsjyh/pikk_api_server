@@ -1,7 +1,6 @@
 import { RecommendPostInfo } from "./type/ReturnType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { GetReviewsByPostList } from "../Review/util"
-import { info } from "console"
 import { GetSimpleItemListByPostList } from "../Item/util"
 import { GraphQLResolveInfo } from "graphql"
 import { ConvertListToOrderedPair } from "../Utils/stringUtil"

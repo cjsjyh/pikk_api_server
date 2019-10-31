@@ -86,7 +86,7 @@ type ItemReviewInfo {
   shortReview: String!
   review: String!
   score: Float!
-  imgs: [ItemReviewImgInfo!]
+  images: [ItemReviewImgInfo!]
 
   itemInfo: ItemInfo
   userInfo: UserInfo
@@ -95,7 +95,7 @@ type ItemReviewInfo {
 type ItemReviewImgInfo {
   id: Int!
   reviewId: Int!
-  imgUrl: String
+  imageUrl: String
 }
 
 #------------------

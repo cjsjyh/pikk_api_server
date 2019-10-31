@@ -4,9 +4,11 @@ if (process.env.MODE == "DEPLOY") {
   var whitelist = [
     "https://pickk.one",
     "https://www.pickk.one",
+    "www.pickk.one",
     "pickk.one",
     "https://pickkapiserver.online",
     "http://pickkapiserver.online",
+    "www.pickkapiserver.online",
     "pickkapiserver.online",
     process.env.ELB_IP1,
     process.env.ELB_IP2,

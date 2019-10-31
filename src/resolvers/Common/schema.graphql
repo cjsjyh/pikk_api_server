@@ -6,7 +6,7 @@ type Query {
 }
 
 type Mutation {
-  UploadImage(image: Upload): String!
+  UploadImages(images: [Upload!]!): [String!]!
   FollowTarget(followInfo: FollowInfoInput!): Int!
   IncrementViewCount(postType: PostType!, postId: Int!): Boolean!
 }

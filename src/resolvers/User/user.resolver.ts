@@ -4,7 +4,12 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { RunSingleSQL, UploadImage, ExtractSelectionSet, ExtractFieldFromList } from "../Utils/promiseUtil"
+import {
+  RunSingleSQL,
+  UploadImage,
+  ExtractSelectionSet,
+  ExtractFieldFromList
+} from "../Utils/promiseUtil"
 import { GetFormatSql, ConvertListToOrderedPair, logWithDate } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
@@ -12,7 +17,11 @@ import { ValidateUser } from "../Utils/securityUtil"
 
 module.exports = {
   Mutation: {
-    createUser: async (parent: void, args: MutationArgInfo, ctx: any): Promise<ReturnType.UserCredentialInfo> => {
+    createUser: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<ReturnType.UserCredentialInfo> => {
       let arg: ArgType.UserCredentialInput = args.userAccountInfo
       //Make UserCredential
       try {
@@ -26,14 +35,18 @@ module.exports = {
             `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"='${arg.providerId}'`
           )
           userAccount = queryResult[0]
-          await RunSingleSQL(`UPDATE "USER_CONFIDENTIAL" SET "lastLogin" = NOW() WHERE id=${userAccount.id}`)
-          queryResult = await RunSingleSQL(`SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`)
+          await RunSingleSQL(
+            `UPDATE "USER_CONFIDENTIAL" SET "lastLogin" = NOW() WHERE id=${userAccount.id}`
+          )
+          queryResult = await RunSingleSQL(
+            `SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`
+          )
           //If user didn't insert user info yet
           if (queryResult.length == 0) userAccount.isNewUser = true
           else {
             userAccount.isNewUser = false
             userAccount.name = queryResult[0].name
-            userAccount.profileImgUrl = queryResult[0].profileImgUrl
+            userAccount.profileImageUrl = queryResult[0].profileImgUrl
             userAccount.rank = queryResult[0].rank
           }
           userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
@@ -55,26 +68,23 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       //Make UserCredential
       try {
-        let profileImgUrl = null
-        if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
-          profileImgUrl = await UploadImage(arg.profileImg)
-          if (profileImgUrl == null) {
-            throw new Error("[Error] Image Upload Failed!")
-          }
-        }
-
         let qResult
-        if (profileImgUrl != null) {
-          qResult = await RunSingleSQL(
-            'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-            [arg.accountId, arg.name, arg.email, arg.age, arg.height, arg.weight, profileImgUrl, arg.phoneNum, arg.address]
-          )
-        } else {
-          qResult = await RunSingleSQL(
-            'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-            [arg.accountId, arg.name, arg.email, arg.age, arg.height, arg.weight, arg.phoneNum, arg.address]
-          )
-        }
+        if (arg.profileImageUrl == undefined) arg.profileImageUrl = null
+        qResult = await RunSingleSQL(
+          'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
+          [
+            arg.accountId,
+            arg.name,
+            arg.email,
+            arg.age,
+            arg.height,
+            arg.weight,
+            arg.profileImageUrl,
+            arg.phoneNum,
+            arg.address
+          ]
+        )
+
         logWithDate(`User Info for User ${arg.accountId} created`)
         return true
       } catch (e) {
@@ -84,15 +94,18 @@ module.exports = {
       }
     },
 
-    updateUserChannelInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    updateUserChannelInfo: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.UserChannelInfoInput = args.userChannelInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       try {
         let setSql = ""
         let isFirst = true
-        if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImg")) {
-          let imgUrl = await UploadImage(arg.channel_titleImg)
-          setSql += `"channel_titleImgUrl"='${imgUrl}'`
+        if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl")) {
+          setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
           isFirst = false
         }
 
@@ -156,7 +169,12 @@ module.exports = {
     }
   },
   Query: {
-    getUserInfo: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo> => {
+    getUserInfo: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.UserInfo> => {
       let arg: ArgType.UserQuery = args.userOption
       try {
         let requestSql = UserInfoSelectionField(info)
@@ -170,7 +188,12 @@ module.exports = {
       }
     },
 
-    getUserPickkChannel: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo[]> => {
+    getUserPickkChannel: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.UserInfo[]> => {
       let arg: ArgType.PickkChannelQuery = args.pickkChannelOption
       try {
         let formatSql = GetFormatSql(arg)
@@ -189,7 +212,12 @@ module.exports = {
       }
     },
 
-    getChannelRanking: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo[]> => {
+    getChannelRanking: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.UserInfo[]> => {
       try {
         let idList = await GetChannelRankingId()
         let orderSql = `
@@ -245,11 +273,9 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
   let resultSql = ""
   let isMultiple = false
 
-  let profileImgUrl = null
-  if (Object.prototype.hasOwnProperty.call(arg, "profileImg")) {
+  if (Object.prototype.hasOwnProperty.call(arg, "profileImageUrl")) {
     try {
-      profileImgUrl = await UploadImage(arg.profileImg)
-      resultSql += `"profileImgUrl"='${profileImgUrl}'`
+      resultSql += `"profileImgUrl"='${arg.profileImageUrl}'`
       isMultiple = true
     } catch (e) {
       throw new Error("[Error] Image Upload Failed!")

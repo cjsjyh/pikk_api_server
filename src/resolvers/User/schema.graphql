@@ -59,7 +59,7 @@ input UserInfoInput {
   age: Int!
   height: Int!
   weight: Int!
-  profileImg: Upload
+  profileImageUrl: String
   phoneNum: String
   address: String
   rank: Int
@@ -72,7 +72,7 @@ input UserEditInfoInput {
   age: Int
   height: Int
   weight: Int
-  profileImg: Upload
+  profileImageUrl: Upload
   phoneNum: String
   address: String
   rank: Int
@@ -81,7 +81,7 @@ input UserEditInfoInput {
 input UserChannelInfoInput {
   accountId: Int!
   channel_snsUrl: String
-  channel_titleImg: Upload
+  channel_titleImageUrl: Upload
   channel_description: String
 }
 
@@ -96,12 +96,12 @@ type UserInfo {
   age: Int!
   height: Int!
   weight: Int!
-  profileImgUrl: String
+  profileImageUrl: String
   phoneNum: String
   address: String
   rank: Int
   #Channel
-  channel_titleImgUrl: String
+  channel_titleImageUrl: String
   channel_description: String
   channel_snsUrl: String
   channel_pickCount: Int
@@ -114,6 +114,6 @@ type UserCredentialInfo {
   token: String!
 
   name: String
-  profileImgUrl: String
+  profileImageUrl: String
   rank: Int
 }

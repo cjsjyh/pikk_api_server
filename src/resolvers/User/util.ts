@@ -3,7 +3,11 @@ import * as ReturnType from "./type/ReturnType"
 import { RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
 import { ConvertListToString } from "../Utils/stringUtil"
 
-export async function GetUserInfoByIdList(userIdList: any, requestSql: string = "", formatSql: string = ""): Promise<ReturnType.UserInfo[]> {
+export async function GetUserInfoByIdList(
+  userIdList: any,
+  requestSql: string = "",
+  formatSql: string = ""
+): Promise<ReturnType.UserInfo[]> {
   return new Promise(async (resolve, reject) => {
     try {
       let querySql = `
@@ -19,7 +23,7 @@ export async function GetUserInfoByIdList(userIdList: any, requestSql: string = 
       `
       let queryResult = await RunSingleSQL(querySql)
       queryResult.forEach(element => {
-        element.id = element.FK_accountId
+        UserMatchGraphQL(element)
       })
       resolve(queryResult)
     } catch (e) {
@@ -31,9 +35,11 @@ export async function GetUserInfoByIdList(userIdList: any, requestSql: string = 
 export async function FetchUserForReview(reviewInfo: any): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
-      let queryResult = await RunSingleSQL(`SELECT "FK_accountId" FROM "RECOMMEND_POST" WHERE id = ${reviewInfo.FK_postId}`)
+      let queryResult = await RunSingleSQL(
+        `SELECT "FK_accountId" FROM "RECOMMEND_POST" WHERE id = ${reviewInfo.FK_postId}`
+      )
       queryResult = await GetUserInfoByIdList(ExtractFieldFromList(queryResult, "FK_accountId"))
-      queryResult[0].id = queryResult[0].FK_accountId
+      UserMatchGraphQL(queryResult[0])
       reviewInfo.userInfo = queryResult[0]
       resolve()
     } catch (e) {
@@ -108,4 +114,10 @@ export async function GetChannelRankingId(): Promise<number[]> {
 export async function FetchUserForCommunityPost(postInfo: any): Promise<ReturnType.UserInfo> {
   let queryResult = await GetUserInfoByIdList([postInfo.FK_accountId])
   return queryResult[0]
+}
+
+function UserMatchGraphQL(obj: any) {
+  obj.id = obj.FK_accountId
+  obj.profileImageUrl = obj.profileImgUrl
+  obj.channel_titleImageUrl = obj.channel_titleImgUrl
 }

@@ -7,7 +7,7 @@ export type RecommendPostInfo = {
   //USER
   accountId: number
   name: string
-  profileImgUrl: string
+  profileImageUrl: string
   //LOOK
   pickCount: number
   simpleItemList: SimpleItemInfo[]

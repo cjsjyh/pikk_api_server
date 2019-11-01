@@ -4,8 +4,19 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, logWithDate, ConvertListToString, MakeCacheNameByObject } from "../Utils/stringUtil"
+import {
+  GetMetaData,
+  SequentialPromiseValue,
+  RunSingleSQL,
+  UploadImage
+} from "../Utils/promiseUtil"
+import {
+  GetFormatSql,
+  MakeMultipleQuery,
+  logWithDate,
+  ConvertListToString,
+  MakeCacheNameByObject
+} from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, EditReview } from "../Review/util"
 import { performance } from "perf_hooks"
@@ -15,7 +26,12 @@ import { GetRedis, SetRedis } from "../../database/redisConnect"
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
 
       let cacheName = "allRecom"
@@ -46,7 +62,7 @@ module.exports = {
           FROM "RECOMMEND_POST" rec_post ${filterSql}
         ) 
         SELECT 
-          post.*, user_info.name, user_info."profileImgUrl"
+          post.*, user_info.name, user_info."profileImgUrl" as "profileImageUrl"
         FROM "USER_INFO" AS user_info 
         INNER JOIN post ON post."FK_accountId" = user_info."FK_accountId" 
         WHERE post."pickCount" >= ${arg.postFilter.minimumPickCount}
@@ -84,7 +100,7 @@ module.exports = {
           WHERE follower."FK_accountId"=${arg.userId}
           )
           SELECT
-            post.*,user_info.name,user_info."profileImgUrl",
+            post.*,user_info.name,user_info."profileImgUrl" as "profileImageUrl",
             (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=post.id),
             (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=post.id)
           FROM "RECOMMEND_POST" as post
@@ -101,7 +117,11 @@ module.exports = {
     }
   },
   Mutation: {
-    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createRecommendPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -180,7 +200,11 @@ module.exports = {
       }
     },
 
-    deleteRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    deleteRecommendPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.RecommendPostDeleteInfoInput = args.recommendPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -228,7 +252,9 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
+      let rows = await RunSingleSQL(
+        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
+      )
       if (rows.length == 0) return null
 
       let postIdSql = ""

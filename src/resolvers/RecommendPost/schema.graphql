@@ -1,7 +1,9 @@
 type Query {
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata: Int!
-  getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
+  getUserPickkRecommendPost(
+    pickkRecommendPostOption: PickkRecommendPostQuery!
+  ): [RecommendPostInfo!]
 }
 
 type Mutation {
@@ -97,7 +99,7 @@ input RecommendPostDeleteInfoInput {
 type RecommendPostInfo {
   accountId: Int
   name: String!
-  profileImgUrl: String
+  profileImageUrl: String
 
   pickCount: Int!
   simpleItemList: [SimpleItemInfo]

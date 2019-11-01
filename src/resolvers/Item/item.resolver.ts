@@ -7,7 +7,13 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, ConvertListToOrderedPair, logWithDate, MakeCacheNameByObject } from "../Utils/stringUtil"
+import {
+  GetFormatSql,
+  MakeMultipleQuery,
+  ConvertListToOrderedPair,
+  logWithDate,
+  MakeCacheNameByObject
+} from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertItem, GetItemsById, GetItemIdInRanking } from "./util"
@@ -16,7 +22,12 @@ import { performance } from "perf_hooks"
 
 module.exports = {
   Query: {
-    allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.ItemInfo[]> => {
+    allItems: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.ItemQuery = args.itemOption
       try {
         let formatSql = GetFormatSql(arg)
@@ -41,7 +52,9 @@ module.exports = {
       let arg: ArgType.PickkItemQuery = args.pickkItemOption
 
       let formatSql = GetFormatSql(arg)
-      let queryResult = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
+      let queryResult = await RunSingleSQL(
+        `SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
+      )
       if (queryResult.length == 0) return []
       let idList = ExtractFieldFromList(queryResult, "FK_itemId")
 
@@ -58,6 +71,7 @@ module.exports = {
       cacheName += MakeCacheNameByObject(arg.filterGeneral)
       let itemRankCache: any = await GetRedis(cacheName)
       if (itemRankCache != null) {
+        logWithDate("getItemRank Cache Return")
         return JSON.parse(itemRankCache)
       }
 
@@ -76,6 +90,7 @@ module.exports = {
       let itemList = await GetItemsById(itemIdList, "", customFilterSql)
       await SetRedis(cacheName, JSON.stringify(itemList), 1800)
 
+      logWithDate("ItemRanking Called")
       return itemList
     }
   },
@@ -108,14 +123,22 @@ function GetItemFilterSql(filter: any): string {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemMinorType")) {
     if (filter.itemMinorType != "ALL") {
-      filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` item_gr."itemMinorType"='${filter.itemMinorType}'`)
+      filterSql = MakeMultipleQuery(
+        multipleQuery,
+        filterSql,
+        ` item_gr."itemMinorType"='${filter.itemMinorType}'`
+      )
       multipleQuery = true
     }
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemFinalType")) {
     if (filter.itemFinalType != "ALL") {
-      filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` item_gr."itemFinalType"='${filter.itemFinalType}'`)
+      filterSql = MakeMultipleQuery(
+        multipleQuery,
+        filterSql,
+        ` item_gr."itemFinalType"='${filter.itemFinalType}'`
+      )
       multipleQuery = true
     }
   }

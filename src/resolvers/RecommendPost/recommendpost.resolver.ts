@@ -39,6 +39,7 @@ module.exports = {
       cacheName += MakeCacheNameByObject(arg.postFilter)
       let recomPostCache: any = await GetRedis(cacheName)
       if (recomPostCache != null) {
+        logWithDate("allRecommendPosts Cache Return")
         return JSON.parse(recomPostCache)
       }
 

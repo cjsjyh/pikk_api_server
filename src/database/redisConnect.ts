@@ -68,7 +68,7 @@ export function DelCacheByPattern(pattern: string) {
 }
 
 function scan(pattern, redisClient, cursor, resolve, reject) {
-  redisClient.scan(cursor, "MATCH", pattern, "COUNT", "1000", function(err, reply) {
+  redisClient.scan(cursor, "MATCH", pattern, "COUNT", "1000", async function(err, reply) {
     if (err) {
       redisClient.end(true)
       logWithDate("[Error] Failed to make connection with Redis")
@@ -76,16 +76,21 @@ function scan(pattern, redisClient, cursor, resolve, reject) {
       reject(err)
     }
     cursor = reply[0]
-
     var keys = reply[1]
-    keys.forEach(function(key, i) {
-      redisClient.del(key, function(deleteErr, deleteSuccess) {
-        if (deleteErr) {
-          logWithDate("[Error] Failed to delete Cache")
-          logWithDate(deleteErr)
-        }
+    await Promise.all(
+      keys.map(key => {
+        return new Promise((resolve, reject) => {
+          redisClient.del(key, function(deleteErr, deleteSuccess) {
+            if (deleteErr) {
+              logWithDate("[Error] Failed to delete Cache")
+              logWithDate(deleteErr)
+              reject()
+            }
+            resolve()
+          })
+        })
       })
-    })
+    )
 
     if (cursor === "0") {
       redisClient.end(true)

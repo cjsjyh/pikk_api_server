@@ -185,6 +185,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   (
     SELECT 
       item_var.*,
+      item_gr."id" as "groupId",
       item_gr."itemMinorType",
       item_gr."itemMajorType",
       item_gr."itemFinalType",

@@ -40,7 +40,11 @@ module.exports = {
       let recomPostCache: any = await GetRedis(cacheName)
       if (recomPostCache != null) {
         logWithDate("allRecommendPosts Cache Return")
-        return JSON.parse(recomPostCache)
+        let parsedPosts = JSON.parse(recomPostCache)
+        parsedPosts.forEach(post => {
+          post.time = Date.parse(post.time)
+        })
+        return parsedPosts
       }
 
       try {

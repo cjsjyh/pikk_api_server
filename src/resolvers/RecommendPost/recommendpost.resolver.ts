@@ -151,7 +151,7 @@ module.exports = {
         for (let index = 0; index < arg.reviews.length; index++) {
           await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId, index])
         }
-        await DelCacheByPattern("allRecom")
+        await DelCacheByPattern("allRecom*")
         logWithDate(`Recommend Post created by User${arg.accountId}`)
         return true
       } catch (e) {
@@ -200,7 +200,7 @@ module.exports = {
             })
           )
         }
-        await DelCacheByPattern("allRecom")
+        await DelCacheByPattern("allRecom*")
         logWithDate(`Edited RecommendPost ${arg.postId}`)
         return true
       } catch (e) {
@@ -222,7 +222,7 @@ module.exports = {
         let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`
         let result = await RunSingleSQL(query)
 
-        await DelCacheByPattern("allRecom")
+        await DelCacheByPattern("allRecom*")
         logWithDate(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)
         return true
       } catch (e) {

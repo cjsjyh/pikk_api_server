@@ -151,6 +151,7 @@ module.exports = {
         for (let index = 0; index < arg.reviews.length; index++) {
           await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId, index])
         }
+        await DelCacheByPattern("allRecom")
         logWithDate(`Recommend Post created by User${arg.accountId}`)
         return true
       } catch (e) {

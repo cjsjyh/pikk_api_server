@@ -170,17 +170,21 @@ module.exports = {
         `)
         //Delete Images
         if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {
-          let idList = ConvertListToString(arg.deletedImages)
-          await RunSingleSQL(`
+          if (arg.deletedImages.length != 0) {
+            let idList = ConvertListToString(arg.deletedImages)
+            await RunSingleSQL(`
             DELETE FROM "ITEM_REVIEW_IMAGE" WHERE id IN (${idList})
           `)
+          }
         }
 
         if (Object.prototype.hasOwnProperty.call(arg, "deletedReviews")) {
-          let idList = ConvertListToString(arg.deletedReviews)
-          await RunSingleSQL(`
+          if (arg.deletedReviews.length != 0) {
+            let idList = ConvertListToString(arg.deletedReviews)
+            await RunSingleSQL(`
             DELETE FROM "ITEM_REVIEW" WHERE id IN (${idList})
           `)
+          }
         }
 
         //Edit Review
@@ -311,7 +315,7 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
   }
   if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl")) {
     if (isMultiple) resultSql += ", "
-    resultSql += `"titleImageUrl = '${filter.titleImageUrl}'`
+    resultSql += `"titleImageUrl" = '${filter.titleImageUrl}'`
     isMultiple = true
   }
   if (Object.prototype.hasOwnProperty.call(filter, "titleYoutubeUrl")) {

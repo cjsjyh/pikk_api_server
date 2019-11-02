@@ -138,6 +138,7 @@ input PickkItemQuery {
 #Return
 type ItemInfo {
   id: Int!
+  groupId: Int!
   name: String!
   brandKor: String!
   brandEng: String

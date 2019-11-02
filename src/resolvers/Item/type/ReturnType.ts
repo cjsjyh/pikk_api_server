@@ -3,6 +3,7 @@ export type ItemInfo = {
   avg: number
 
   id: number
+  groupId: number
   name: string
   brandEng: string
   brandKor: string

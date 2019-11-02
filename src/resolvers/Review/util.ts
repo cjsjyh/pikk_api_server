@@ -13,10 +13,13 @@ import { FetchItemsForReview, EditItem, InsertItemForRecommendPost } from "../It
 import { FetchUserForReview } from "../User/util"
 import { IncrementViewCountFunc, InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
 
-export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, args: any): Promise<boolean> {
+export async function EditReview(
+  review: ReviewArgType.ItemReviewEditInfoInput,
+  args: any
+): Promise<boolean> {
   try {
     //Editing Review
-    if (Object.prototype.hasOwnProperty.call(review, "reviewId")) {
+    if (Object.prototype.hasOwnProperty.call(review, "reviewId") && review.reviewId != null) {
       let setSql = GetEditSql(review)
       await RunSingleSQL(`
         UPDATE "ITEM_REVIEW" SET
@@ -27,7 +30,13 @@ export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, 
       if (Object.prototype.hasOwnProperty.call(review, "images")) {
         await Promise.all(
           review.images.map((image, index) => {
-            return EditImageUrlInTable(image, "ITEM_REVIEW_IMAGE", "FK_reviewId", review.reviewId, index)
+            return EditImageUrlInTable(
+              image,
+              "ITEM_REVIEW_IMAGE",
+              "FK_reviewId",
+              review.reviewId,
+              index
+            )
           })
         )
       }
@@ -58,13 +67,28 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           return IncrementViewCountFunc("RECOMMEND", post.id)
         })
       )
-      let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", "ORDER BY id ASC")
+      let reviewResult = await GetSubField(
+        postResult,
+        "ITEM_REVIEW",
+        "FK_postId",
+        "reviews",
+        1,
+        "",
+        "ORDER BY id ASC"
+      )
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
         review.images = []
       })
       if (IsSubFieldRequired(selectionSet, "reviews", "images")) {
-        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 2, "")
+        let imgResult = await GetSubField(
+          reviewResult,
+          "ITEM_REVIEW_IMAGE",
+          "FK_reviewId",
+          "images",
+          2,
+          ""
+        )
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {

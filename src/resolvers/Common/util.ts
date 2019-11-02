@@ -42,7 +42,7 @@ export async function EditImageUrlInTable(
 ): Promise<boolean> {
   try {
     //Edit exsiting image
-    if (Object.prototype.hasOwnProperty.call(image, "id")) {
+    if (Object.prototype.hasOwnProperty.call(image, "id") && image.id != null) {
       await RunSingleSQL(
         `UPDATE "${tableName}" SET "imageUrl"='${image.imageUrl}', "order"=${index} WHERE id=${image.id}`
       )

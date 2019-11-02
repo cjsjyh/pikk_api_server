@@ -20,7 +20,7 @@ export type ItemReviewInfoInput = {
 }
 
 export type ItemReviewImgEditInfoInput = {
-  imageId: number
+  id: number
   imageUrl: string
 }
 

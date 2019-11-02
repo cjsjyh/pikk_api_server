@@ -79,7 +79,7 @@ input CommunityPostEditInfoInput {
 }
 
 input CommunityPostEditImageInfo {
-  imageId: Int
+  id: Int
   imageUrl: String!
 }
 

@@ -30,7 +30,7 @@ export type CommunityPostEditInfoInput = {
   deletedImages: number[]
 }
 export type CommunityPostEditImageInfo = {
-  imageId: number
+  id: number
   imageUrl: string
 }
 

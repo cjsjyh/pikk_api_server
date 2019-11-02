@@ -22,7 +22,7 @@ import { InsertItemReview, EditReview } from "../Review/util"
 import { performance } from "perf_hooks"
 import { GetRecommendPostList } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
-import { GetRedis, SetRedis } from "../../database/redisConnect"
+import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
 
 module.exports = {
   Query: {
@@ -195,7 +195,7 @@ module.exports = {
             })
           )
         }
-
+        await DelCacheByPattern("allRecom")
         logWithDate(`Edited RecommendPost ${arg.postId}`)
         return true
       } catch (e) {

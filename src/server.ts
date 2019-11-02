@@ -17,7 +17,7 @@ import schema from "./schema"
 //-------------------------------
 import * as fs from "fs"
 import { logWithDate } from "./resolvers/Utils/stringUtil"
-import { GetRedis, SetRedis } from "./database/redisConnect"
+import { GetRedis, SetRedis, DelCacheByPattern } from "./database/redisConnect"
 const { pool } = require("./database/connectionPool")
 
 //Create Express Server
@@ -44,9 +44,15 @@ const server = new ApolloServer({
   schema,
   context: ({ req }) => {
     const header: any = req.headers
-    if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")) {
+    if (
+      !Object.prototype.hasOwnProperty.call(header, "authorizationtoken") ||
+      !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")
+    ) {
       return { IsVerified: false }
-    } else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined") {
+    } else if (
+      header.authorizationtoken == "undefined" ||
+      header.authorizationuserid == "undefined"
+    ) {
       return { IsVerified: false }
     }
 
@@ -75,20 +81,22 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
-/*
-async function testfunc() {
-  let settest = await SetRedis("key6", JSON.stringify({ id: 40, age: 100 }), 30)
-  console.log(settest)
+// async function testfunc() {
+//   let settest = await SetRedis("key6", JSON.stringify({ id: 40, age: 100 }), 30)
+//   console.log(settest)
 
-  let gettest = await GetRedis("key6")
-  console.log(gettest)
-  if (gettest == null) console.log("Null!!!!")
-}
-testfunc()
-*/
+//   let gettest = await GetRedis("key6")
+//   console.log(gettest)
+//   if (gettest == null) console.log("Null!!!!")
+//   let test = await DelCacheByPattern("recTest*")
+//   console.log(test)
+// }
+// testfunc()
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))
+httpServer.listen({ port: 80 }, (): void =>
+  logWithDate(`GraphQL is now running on http://localhost:80/graphql`)
+)
 
 process.on("SIGINT", async function() {
   await pool.end()

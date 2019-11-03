@@ -33,18 +33,22 @@ module.exports = {
       info: GraphQLResolveInfo
     ): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
-
       let cacheName = "allRecom"
-      cacheName += MakeCacheNameByObject(arg.filterGeneral)
-      cacheName += MakeCacheNameByObject(arg.postFilter)
-      let recomPostCache: any = await GetRedis(cacheName)
-      if (recomPostCache != null) {
-        logWithDate("allRecommendPosts Cache Return")
-        let parsedPosts = JSON.parse(recomPostCache)
-        parsedPosts.forEach(post => {
-          post.time = Date.parse(post.time)
-        })
-        return parsedPosts
+      try {
+        cacheName += MakeCacheNameByObject(arg.filterGeneral)
+        cacheName += MakeCacheNameByObject(arg.postFilter)
+        let recomPostCache: any = await GetRedis(cacheName)
+        if (recomPostCache != null) {
+          logWithDate("allRecommendPosts Cache Return")
+          let parsedPosts = JSON.parse(recomPostCache)
+          parsedPosts.forEach(post => {
+            post.time = Date.parse(post.time)
+          })
+          return parsedPosts
+        }
+      } catch (e) {
+        logWithDate("[Error] Redis Command Error")
+        logWithDate(e)
       }
 
       try {
@@ -75,7 +79,11 @@ module.exports = {
         `
         let postResult = await GetRecommendPostList(postSql, info)
         logWithDate(`allRecommendPosts Called`)
-        await SetRedis(cacheName, JSON.stringify(postResult), 60)
+        try {
+          await SetRedis(cacheName, JSON.stringify(postResult), 60)
+        } catch (e) {
+          logWithDate(e)
+        }
         return postResult
       } catch (e) {
         logWithDate(e)
@@ -130,6 +138,12 @@ module.exports = {
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
+      try {
+        await DelCacheByPattern("allRecom*")
+      } catch (e) {
+        logWithDate(e)
+      }
+
       let recommendPostId: number
       try {
         if (arg.styleType === undefined) arg.styleType = "NONE"
@@ -151,7 +165,6 @@ module.exports = {
         for (let index = 0; index < arg.reviews.length; index++) {
           await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId, index])
         }
-        await DelCacheByPattern("allRecom*")
         logWithDate(`Recommend Post created by User${arg.accountId}`)
         return true
       } catch (e) {
@@ -165,6 +178,13 @@ module.exports = {
     editRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostEditInfoInput = args.recommendPostEditInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+
+      try {
+        await DelCacheByPattern("allRecom*")
+      } catch (e) {
+        logWithDate(e)
+      }
+
       try {
         let setSql = await GetEditSql(arg)
         //Edit others
@@ -200,7 +220,6 @@ module.exports = {
             })
           )
         }
-        await DelCacheByPattern("allRecom*")
         logWithDate(`Edited RecommendPost ${arg.postId}`)
         return true
       } catch (e) {
@@ -219,10 +238,15 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
+        await DelCacheByPattern("allRecom*")
+      } catch (e) {
+        logWithDate(e)
+      }
+
+      try {
         let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`
         let result = await RunSingleSQL(query)
 
-        await DelCacheByPattern("allRecom*")
         logWithDate(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)
         return true
       } catch (e) {

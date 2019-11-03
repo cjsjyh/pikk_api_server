@@ -1,10 +1,14 @@
-const { pool } = require("../../database/connectionPool")
+let { pool, resetPool } = require("../../database/connectionPool")
 const { S3 } = require("../../database/aws_s3")
 
 import * as AWS from "aws-sdk"
 import { getFormatDate, getFormatHour, logWithDate } from "./stringUtil"
 
-export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<any> {
+export async function SequentialPromiseValue<T, U>(
+  arr: T[],
+  func: Function,
+  args: Array<U> = []
+): Promise<any> {
   return new Promise(async (resolve, reject) => {
     try {
       let resultArr = new Array<T>(arr.length)
@@ -43,7 +47,13 @@ export function MakeGroups(data: any, groupBy: string, groupIdList: number[]): a
   return resultArray
 }
 
-export function AssignGroupsToParent(parentsGroup: any, groups: any, parentId: string, parentField: string, depth: number) {
+export function AssignGroupsToParent(
+  parentsGroup: any,
+  groups: any,
+  parentId: string,
+  parentField: string,
+  depth: number
+) {
   groups.forEach(item => {
     if (item.length == 0) return
     if (depth == 2) {
@@ -66,7 +76,15 @@ export function RunSingleSQL(sql: string, args?: any): Promise<any> {
     try {
       client = await pool.connect()
     } catch (e) {
-      throw new Error("[Error] Failed Connecting to DB")
+      //Try to reconnect Pool
+      try {
+        pool = resetPool()
+        client = await pool.connect()
+      } catch (e) {
+        logWithDate("[Error] Failed to Connect to DB")
+        logWithDate(e)
+        throw new Error("[Error] Failed Connecting to DB")
+      }
     }
 
     try {

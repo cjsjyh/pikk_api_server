@@ -5,12 +5,6 @@ export type MutationArgInfo = {
   itemInfoInput: ItemInfoInput
 }
 
-export type ItemInfoInput = {
-  createItemLevel: string
-  groupInfo: GroupInfo
-  variationInfo: VariationInfo
-}
-
 export type ItemEditInfoInput = {
   createItemLevel: string
   groupInfo: GroupEditInfo
@@ -38,6 +32,12 @@ export type VariationEditInfo = {
   salePrice: number
   imageUrl: string
   purchaseUrl: string
+}
+
+export type ItemInfoInput = {
+  createItemLevel: string
+  groupInfo: GroupInfo
+  variationInfo: VariationInfo
 }
 
 type GroupInfo = {

@@ -4,11 +4,7 @@ const { S3 } = require("../../database/aws_s3")
 import * as AWS from "aws-sdk"
 import { getFormatDate, getFormatHour, logWithDate } from "./stringUtil"
 
-export async function SequentialPromiseValue<T, U>(
-  arr: T[],
-  func: Function,
-  args: Array<U> = []
-): Promise<any> {
+export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<any> {
   return new Promise(async (resolve, reject) => {
     try {
       let resultArr = new Array<T>(arr.length)
@@ -47,13 +43,7 @@ export function MakeGroups(data: any, groupBy: string, groupIdList: number[]): a
   return resultArray
 }
 
-export function AssignGroupsToParent(
-  parentsGroup: any,
-  groups: any,
-  parentId: string,
-  parentField: string,
-  depth: number
-) {
+export function AssignGroupsToParent(parentsGroup: any, groups: any, parentId: string, parentField: string, depth: number) {
   groups.forEach(item => {
     if (item.length == 0) return
     if (depth == 2) {
@@ -124,7 +114,7 @@ export function ExtractSelectionSet(info: any): any {
 export async function UploadImageWrapper(imgObj: any): Promise<string> {
   return new Promise(async (resolve, reject) => {
     try {
-      let url = await UploadImage(imgObj)
+      let url = await UploadImageTemp(imgObj)
       resolve(url)
     } catch (e) {
       reject(0)
@@ -132,15 +122,64 @@ export async function UploadImageWrapper(imgObj: any): Promise<string> {
   })
 }
 
-export async function UploadImage(itemImg: any): Promise<string> {
+export async function DeployImage(imageUrl: string): Promise<string> {
+  imageUrl = imageUrl.replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/testimage_temp/", "")
+
+  let folderName = "image"
+  if (process.env.MODE != "DEPLOY") folderName = "testimage"
+
+  var param = {
+    Bucket: "fashiondogam-images",
+    CopySource: "fashiondogam-images/" + `${folderName}_temp/` + imageUrl,
+    Key: `${folderName}/` + imageUrl
+  }
+  try {
+    await new Promise((resolve, reject) => {
+      S3.copyObject(param)
+        .promise()
+        .then(() => {
+          S3.deleteObject({
+            Bucket: "fashiondogam-images",
+            Key: `${folderName}_temp/` + imageUrl
+          })
+            .promise()
+            .then(() => {
+              logWithDate("Successfully Deployed Image")
+              resolve()
+            })
+            .catch(e => {
+              logWithDate("[Error] Failed to deploy Image")
+              logWithDate(e)
+              reject(e)
+            })
+        })
+        .catch(e => {
+          logWithDate("[Error] Failed to deploy Image")
+          logWithDate(e)
+          reject(e)
+        })
+    })
+
+    return "https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/image/" + imageUrl
+  } catch (e) {
+    logWithDate("Failed to deploy Image")
+    logWithDate(e)
+    return null
+  }
+}
+
+export async function UploadImageTemp(itemImg: any): Promise<string> {
   const { createReadStream, filename, mimetype, encoding } = await itemImg
 
   let date = getFormatDate(new Date())
   let hour = getFormatHour(new Date())
 
+  let folderName = "image_temp/"
+  if (process.env.MODE != "DEPLOY") folderName = "testimage_temp/"
+
   var param = {
     Bucket: "fashiondogam-images",
-    Key: "image/" + date + hour + filename,
+    Key: folderName + date + hour + filename,
     ACL: "public-read",
     Body: createReadStream(),
     ContentType: mimetype

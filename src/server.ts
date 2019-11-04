@@ -18,6 +18,7 @@ import schema from "./schema"
 import * as fs from "fs"
 import { logWithDate } from "./resolvers/Utils/stringUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "./database/redisConnect"
+import { DeployImage } from "./resolvers/Utils/promiseUtil"
 const { pool } = require("./database/connectionPool")
 
 //Create Express Server
@@ -77,14 +78,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 // async function testfunc() {
-//   let settest = await SetRedis("key6", JSON.stringify({ id: 40, age: 100 }), 30)
-//   console.log(settest)
-
-//   let gettest = await GetRedis("key6")
-//   console.log(gettest)
-//   if (gettest == null) console.log("Null!!!!")
-//   let test = await DelCacheByPattern("recTest*")
-//   console.log(test)
+//   await DeployImage("1.jpg")
 // }
 // testfunc()
 

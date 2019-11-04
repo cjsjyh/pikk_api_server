@@ -1,4 +1,4 @@
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, UploadImage } from "../Utils/promiseUtil"
+import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList } from "../Utils/promiseUtil"
 import { ConvertListToString, logWithDate } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput, ItemEditInfoInput, GroupEditInfo, VariationEditInfo } from "./type/ArgType"

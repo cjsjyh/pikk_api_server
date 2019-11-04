@@ -160,7 +160,7 @@ export async function DeployImage(imageUrl: string): Promise<string> {
         })
     })
 
-    return "https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/image/" + imageUrl
+    return `https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}/` + imageUrl
   } catch (e) {
     logWithDate("Failed to deploy Image")
     logWithDate(e)

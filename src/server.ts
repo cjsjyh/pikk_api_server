@@ -31,7 +31,6 @@ app.use(function(req, res, next) {
 const corsOptions = require("./middleware/cors")
 app.use("*", cors(corsOptions))
 
-let limiter
 if (process.env.MODE == "DEPLOY") {
   const rateLimiterRedisMiddleware = require("./middleware/rateLimiter")
   app.use(rateLimiterRedisMiddleware)
@@ -42,6 +41,7 @@ app.use(compression())
 //Create Apollo Server
 const server = new ApolloServer({
   schema,
+
   context: ({ req }) => {
     const header: any = req.headers
     if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")) {
@@ -65,6 +65,7 @@ const server = new ApolloServer({
       userId: decoded.id
     }
   },
+
   validationRules: [depthLimit(5)]
 })
 

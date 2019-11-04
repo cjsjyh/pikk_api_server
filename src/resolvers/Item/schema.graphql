@@ -104,6 +104,9 @@ input ItemInfoInput {
 }
 
 input GroupInfo {
+  #dummy
+  brandId: Int
+
   brand: String!
   isNewBrand: Boolean!
 
@@ -120,7 +123,10 @@ input GroupInfo {
 }
 
 input VariationInfo {
+  #dummy
+  itemId: Int
   groupId: Int
+
   name: String!
   salePrice: Int
   imageUrl: String

@@ -80,7 +80,7 @@ module.exports = {
         let postResult = await GetRecommendPostList(postSql, info)
         logWithDate(`allRecommendPosts Called`)
         try {
-          await SetRedis(cacheName, JSON.stringify(postResult), 60)
+          await SetRedis(cacheName, JSON.stringify(postResult), 180)
         } catch (e) {
           logWithDate(e)
         }

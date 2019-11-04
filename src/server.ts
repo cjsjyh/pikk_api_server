@@ -33,8 +33,8 @@ app.use("*", cors(corsOptions))
 
 let limiter
 if (process.env.MODE == "DEPLOY") {
-  limiter = require("./middleware/rateLimiter")
-  app.use(limiter.rateLimiterRedisMiddleware)
+  const rateLimiterRedisMiddleware = require("./middleware/rateLimiter")
+  app.use(rateLimiterRedisMiddleware)
 }
 app.use(require("express-status-monitor")())
 app.use(compression())
@@ -92,10 +92,12 @@ httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running 
 
 process.on("SIGINT", async function() {
   await pool.end()
+  /*
   if (process.env.MODE == "DEPLOY") {
     limiter.redisClient.quit()
   }
   httpServer.close(function() {
     process.exit(0)
   })
+  */
 })

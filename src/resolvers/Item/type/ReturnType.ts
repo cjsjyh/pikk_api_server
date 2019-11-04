@@ -2,11 +2,13 @@
 export type ItemInfo = {
   avg: number
 
+  brandId: number
+  brandEng: string
+  brandKor: string
+
   id: number
   groupId: number
   name: string
-  brandEng: string
-  brandKor: string
   originalPrice: number
   salePrice: number
   itemMinorType: string

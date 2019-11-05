@@ -5,7 +5,8 @@ import {
   ExtractFieldFromList,
   SequentialPromiseValue,
   MakeGroups,
-  AssignGroupsToParent
+  AssignGroupsToParent,
+  DeployImage
 } from "../Utils/promiseUtil"
 import { ConvertListToString, ConvertListToOrderedPair, logWithDate } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
@@ -13,10 +14,7 @@ import { FetchItemsForReview, EditItem, InsertItemForRecommendPost } from "../It
 import { FetchUserForReview } from "../User/util"
 import { IncrementViewCountFunc, InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
 
-export async function EditReview(
-  review: ReviewArgType.ItemReviewEditInfoInput,
-  args: any
-): Promise<boolean> {
+export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, args: any): Promise<boolean> {
   try {
     //Editing Review
     if (Object.prototype.hasOwnProperty.call(review, "reviewId") && review.reviewId != null) {
@@ -30,13 +28,7 @@ export async function EditReview(
       if (Object.prototype.hasOwnProperty.call(review, "images")) {
         await Promise.all(
           review.images.map((image, index) => {
-            return EditImageUrlInTable(
-              image,
-              "ITEM_REVIEW_IMAGE",
-              "FK_reviewId",
-              review.reviewId,
-              index
-            )
+            return EditImageUrlInTable(image, "ITEM_REVIEW_IMAGE", "FK_reviewId", review.reviewId, index)
           })
         )
       }
@@ -67,28 +59,13 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           return IncrementViewCountFunc("RECOMMEND", post.id)
         })
       )
-      let reviewResult = await GetSubField(
-        postResult,
-        "ITEM_REVIEW",
-        "FK_postId",
-        "reviews",
-        1,
-        "",
-        "ORDER BY id ASC"
-      )
+      let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", "ORDER BY id ASC")
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
         review.images = []
       })
       if (IsSubFieldRequired(selectionSet, "reviews", "images")) {
-        let imgResult = await GetSubField(
-          reviewResult,
-          "ITEM_REVIEW_IMAGE",
-          "FK_reviewId",
-          "images",
-          2,
-          ""
-        )
+        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 2, "")
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
@@ -175,6 +152,19 @@ export function InsertItemReview(
         }
 
         try {
+          await Promise.all(
+            imgUrlList.map((imgUrl, index) => {
+              return new Promise(async (resolve, reject) => {
+                try {
+                  imgUrlList[index] = await DeployImage(imgUrl)
+                  resolve()
+                } catch (e) {
+                  reject(e)
+                }
+              })
+            })
+          )
+
           let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
           await InsertImageIntoTable(imgPairs, "ITEM_REVIEW_IMAGE", "FK_reviewId")
         } catch (e) {

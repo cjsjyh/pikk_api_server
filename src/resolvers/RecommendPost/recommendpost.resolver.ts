@@ -4,7 +4,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL } from "../Utils/promiseUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImage } from "../Utils/promiseUtil"
 import { GetFormatSql, MakeMultipleQuery, logWithDate, ConvertListToString, MakeCacheNameByObject } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, EditReview } from "../Review/util"
@@ -126,12 +126,14 @@ module.exports = {
 
       let recommendPostId: number
       try {
+        let deployImageUrl = await DeployImage(arg.titleImageUrl)
+
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(
           `INSERT INTO "RECOMMEND_POST"
           ("FK_accountId","title","content","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") 
           VALUES (${arg.accountId}, '${arg.title}', '${arg.content}', '${arg.postType}', '${arg.styleType}', 
-          '${arg.titleType}', '${arg.titleYoutubeUrl}', '${arg.titleImageUrl}') RETURNING id`
+          '${arg.titleType}', '${arg.titleYoutubeUrl}', '${deployImageUrl}') RETURNING id`
         )
         recommendPostId = insertResult[0].id
       } catch (e) {

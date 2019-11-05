@@ -1,4 +1,4 @@
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList } from "../Utils/promiseUtil"
+import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImage } from "../Utils/promiseUtil"
 import { ConvertListToString, logWithDate } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput, ItemEditInfoInput, GroupEditInfo, VariationEditInfo } from "./type/ArgType"
@@ -72,8 +72,10 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
       //Insert Variation
       if (arg.variationInfo.salePrice === undefined) arg.variationInfo.salePrice = null
 
+      let deployImageUrl = await DeployImage(arg.variationInfo.imageUrl)
+
       queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
-        VALUES ('${arg.variationInfo.name}','${arg.variationInfo.imageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
+        VALUES ('${arg.variationInfo.name}','${deployImageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
       resolve(queryResult[0].id)
     } catch (e) {
       logWithDate("[Error] Failed to Insert into ITEM_VARIATION")

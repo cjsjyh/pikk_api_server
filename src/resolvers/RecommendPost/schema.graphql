@@ -2,7 +2,7 @@ type Query {
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata: Int!
   getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
-  getTempSavedRecommendPost(tempSavedRecommendPostOption: TempSavedRecommendPostQuery!): 
+  #getTempSavedRecommendPost(tempSavedRecommendPostOption: TempSavedRecommendPostQuery!): #------
 }
 
 type Mutation {
@@ -12,7 +12,7 @@ type Mutation {
   createRecommendPost(recommendPostInfo: RecommendPostInfoInput!): Boolean!
   editRecommendPost(recommendPostEditInfo: RecommendPostEditInfoInput!): Boolean!
   deleteRecommendPost(recommendPostDeleteInfo: RecommendPostDeleteInfoInput!): Boolean!
-  tempSaveRecommendPost(RecommendPostTempSaveInfo): RecommendPostTempSaveInfoInput!): Boolean!
+  tempSaveRecommendPost(RecommendPostTempSaveInfo: RecommendPostTempSaveInfoInput!): Boolean!
 }
 
 enum RecPostSortableField {
@@ -100,8 +100,6 @@ input RecommendPostTempSaveInfoInput {
   accountId: Int!
   content: String!
 }
-
-
 
 #---------------
 #   Return

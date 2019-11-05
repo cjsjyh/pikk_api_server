@@ -123,10 +123,10 @@ export async function UploadImageWrapper(imgObj: any): Promise<string> {
 }
 
 export async function DeployImage(imageUrl: string): Promise<string> {
-  imageUrl = imageUrl.replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/testimage_temp/", "")
-
   let folderName = "image"
   if (process.env.MODE != "DEPLOY") folderName = "testimage"
+
+  imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")
 
   var param = {
     Bucket: "fashiondogam-images",

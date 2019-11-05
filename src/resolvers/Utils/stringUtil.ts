@@ -35,10 +35,7 @@ export function getFormatHour(secs, delimiter = "") {
 export function GetFormatSql(filter: any): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
-    if (
-      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") &&
-      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")
-    )
+    if (Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") && Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort"))
       filterSql += ` ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} NULLS LAST`
     if (filter.filterGeneral.first > 30) filter.filterGeneral.first = 30
     filterSql += " LIMIT " + filter.filterGeneral.first + " OFFSET " + filter.filterGeneral.start
@@ -60,11 +57,7 @@ export function ConvertListToString(list: any): string {
   return result
 }
 
-export function ConvertListToOrderedPair(
-  list: any,
-  append: string = "",
-  isNumber: boolean = true
-): string {
+export function ConvertListToOrderedPair(list: any, append: string = "", isNumber: boolean = true): string {
   let result = ""
   list.forEach((item, index) => {
     if (index != 0) result += ","
@@ -93,4 +86,11 @@ export function MakeCacheNameByObject(obj: any): string {
   }
 
   return result
+}
+
+export function IsNewImage(imageUrl: string): boolean {
+  let removedUrl = imageUrl.replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
+  let folderName = removedUrl.split("/")[0]
+  if (folderName.includes("_temp")) return true
+  else return false
 }

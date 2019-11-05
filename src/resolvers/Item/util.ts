@@ -1,5 +1,5 @@
 import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImage } from "../Utils/promiseUtil"
-import { ConvertListToString, logWithDate } from "../Utils/stringUtil"
+import { ConvertListToString, logWithDate, IsNewImage } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput, ItemEditInfoInput, GroupEditInfo, VariationEditInfo } from "./type/ArgType"
 import { ItemReviewInfoInput, ItemReviewEditInfoInput } from "../Review/type/ArgType"
@@ -299,7 +299,7 @@ function GetItemGroupEditSql(itemGroup: GroupEditInfo): string {
   return resultSql
 }
 
-function GetItemVariationEditSql(itemVar: VariationEditInfo): string {
+async function GetItemVariationEditSql(itemVar: VariationEditInfo): Promise<string> {
   let isMultiple = false
   let resultSql = ""
 
@@ -316,6 +316,7 @@ function GetItemVariationEditSql(itemVar: VariationEditInfo): string {
   }
 
   if (Object.prototype.hasOwnProperty.call(itemVar, "imageUrl")) {
+    if (IsNewImage(itemVar.imageUrl)) itemVar.imageUrl = await DeployImage(itemVar.imageUrl)
     if (isMultiple) resultSql += ", "
     resultSql += ` "imageUrl" = '${itemVar.imageUrl}'`
     isMultiple = true

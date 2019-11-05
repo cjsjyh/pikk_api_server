@@ -130,6 +130,7 @@ export async function DeployImage(imageUrl: string): Promise<string> {
 
   var param = {
     Bucket: "fashiondogam-images",
+    ACL: "public-read",
     CopySource: "fashiondogam-images/" + `${folderName}_temp/` + imageUrl,
     Key: `${folderName}/` + imageUrl
   }

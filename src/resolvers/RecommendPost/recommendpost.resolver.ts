@@ -5,7 +5,15 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImage } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, logWithDate, ConvertListToString, MakeCacheNameByObject } from "../Utils/stringUtil"
+import {
+  GetFormatSql,
+  MakeMultipleQuery,
+  logWithDate,
+  ConvertListToString,
+  MakeCacheNameByObject,
+  getFormatDate,
+  getFormatHour
+} from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, EditReview } from "../Review/util"
 import { performance } from "perf_hooks"
@@ -112,6 +120,8 @@ module.exports = {
         throw new Error("[Error] Failed to load Picked RecommendPost data from DB")
       }
     }
+
+    //getTempSavedRecommendPost: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<> => {}
   },
   Mutation: {
     createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
@@ -231,6 +241,22 @@ module.exports = {
         logWithDate(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
         logWithDate(e)
         throw new Error(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
+      }
+    },
+
+    tempSaveRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      let arg: ArgType.RecommendPostTempSaveInfoInput = args.recommendPostTempSaveInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+
+      let cacheName = `recomCache_${String(arg.accountId)}_` + getFormatDate(new Date()) + getFormatHour(new Date())
+      try {
+        SetRedis(cacheName, arg.content, 604800)
+        logWithDate(`RecommendPost Temporary Save! Cache key: ${cacheName}`)
+        return true
+      } catch (e) {
+        logWithDate("[Error] Failed to temporarily save Recommend Post")
+        logWithDate(e)
+        return false
       }
     }
   }

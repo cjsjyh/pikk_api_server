@@ -7,6 +7,7 @@ export type MutationArgInfo = {
   recommendPostInfo: RecommendPostInfoInput
   recommendPostEditInfo: RecommendPostEditInfoInput
   recommendPostDeleteInfo: RecommendPostDeleteInfoInput
+  recommendPostTempSaveInfo: RecommendPostTempSaveInfoInput
 }
 
 export type RecommendPostInfoInput = {
@@ -44,6 +45,11 @@ export type RecommendPostDeleteInfoInput = {
   accountId: number
 }
 
+export type RecommendPostTempSaveInfoInput = {
+  accountId: number
+  content: string
+}
+
 //-------------
 //Query
 //-------------
@@ -77,4 +83,8 @@ export interface RecommendPostQuery {
 export interface PickkRecommendPostQuery {
   filterGeneral: RecommendPostFilterGeneral
   userId: number
+}
+
+export type TempSavedRecommendPostQuery = {
+  accountId: number
 }

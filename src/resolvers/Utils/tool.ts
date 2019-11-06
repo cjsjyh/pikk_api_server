@@ -45,8 +45,6 @@ export async function ReplaceImageWithResolutions() {
   let highName = filtered[0].replace(".", "_high.")
 
   //Resize Images
-
-  //await new Promise((resolve, reject) => {
   await sharp(`./${filtered[0]}`)
     .resize({ width: 128 })
     .toFile(`./${lowName}`)
@@ -66,7 +64,6 @@ export async function ReplaceImageWithResolutions() {
       .resize({ width: 1024 })
       .toFile(`./${highName}`)
   }
-  //})
 
   let buffer = readChunk.sync(`./${filtered[0]}`, 0, fs.statSync(`./${filtered[0]}`)["size"])
   //Upload Image

@@ -12,7 +12,8 @@ import {
   ConvertListToString,
   MakeCacheNameByObject,
   getFormatDate,
-  getFormatHour
+  getFormatHour,
+  IsNewImage
 } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, EditReview } from "../Review/util"
@@ -346,6 +347,7 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     isMultiple = true
   }
   if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl")) {
+    if (IsNewImage(filter.titleImageUrl)) filter.titleImageUrl = await DeployImage(filter.titleImageUrl)
     if (isMultiple) resultSql += ", "
     resultSql += `"titleImageUrl" = '${filter.titleImageUrl}'`
     isMultiple = true

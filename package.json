@@ -32,7 +32,9 @@
     "copyfiles": "^2.1.1",
     "graphql-import": "^0.7.1",
     "graphql-import-node": "0.0.4",
+    "image-size": "^0.8.3",
     "nodemon": "^1.19.1",
+    "sharp": "^0.23.2",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.3"
   },
@@ -48,14 +50,14 @@
     "graphql": "^14.4.2",
     "graphql-depth-limit": "^1.1.0",
     "http": "0.0.0",
-    "image-size": "^0.8.3",
+    "image-type": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "merge-graphql-schemas": "^1.7.0",
     "ncp": "^2.0.0",
     "pg": "^7.12.1",
     "rate-limiter-flexible": "^1.1.6",
-    "redis": "^2.8.0",
-    "sharp": "^0.23.2"
+    "read-chunk": "^3.2.0",
+    "redis": "^2.8.0"
   }
 }

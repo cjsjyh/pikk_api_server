@@ -19,6 +19,7 @@ import * as fs from "fs"
 import { logWithDate } from "./resolvers/Utils/stringUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "./database/redisConnect"
 import { DeployImage } from "./resolvers/Utils/promiseUtil"
+import { ReplaceImageWithResolutions } from "./resolvers/Utils/tool"
 const { pool } = require("./database/connectionPool")
 
 //Create Express Server
@@ -77,10 +78,10 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
-// async function testfunc() {
-//   await DeployImage("1.jpg")
-// }
-// testfunc()
+async function testfunc() {
+  await ReplaceImageWithResolutions()
+}
+testfunc()
 
 const httpServer = createServer(app)
 httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))

@@ -20,7 +20,7 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
 
     if (Object.prototype.hasOwnProperty.call(item, "variationInfo")) {
       if (IsNewImage(item.variationInfo.imageUrl)) item.variationInfo.imageUrl = await DeployImage(item.variationInfo.imageUrl)
-      let variationSql = GetItemVariationEditSql(item.variationInfo)
+      let variationSql = await GetItemVariationEditSql(item.variationInfo)
       await RunSingleSQL(`UPDATE "ITEM_VARIATION" SET ${variationSql} WHERE id=${item.variationInfo.itemId}`)
     }
     return true

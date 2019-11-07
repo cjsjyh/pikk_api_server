@@ -46,15 +46,9 @@ const server = new ApolloServer({
 
   context: ({ req }) => {
     const header: any = req.headers
-    if (
-      !Object.prototype.hasOwnProperty.call(header, "authorizationtoken") ||
-      !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")
-    ) {
+    if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")) {
       return { IsVerified: false }
-    } else if (
-      header.authorizationtoken == "undefined" ||
-      header.authorizationuserid == "undefined"
-    ) {
+    } else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined") {
       return { IsVerified: false }
     }
 
@@ -90,18 +84,18 @@ app.get("/", (req: express.Request, res: express.Response) => {
 // testfunc()
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 80 }, (): void =>
-  logWithDate(`GraphQL is now running on http://localhost:80/graphql`)
-)
+httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))
 
+/*
 process.on("SIGINT", async function() {
   await pool.end()
-  /*
+  
   if (process.env.MODE == "DEPLOY") {
     limiter.redisClient.quit()
   }
   httpServer.close(function() {
     process.exit(0)
   })
-  */
+  
 })
+*/

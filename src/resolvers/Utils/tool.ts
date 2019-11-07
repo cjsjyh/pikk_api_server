@@ -10,33 +10,52 @@ const readChunk = require("read-chunk")
 
 export async function ReplaceImageWithResolutions() {
   //Get table rows
-  let imageUrls = await RunSingleSQL(
-    'SELECT rec."titleImageUrl" as "imageUrl" from "RECOMMEND_POST" rec'
-  )
+  let imageUrls = await RunSingleSQL('SELECT tab."channel_titleImgUrl" as "imageUrl" from "USER_INFO" tab')
   imageUrls = ExtractFieldFromList(imageUrls, "imageUrl")
   var filtered = imageUrls.filter(function(el) {
-    return el != "null"
+    return el != "null" && el != null
   })
 
+  console.log(filtered)
   //Extract S3 Key
   for (let i = 0; i < filtered.length; i++) {
-    filtered[i] = filtered[i].replace(
-      "https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/",
-      ""
-    )
+    filtered[i] = filtered[i].replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
   }
-  console.log(filtered)
 
   filtered.forEach(async filteredUrl => {
     //Download From S3
     await new Promise((resolve, reject) => {
+      /*
+      let lowName = filteredUrl.replace(".", "_low.")
+      let mediumName = filteredUrl.replace(".", "_medium.")
+      let highName = filteredUrl.replace(".", "_high.")
+      ;[lowName, mediumName, highName].forEach(filename => {
+        S3.deleteObject({
+          Bucket: "fashiondogam-images",
+          Key: filename
+        })
+          .promise()
+          .then(() => {
+            console.log(filename)
+            logWithDate("Successfully Deleted Image")
+            resolve()
+          })
+          .catch(e => {
+            logWithDate("[Error] Failed to delete Image")
+            logWithDate(e)
+            reject(e)
+          })
+      })
+      */
+
       var param = {
         Bucket: "fashiondogam-images",
-        Key: filteredUrl
+        Key: decodeURIComponent(filteredUrl)
       }
 
       S3.getObject(param, (err, data) => {
         if (err) {
+          logWithDate(decodeURIComponent(filteredUrl))
           logWithDate(err)
           return
         }
@@ -98,11 +117,12 @@ export async function ReplaceImageWithResolutions() {
 
     //Upload Image
     ;[lowName, mediumName, highName].forEach(filename => {
-      console.log(`./${filename}`)
+      console.log(`Uploading ./${filename}`)
+      let cutfilename = filename.replace("image/", "")
       let buffer = readChunk.sync(`./${filename}`, 0, fs.statSync(`./${filename}`)["size"])
       let param2 = {
         Bucket: "fashiondogam-images",
-        Key: filename,
+        Key: decodeURIComponent(filename),
         ACL: "public-read",
         Body: fs.createReadStream(`./${filename}`),
         ContentType: imageType(buffer)["mime"]
@@ -112,7 +132,6 @@ export async function ReplaceImageWithResolutions() {
           logWithDate(err)
         }
         let imageUrl = data.Location
-        logWithDate("image Upload properly done")
         logWithDate(imageUrl)
       })
     })

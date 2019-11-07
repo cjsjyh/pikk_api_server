@@ -13,7 +13,8 @@ import {
   MakeCacheNameByObject,
   getFormatDate,
   getFormatHour,
-  IsNewImage
+  IsNewImage,
+  InsertImageIntoDeleteQueue
 } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, EditReview } from "../Review/util"
@@ -137,7 +138,8 @@ module.exports = {
 
       let recommendPostId: number
       try {
-        let deployImageUrl = await DeployImage(arg.titleImageUrl)
+        //let deployImageUrl = await DeployImage(arg.titleImageUrl)
+        let deployImageUrl = "test"
 
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(
@@ -180,17 +182,18 @@ module.exports = {
 
       try {
         let setSql = await GetEditSql(arg)
+        console.log(setSql)
         //Edit others
-        await RunSingleSQL(`
-          UPDATE "RECOMMEND_POST" SET
-          ${setSql}
-          WHERE "id"=${arg.postId}
-        `)
+        await RunSingleSQL(setSql)
         //Delete Images
         if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {
           if (arg.deletedImages.length != 0) {
+            let deleteSql = ""
+            deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "id", arg.deletedImages)
+
             let idList = ConvertListToString(arg.deletedImages)
             await RunSingleSQL(`
+            ${deleteSql}
             DELETE FROM "ITEM_REVIEW_IMAGE" WHERE id IN (${idList})
           `)
           }
@@ -313,7 +316,7 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
 async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<string> {
   let isMultiple = false
-  let resultSql = ""
+  let resultSql = `UPDATE "RECOMMEND_POST" SET `
 
   if (Object.prototype.hasOwnProperty.call(filter, "title")) {
     if (isMultiple) resultSql += ", "
@@ -347,7 +350,10 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     isMultiple = true
   }
   if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl")) {
-    if (IsNewImage(filter.titleImageUrl)) filter.titleImageUrl = await DeployImage(filter.titleImageUrl)
+    if (IsNewImage(filter.titleImageUrl)) {
+      resultSql = InsertImageIntoDeleteQueue("RECOMMEND_POST", "titleImageUrl", "id", [filter.postId]) + resultSql
+      filter.titleImageUrl = await DeployImage(filter.titleImageUrl)
+    }
     if (isMultiple) resultSql += ", "
     resultSql += `"titleImageUrl" = '${filter.titleImageUrl}'`
     isMultiple = true
@@ -357,6 +363,8 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     resultSql += `"titleYoutubeUrl"='${filter.titleYoutubeUrl}'`
     isMultiple = true
   }
+
+  resultSql += `WHERE "id"=${filter.postId}`
 
   return resultSql
 }

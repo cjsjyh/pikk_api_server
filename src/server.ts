@@ -79,11 +79,11 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
-async function testfunc() {
-  await CombineItem(204088, [204100, 204094, 204091])
-  await CombineItem(204216, [204210])
-}
-testfunc()
+// async function testfunc() {
+//   await CombineItem(204088, [204100, 204094, 204091])
+//   await CombineItem(204216, [204210])
+// }
+// testfunc()
 
 const httpServer = createServer(app)
 httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))

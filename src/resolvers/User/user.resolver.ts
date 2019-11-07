@@ -5,7 +5,7 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, ConvertListToOrderedPair, logWithDate } from "../Utils/stringUtil"
+import { GetFormatSql, ConvertListToOrderedPair, logWithDate, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
@@ -77,7 +77,9 @@ module.exports = {
       try {
         let setSql = ""
         let isFirst = true
+        let deleteSql = ""
         if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl")) {
+          deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
           setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
           isFirst = false
         }
@@ -94,7 +96,15 @@ module.exports = {
           setSql += `"channel_description"='${arg.channel_description}'`
         }
 
+        console.log(`
+        ${deleteSql}
+        UPDATE "USER_INFO" SET
+        ${setSql}
+        WHERE "FK_accountId"=${arg.accountId}
+      `)
+
         await RunSingleSQL(`
+          ${deleteSql}
           UPDATE "USER_INFO" SET
           ${setSql}
           WHERE "FK_accountId"=${arg.accountId}

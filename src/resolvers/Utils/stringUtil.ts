@@ -99,22 +99,24 @@ export function InsertImageIntoDeleteQueue(
   tableName: string,
   imageColumnName: string,
   filterColumnName: string,
-  filterValue: number,
-  isMultiple: boolean
+  filterValue: number[],
+  isMultiple: boolean = false
 ): string {
   let sql = ""
   if (isMultiple == false) {
     sql = `
       WITH aaa AS (
         INSERT INTO "IMAGE_DELETE"("imageUrl")
-        SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" = ${String(filterValue)}
+        SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" IN ${ConvertListToString(
+      filterValue
+    )}
       )
       `
   } else {
     sql = `
-    , aaa AS (
+    , bbb AS (
       INSERT INTO "IMAGE_DELETE"("imageUrl")
-      SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" = ${String(filterValue)}
+      SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" IN ${ConvertListToString(filterValue)}
     )
     `
   }

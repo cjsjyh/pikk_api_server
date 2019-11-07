@@ -94,3 +94,29 @@ export function IsNewImage(imageUrl: string): boolean {
   if (folderName.includes("_temp")) return true
   else return false
 }
+
+export function InsertImageIntoDeleteQueue(
+  tableName: string,
+  imageColumnName: string,
+  filterColumnName: string,
+  filterValue: number,
+  isMultiple: boolean
+): string {
+  let sql = ""
+  if (isMultiple == false) {
+    sql = `
+      WITH aaa AS (
+        INSERT INTO "IMAGE_DELETE"("imageUrl")
+        SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" = ${String(filterValue)}
+      )
+      `
+  } else {
+    sql = `
+    , aaa AS (
+      INSERT INTO "IMAGE_DELETE"("imageUrl")
+      SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" = ${String(filterValue)}
+    )
+    `
+  }
+  return sql
+}

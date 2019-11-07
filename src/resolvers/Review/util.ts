@@ -59,7 +59,7 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           return IncrementViewCountFunc("RECOMMEND", post.id)
         })
       )
-      let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", "ORDER BY id ASC")
+      let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", `ORDER BY "order" ASC`)
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
         review.images = []

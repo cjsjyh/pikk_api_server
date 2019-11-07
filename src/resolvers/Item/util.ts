@@ -31,6 +31,23 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
   }
 }
 
+export async function CombineItem(updateId: number, deleteIds: number[]) {
+  try {
+    let querySql = `
+    WITH update_item as (
+      UPDATE "ITEM_REVIEW" SET "FK_itemId" = ${updateId} WHERE "FK_itemId" IN (${ConvertListToString(deleteIds)})
+    ),
+    delete_item as (
+      SELECT "FK_itemGroupId", id FROM "ITEM_VARIATION" WHERE id IN (${ConvertListToString(deleteIds)})
+    )
+    DELETE FROM "ITEM_GROUP" USING delete_item WHERE "ITEM_GROUP".id = delete_item."FK_itemGroupId"
+    `
+    await RunSingleSQL(querySql)
+  } catch (e) {
+    logWithDate(e)
+  }
+}
+
 export function InsertItemForRecommendPost(argReview: ItemReviewInfoInput | ItemReviewEditInfoInput): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {

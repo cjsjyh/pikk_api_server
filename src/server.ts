@@ -20,6 +20,7 @@ import { logWithDate } from "./resolvers/Utils/stringUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "./database/redisConnect"
 import { DeployImage } from "./resolvers/Utils/promiseUtil"
 import { ReplaceImageWithResolutions } from "./resolvers/Utils/tool"
+import { CombineItem } from "./resolvers/Item/util"
 const { pool } = require("./database/connectionPool")
 
 //Create Express Server
@@ -78,10 +79,11 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
-// async function testfunc() {
-//   await ReplaceImageWithResolutions()
-// }
-// testfunc()
+async function testfunc() {
+  await CombineItem(204088, [204100, 204094, 204091])
+  await CombineItem(204216, [204210])
+}
+testfunc()
 
 const httpServer = createServer(app)
 httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))

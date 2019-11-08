@@ -15,13 +15,7 @@ import schema from "./schema"
 //-------------------------------
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
-import * as fs from "fs"
 import { logWithDate } from "./resolvers/Utils/stringUtil"
-import { GetRedis, SetRedis, DelCacheByPattern } from "./database/redisConnect"
-import { DeployImage } from "./resolvers/Utils/promiseUtil"
-import { ReplaceImageWithResolutions } from "./resolvers/Utils/tool"
-import { CombineItem } from "./resolvers/Item/util"
-const { pool } = require("./database/connectionPool")
 
 //Create Express Server
 const app = express()
@@ -80,8 +74,8 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 // async function testfunc() {
-//   await CombineItem(204088, [204100, 204094, 204091])
-//   await CombineItem(204216, [204210])
+//   let urll = await DeployImageBy3Version("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/testimage_temp/1.jpg")
+//   console.log(urll)
 // }
 // testfunc()
 

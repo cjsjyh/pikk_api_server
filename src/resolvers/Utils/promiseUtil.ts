@@ -1,5 +1,10 @@
 let { pool, resetPool } = require("../../database/connectionPool")
 const { S3 } = require("../../database/aws_s3")
+const fs = require("fs")
+var sizeOf = require("image-size")
+const sharp = require("sharp")
+const imageType = require("image-type")
+const readChunk = require("read-chunk")
 
 import * as AWS from "aws-sdk"
 import { getFormatDate, getFormatHour, logWithDate } from "./stringUtil"
@@ -122,6 +127,85 @@ export async function UploadImageWrapper(imgObj: any): Promise<string> {
   })
 }
 
+export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
+  let folderName = "image"
+  if (process.env.MODE != "DEPLOY") folderName = "testimage"
+
+  try {
+    imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")
+    //Download Image
+    await new Promise((resolve, reject) => {
+      var param = {
+        Bucket: "fashiondogam-images",
+        Key: decodeURIComponent(`${folderName}_temp/${imageUrl}`)
+      }
+      S3.getObject(param, (err, data) => {
+        if (err) {
+          logWithDate(err)
+          reject(err)
+        }
+        fs.writeFile(`./${imageUrl}`, data.Body, function(err) {
+          if (err) logWithDate(err)
+          resolve()
+        })
+      })
+    })
+
+    //Make 3sizes
+    var dimensions = sizeOf(`./${imageUrl}`)
+
+    let lowName = imageUrl.replace(".", "_low.")
+    let mediumName = imageUrl.replace(".", "_medium.")
+    let highName = imageUrl.replace(".", "_high.")
+
+    await Make3VersionsOfImage(imageUrl, dimensions, lowName, mediumName, highName)
+
+    //Upload 3Images
+    await Promise.all(
+      [lowName, mediumName, highName].map(filename => {
+        return new Promise((resolve, reject) => {
+          let buffer = readChunk.sync(`./${filename}`, 0, fs.statSync(`./${filename}`)["size"])
+          let param2 = {
+            Bucket: "fashiondogam-images",
+            Key: decodeURIComponent(`${folderName}/${filename}`),
+            ACL: "public-read",
+            Body: fs.createReadStream(`./${filename}`),
+            ContentType: imageType(buffer)["mime"]
+          }
+          S3.upload(param2, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+            if (err) {
+              logWithDate(err)
+              reject(err)
+            }
+            resolve()
+          })
+        })
+      })
+    )
+
+    //Delete S3 original image
+    await DeleteImage(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
+
+    //Delete file from local
+    await Promise.all(
+      [imageUrl, lowName, mediumName, highName].map(filename => {
+        return new Promise((resolve, reject) => {
+          fs.unlink(filename, function(err) {
+            if (err) reject(err)
+            resolve()
+          })
+        })
+      })
+    )
+
+    return `https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}/` + imageUrl
+  } catch (e) {
+    logWithDate("Failed to deploy Image")
+    logWithDate(e)
+    return null
+  }
+}
+
 export async function DeployImage(imageUrl: string): Promise<string> {
   let folderName = "image"
   if (process.env.MODE != "DEPLOY") folderName = "testimage"
@@ -215,6 +299,66 @@ export function ExtractFieldFromList(list: any, fieldName: string, depth: number
     } else result.push(item[fieldName])
   })
   return result
+}
+
+export async function DeleteImage(imageUrl: string) {
+  return new Promise((resolve, reject) => {
+    S3.deleteObject({
+      Bucket: "fashiondogam-images",
+      Key: imageUrl
+    })
+      .promise()
+      .then(() => {
+        console.log(imageUrl)
+        logWithDate("Successfully Deleted Image")
+        resolve()
+      })
+      .catch(e => {
+        logWithDate("[Error] Failed to delete Image")
+        logWithDate(e)
+        reject(e)
+      })
+  })
+}
+
+export async function Make3VersionsOfImage(imageUrl: string, dimensions: any, lowName: string, mediumName: string, highName: string) {
+  await sharp(`./${imageUrl}`)
+    .resize({ width: 128 })
+    .toFile(`./${lowName}`)
+
+  if (dimensions.width < 512) {
+    await new Promise((resolve, reject) => {
+      let outStream = fs.createWriteStream(`./${mediumName}`)
+      fs.createReadStream(`./${imageUrl}`).pipe(outStream)
+      outStream.on("end", () => {
+        resolve("end")
+      })
+      outStream.on("finish", () => {
+        resolve("finish")
+      })
+    })
+  } else {
+    await sharp(`./${imageUrl}`)
+      .resize({ width: 512 })
+      .toFile(`./${mediumName}`)
+  }
+
+  if (dimensions.width < 1024) {
+    await new Promise((resolve, reject) => {
+      let outStream = fs.createWriteStream(`./${highName}`)
+      fs.createReadStream(`./${imageUrl}`).pipe(outStream)
+      outStream.on("end", () => {
+        resolve("end")
+      })
+      outStream.on("finish", () => {
+        resolve("finish")
+      })
+    })
+  } else {
+    await sharp(`./${imageUrl}`)
+      .resize({ width: 1024 })
+      .toFile(`./${highName}`)
+  }
 }
 
 /*

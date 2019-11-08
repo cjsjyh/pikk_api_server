@@ -1,8 +1,8 @@
-import { RunSingleSQL, ExtractFieldFromList } from "./promiseUtil"
+import { RunSingleSQL, ExtractFieldFromList, Make3VersionsOfImage } from "./promiseUtil"
 import { logWithDate } from "./stringUtil"
-const fs = require("fs")
 const { S3 } = require("../../database/aws_s3")
 
+const fs = require("fs")
 var sizeOf = require("image-size")
 const sharp = require("sharp")
 const imageType = require("image-type")
@@ -74,45 +74,9 @@ export async function ReplaceImageWithResolutions() {
     let highName = filteredUrl.replace(".", "_high.")
 
     //Resize Images
-    await sharp(`./${filteredUrl}`)
-      .resize({ width: 128 })
-      .toFile(`./${lowName}`)
+    await Make3VersionsOfImage(filteredUrl, dimensions, lowName, mediumName, highName)
 
-    if (dimensions.width < 512) {
-      await new Promise((resolve, reject) => {
-        let outStream = fs.createWriteStream(`./${mediumName}`)
-        fs.createReadStream(`./${filteredUrl}`).pipe(outStream)
-        outStream.on("end", () => {
-          resolve("end")
-        })
-        outStream.on("finish", () => {
-          resolve("finish")
-        })
-      })
-    } else {
-      await sharp(`./${filteredUrl}`)
-        .resize({ width: 512 })
-        .toFile(`./${mediumName}`)
-    }
-
-    if (dimensions.width < 1024) {
-      await new Promise((resolve, reject) => {
-        let outStream = fs.createWriteStream(`./${highName}`)
-        fs.createReadStream(`./${filteredUrl}`).pipe(outStream)
-        outStream.on("end", () => {
-          resolve("end")
-        })
-        outStream.on("finish", () => {
-          resolve("finish")
-        })
-      })
-    } else {
-      await sharp(`./${filteredUrl}`)
-        .resize({ width: 1024 })
-        .toFile(`./${highName}`)
-    }
-
-    //Upload Image
+    //Upload Images
     ;[lowName, mediumName, highName].forEach(filename => {
       logWithDate(`Uploading ./${filename}`)
       let cutfilename = filename.replace("image/", "")

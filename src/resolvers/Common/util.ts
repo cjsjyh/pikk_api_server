@@ -1,4 +1,4 @@
-import { RunSingleSQL, DeployImage } from "../Utils/promiseUtil"
+import { RunSingleSQL, DeployImageBy3Version } from "../Utils/promiseUtil"
 import { logWithDate, IsNewImage, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 import { CommunityPostEditImageInfo } from "../CommunityPost/type/ArgType"
 import { ItemReviewImgEditInfoInput } from "../Review/type/ArgType"
@@ -46,7 +46,7 @@ export async function EditImageUrlInTable(
       let deleteSql = ""
       if (IsNewImage(image.imageUrl)) {
         deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "id", [image.id])
-        deployUrl = await DeployImage(deployUrl)
+        deployUrl = await DeployImageBy3Version(deployUrl)
       }
       await RunSingleSQL(`
       ${deleteSql}
@@ -54,7 +54,7 @@ export async function EditImageUrlInTable(
     }
     //Insert new image
     else {
-      let deployUrl = await DeployImage(image.imageUrl)
+      let deployUrl = await DeployImageBy3Version(image.imageUrl)
       await InsertImageIntoTable("", tableName, foreignKeyName, foreignKeyId, deployUrl, index)
     }
     return true

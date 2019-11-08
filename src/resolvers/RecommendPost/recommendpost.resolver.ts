@@ -4,7 +4,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImage } from "../Utils/promiseUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy3Version } from "../Utils/promiseUtil"
 import {
   GetFormatSql,
   MakeMultipleQuery,
@@ -138,8 +138,7 @@ module.exports = {
 
       let recommendPostId: number
       try {
-        //let deployImageUrl = await DeployImage(arg.titleImageUrl)
-        let deployImageUrl = "test"
+        let deployImageUrl = await DeployImageBy3Version(arg.titleImageUrl)
 
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(
@@ -367,7 +366,7 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
   if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl")) {
     if (IsNewImage(filter.titleImageUrl)) {
       resultSql = InsertImageIntoDeleteQueue("RECOMMEND_POST", "titleImageUrl", "id", [filter.postId]) + resultSql
-      filter.titleImageUrl = await DeployImage(filter.titleImageUrl)
+      filter.titleImageUrl = await DeployImageBy3Version(filter.titleImageUrl)
     }
     if (isMultiple) resultSql += ", "
     resultSql += `"titleImageUrl" = '${filter.titleImageUrl}'`

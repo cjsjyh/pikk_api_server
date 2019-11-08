@@ -5,10 +5,11 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, ConvertListToOrderedPair, logWithDate, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
+import { GetFormatSql, ConvertListToOrderedPair, logWithDate, InsertImageIntoDeleteQueue, IsNewImage } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
+import { InsertImageIntoTable } from "../Common/util"
 
 module.exports = {
   Mutation: {
@@ -79,7 +80,8 @@ module.exports = {
         let isFirst = true
         let deleteSql = ""
         if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl")) {
-          deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
+          if (IsNewImage(arg.channel_titleImageUrl))
+            deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
           setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
           isFirst = false
         }
@@ -95,13 +97,6 @@ module.exports = {
           isFirst = false
           setSql += `"channel_description"='${arg.channel_description}'`
         }
-
-        console.log(`
-        ${deleteSql}
-        UPDATE "USER_INFO" SET
-        ${setSql}
-        WHERE "FK_accountId"=${arg.accountId}
-      `)
 
         await RunSingleSQL(`
           ${deleteSql}
@@ -122,10 +117,8 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       //Make UserCredential
       try {
-        let querySql = `UPDATE "USER_INFO" SET
-        ${await GetUpdateUserInfoSql(arg)}
-        WHERE "FK_accountId" = ${arg.accountId}
-        `
+        let querySql = await GetUpdateUserInfoSql(arg)
+
         let qResult = await RunSingleSQL(querySql)
         logWithDate(`User Info for User ${arg.accountId} updated`)
         return true
@@ -238,11 +231,15 @@ function UserInfoSelectionField(info: GraphQLResolveInfo) {
 }
 
 async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<string> {
-  let resultSql = ""
+  let resultSql = `UPDATE "USER_INFO" SET `
   let isMultiple = false
+  let deleteSql = ""
 
   if (Object.prototype.hasOwnProperty.call(arg, "profileImageUrl")) {
     try {
+      if (IsNewImage(arg.profileImageUrl)) {
+        deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "profileImgUrl", "FK_accountId", [arg.accountId])
+      }
       resultSql += `"profileImgUrl"='${arg.profileImageUrl}'`
       isMultiple = true
     } catch (e) {
@@ -292,5 +289,8 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
     isMultiple = true
   }
 
+  resultSql = deleteSql + " " + resultSql
+  resultSql += `
+  WHERE "FK_accountId" = ${arg.accountId}`
   return resultSql
 }

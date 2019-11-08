@@ -1,5 +1,5 @@
 import { RunSingleSQL, DeployImage } from "../Utils/promiseUtil"
-import { logWithDate, IsNewImage } from "../Utils/stringUtil"
+import { logWithDate, IsNewImage, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 import { CommunityPostEditImageInfo } from "../CommunityPost/type/ArgType"
 import { ItemReviewImgEditInfoInput } from "../Review/type/ArgType"
 
@@ -43,10 +43,14 @@ export async function EditImageUrlInTable(
     //Edit exsiting image
     if (Object.prototype.hasOwnProperty.call(image, "id") && image.id != null) {
       let deployUrl = image.imageUrl
+      let deleteSql = ""
       if (IsNewImage(image.imageUrl)) {
+        deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "id", [image.id])
         deployUrl = await DeployImage(deployUrl)
       }
-      await RunSingleSQL(`UPDATE "${tableName}" SET "imageUrl"='${deployUrl}', "order"=${index} WHERE id=${image.id}`)
+      await RunSingleSQL(`
+      ${deleteSql}
+      UPDATE "${tableName}" SET "imageUrl"='${deployUrl}', "order"=${index} WHERE id=${image.id}`)
     }
     //Insert new image
     else {

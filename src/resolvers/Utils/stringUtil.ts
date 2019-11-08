@@ -107,16 +107,16 @@ export function InsertImageIntoDeleteQueue(
     sql = `
       WITH aaa AS (
         INSERT INTO "IMAGE_DELETE"("imageUrl")
-        SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" IN ${ConvertListToString(
-      filterValue
-    )}
+        SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" 
+        IN (${ConvertListToString(filterValue)})
       )
       `
   } else {
     sql = `
     , bbb AS (
       INSERT INTO "IMAGE_DELETE"("imageUrl")
-      SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" IN ${ConvertListToString(filterValue)}
+      SELECT "${imageColumnName}" as "imageUrl" FROM "${tableName}" WHERE "${tableName}"."${filterColumnName}" 
+      IN (${ConvertListToString(filterValue)})
     )
     `
   }

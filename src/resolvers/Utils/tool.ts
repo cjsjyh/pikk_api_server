@@ -16,7 +16,6 @@ export async function ReplaceImageWithResolutions() {
     return el != "null" && el != null
   })
 
-  console.log(filtered)
   //Extract S3 Key
   for (let i = 0; i < filtered.length; i++) {
     filtered[i] = filtered[i].replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
@@ -61,7 +60,7 @@ export async function ReplaceImageWithResolutions() {
         }
         fs.writeFile(`./${filteredUrl}`, data.Body, function(err) {
           if (err) logWithDate(err)
-          console.log("Image saved from AWS")
+          logWithDate("Image saved from AWS")
           resolve()
         })
       })
@@ -69,7 +68,6 @@ export async function ReplaceImageWithResolutions() {
 
     //Detect Image Size
     var dimensions = sizeOf(`./${filteredUrl}`)
-    console.log(dimensions.width, dimensions.height)
 
     let lowName = filteredUrl.replace(".", "_low.")
     let mediumName = filteredUrl.replace(".", "_medium.")
@@ -113,11 +111,10 @@ export async function ReplaceImageWithResolutions() {
         .resize({ width: 1024 })
         .toFile(`./${highName}`)
     }
-    console.log("Resizing Done")
 
     //Upload Image
     ;[lowName, mediumName, highName].forEach(filename => {
-      console.log(`Uploading ./${filename}`)
+      logWithDate(`Uploading ./${filename}`)
       let cutfilename = filename.replace("image/", "")
       let buffer = readChunk.sync(`./${filename}`, 0, fs.statSync(`./${filename}`)["size"])
       let param2 = {

@@ -182,7 +182,6 @@ module.exports = {
 
       try {
         let setSql = await GetEditSql(arg)
-        console.log(setSql)
         //Edit others
         await RunSingleSQL(setSql)
         //Delete Images
@@ -201,6 +200,9 @@ module.exports = {
 
         if (Object.prototype.hasOwnProperty.call(arg, "deletedReviews")) {
           if (arg.deletedReviews.length != 0) {
+            let deleteSql = ""
+            deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "FK_reviewId", arg.deletedReviews)
+
             let idList = ConvertListToString(arg.deletedReviews)
             await RunSingleSQL(`
             DELETE FROM "ITEM_REVIEW" WHERE id IN (${idList})
@@ -236,7 +238,20 @@ module.exports = {
       }
 
       try {
-        let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`
+        let query = `
+        WITH review AS (
+          SELECT * FROM "ITEM_REVIEW" WHERE "FK_postId"=${arg.postId}
+        ),
+        bbb AS (
+          INSERT INTO "IMAGE_DELETE"("imageUrl")
+          SELECT image."imageUrl" as "imageUrl" FROM "ITEM_REVIEW_IMAGE" image,review WHERE image."FK_reviewId" = review.id
+        ),
+        ccc AS (
+          INSERT INTO "IMAGE_DELETE"("imageUrl")
+	        SELECT rec."titleImageUrl" as "imageUrl" FROM "RECOMMEND_POST" rec WHERE rec.id=${arg.postId}
+        )
+		    DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}
+        `
         let result = await RunSingleSQL(query)
 
         logWithDate(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)

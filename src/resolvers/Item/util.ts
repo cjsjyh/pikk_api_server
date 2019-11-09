@@ -117,7 +117,8 @@ async function GetSimpleItemInfoByPostId(postList: any) {
   SELECT
     "ITEM_REVIEW".id,
     "ITEM_REVIEW"."FK_itemId",
-    "ITEM_REVIEW"."FK_postId" as "postId"
+    "ITEM_REVIEW"."FK_postId" as "postId",
+    "ITEM_REVIEW".order
   FROM "ITEM_REVIEW"
   WHERE "ITEM_REVIEW"."FK_postId" in (${ConvertListToString(postIdList)})
   ),
@@ -127,7 +128,8 @@ async function GetSimpleItemInfoByPostId(postList: any) {
     item_var."imageUrl",
     item_var."FK_itemGroupId",
     review."postId",
-    review.id
+    review.id,
+    review.order
   FROM review
   INNER JOIN "ITEM_VARIATION" item_var ON item_var.id = review."FK_itemId"
   ),
@@ -137,6 +139,7 @@ async function GetSimpleItemInfoByPostId(postList: any) {
     item."imageUrl",
     item."postId",
     item.id,
+    item.order,
     item_gr."FK_brandId"
   FROM item
   INNER JOIN "ITEM_GROUP" item_gr ON item."FK_itemGroupId" = item_gr.id
@@ -148,7 +151,7 @@ async function GetSimpleItemInfoByPostId(postList: any) {
     gr."postId"
   FROM gr
   INNER JOIN "BRAND" ON "BRAND".id = gr."FK_brandId"
-  ORDER BY gr.id ASC
+  ORDER BY gr.order ASC
   `
 
   await GetSubField(postList, "", "postId", "simpleItemList", 1, querySql)

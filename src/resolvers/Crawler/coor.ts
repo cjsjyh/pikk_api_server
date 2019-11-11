@@ -1,20 +1,21 @@
 import { getHtml, parseHtml } from "./util"
 import { CrawledItemInfo } from "./type/ReturnType"
+import { strip } from "../Utils/stringUtil"
 
 export async function crawlCoor(sourceUrl): Promise<CrawledItemInfo> {
   let htmlCode = await getHtml(sourceUrl)
 
-  let coor_price = parseHtml(htmlCode, "number", "attribute", "#price", "", "value")
-  let coor_saleprice = parseHtml(htmlCode, "number", "attribute", "#disprice", "", "value")
-  let coor_itemname = parseHtml(htmlCode, "string", "value", ".info", ".tit-prd")
-  let coor_image = parseHtml(htmlCode, "string", "attribute", ".prd-detail", "img", "src", 1)
+  let price = parseHtml(htmlCode, "number", "attribute", "#price", "", "value")
+  let saleprice = parseHtml(htmlCode, "number", "attribute", "#disprice", "", "value")
+  let itemname = parseHtml(htmlCode, "string", "value", ".info", ".tit-prd")
+  let image = parseHtml(htmlCode, "string", "attribute", ".prd-detail", "img", "src", 1)
 
   let result: CrawledItemInfo = {
     brandKor: "쿠어",
-    originalPrice: coor_price,
-    salePrice: coor_saleprice,
-    name: coor_itemname,
-    imageUrl: coor_image,
+    originalPrice: price,
+    salePrice: saleprice,
+    name: strip(itemname),
+    imageUrl: image,
     purchaseUrl: sourceUrl
   }
   return result

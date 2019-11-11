@@ -1,20 +1,32 @@
-import { crawlCoor } from "./coor"
 import { CrawledItemInfo } from "./type/ReturnType"
 import { validateCrawledItem, extractDomain } from "./util"
-import { logWithDate } from "../Utils/stringUtil"
+import { strip, logWithDate } from "../Utils/stringUtil"
+
+import { crawlCoor } from "./coor"
+import { crawlGiordano, crawlGiordanoMobile } from "./giordano"
+import { crawlDunst } from "./dunst"
 
 module.exports = {
   Query: {
     crawlItem: async (parent: void, args: any): Promise<CrawledItemInfo> => {
+      args.url = strip(args.url)
       let domain = extractDomain(args.url)
+      console.log("Extracted!")
 
-      let result: CrawledItemInfo
-      if (domain == "coor.kr") result = await crawlCoor(args.url)
-      else if (domain == "m.giordano.co.kr") console.log("Crawling mobile giordano")
+      try {
+        let result: CrawledItemInfo
+        if (domain == "coor.kr") result = await crawlCoor(args.url)
+        else if (domain == "m.giordano.co.kr") result = await crawlGiordanoMobile(args.url)
+        else if (domain == "giordano.co.kr") result = await crawlGiordano(args.url)
+        else if (domain == "dunststudio.com") result = await crawlDunst(args.url)
 
-      console.log(result)
-      if (validateCrawledItem(result)) return result
-      else {
+        console.log(result)
+        if (validateCrawledItem(result)) return result
+        else {
+          logWithDate("[Error] Item crawling failed. Retry with valid URL: " + args.url)
+          throw new Error("[Error] Item crawling failed. Retry with valid URL")
+        }
+      } catch (e) {
         logWithDate("[Error] Item crawling failed. Retry with valid URL: " + args.url)
         throw new Error("[Error] Item crawling failed. Retry with valid URL")
       }

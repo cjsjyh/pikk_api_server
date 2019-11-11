@@ -32,6 +32,10 @@ export function getFormatHour(secs, delimiter = "") {
   return hours + delimiter + minutes + delimiter + seconds
 }
 
+export function strip(str) {
+  return str.replace(/^\s+|\s+$/g, "")
+}
+
 export function GetFormatSql(filter: any): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {

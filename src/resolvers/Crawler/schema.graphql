@@ -1,0 +1,15 @@
+type Query {
+  crawlItem(url: String): CrawledItemInfo!
+}
+
+#----------
+# Return
+#----------
+type CrawledItemInfo {
+  brandKor: String!
+  name: String!
+  originalPrice: Int!
+  salePrice: Int
+  purchaseUrl: String!
+  imageUrl: String!
+}

@@ -7,6 +7,7 @@ import { crawlGiordano, crawlGiordanoMobile } from "./giordano"
 import { crawlDunst } from "./dunst"
 import { crawlDrawFit } from "./drawfit"
 import { crawlTheKnitCompany } from "./theknitcompany"
+import { crawlMusinsa } from "./musinsa"
 
 module.exports = {
   Query: {
@@ -22,6 +23,7 @@ module.exports = {
         else if (domain == "dunststudio.com") result = await crawlDunst(args.url)
         else if (domain == "draw-fit.com") result = await crawlDrawFit(args.url)
         else if (domain == "theknitcompany.com") result = await crawlTheKnitCompany(args.url)
+        else if (domain == "store.musinsa.com") result = await crawlMusinsa(args.url)
 
         console.log(result)
         if (validateCrawledItem(result)) return result

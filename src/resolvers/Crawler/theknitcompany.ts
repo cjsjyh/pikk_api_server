@@ -3,16 +3,11 @@ import { CrawledItemInfo } from "./type/ReturnType"
 import { strip } from "../Utils/stringUtil"
 
 export async function crawlTheKnitCompany(sourceUrl): Promise<CrawledItemInfo> {
-  console.log("the knit")
   let htmlCode = await getHtml(sourceUrl)
   let price = parseHtml(htmlCode, "number", "value", "#span_product_price_custom")
-  console.log(price)
   let saleprice = parseHtml(htmlCode, "number", "value", "#span_product_price_text")
-  console.log(saleprice)
   let itemname = parseHtml(htmlCode, "string", "value", "title")
-  console.log(itemname)
   let image = parseHtml(htmlCode, "string", "attribute", ".xans-product-image", "img", "src")
-  console.log(image)
 
   if (price == null) {
     price = saleprice

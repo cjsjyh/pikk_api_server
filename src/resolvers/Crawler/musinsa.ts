@@ -3,6 +3,7 @@ import { CrawledItemInfo } from "./type/ReturnType"
 import { strip } from "../Utils/stringUtil"
 
 export async function crawlMusinsa(sourceUrl): Promise<CrawledItemInfo> {
+  console.log(sourceUrl)
   let htmlCode = await getHtml(sourceUrl)
   console.log(htmlCode)
   console.log(sourceUrl)

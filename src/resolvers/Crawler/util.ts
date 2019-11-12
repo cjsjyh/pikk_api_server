@@ -15,6 +15,7 @@ export async function getHtml(sourceUrl: string) {
           encoding: null //해당 값을 null로 해주어야 제대로 iconv가 제대로 decode 해준다.
         },
         function(error, res, body) {
+          console.log(body)
           if (!error && res.statusCode == 200) {
             const enc = charset(res.headers, body) // 해당 사이트의 charset값을 획득
             const i_result = iconv.decode(body, enc) // 획득한 charset값으로 body를 디코딩

@@ -22,6 +22,8 @@ import { performance } from "perf_hooks"
 import { GetRecommendPostList } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
+import { IncrementViewCountFunc } from "../Common/util"
+import { resolve } from "dns"
 
 module.exports = {
   Query: {
@@ -34,10 +36,16 @@ module.exports = {
         let recomPostCache: any = await GetRedis(cacheName)
         if (recomPostCache != null) {
           logWithDate("allRecommendPosts Cache Return")
-          let parsedPosts = JSON.parse(recomPostCache)
-          parsedPosts.forEach(post => {
-            post.time = Date.parse(post.time)
-          })
+          let parsedPosts: ReturnType.RecommendPostInfo[] = JSON.parse(recomPostCache)
+          await Promise.all(
+            parsedPosts.map((post: any) => {
+              post.time = Date.parse(post.time)
+              if (Object.prototype.hasOwnProperty.call(post, "reviews")) {
+                return IncrementViewCountFunc("RECOMMEND", post.id)
+              }
+            })
+          )
+          console.log(parsedPosts)
           return parsedPosts
         }
       } catch (e) {

@@ -4,34 +4,19 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import {
-  GetMetaData,
-  SequentialPromiseValue,
-  RunSingleSQL,
-  UploadImage
-} from "../Utils/promiseUtil"
-import {
-  GetFormatSql,
-  MakeMultipleQuery,
-  logWithDate,
-  ConvertListToString,
-  MakeCacheNameByObject
-} from "../Utils/stringUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
+import { GetFormatSql, MakeMultipleQuery, logWithDate, ConvertListToString, MakeCacheNameByObject } from "../Utils/stringUtil"
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, EditReview } from "../Review/util"
 import { performance } from "perf_hooks"
 import { GetRecommendPostList } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
+import { IncrementViewCountFunc } from "../Common/util"
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: any,
-      info: GraphQLResolveInfo
-    ): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
       let cacheName = "allRecom"
       try {
@@ -40,10 +25,16 @@ module.exports = {
         let recomPostCache: any = await GetRedis(cacheName)
         if (recomPostCache != null) {
           logWithDate("allRecommendPosts Cache Return")
-          let parsedPosts = JSON.parse(recomPostCache)
-          parsedPosts.forEach(post => {
-            post.time = Date.parse(post.time)
-          })
+          let parsedPosts: ReturnType.RecommendPostInfo[] = JSON.parse(recomPostCache)
+          await Promise.all(
+            parsedPosts.map((post: any) => {
+              post.time = Date.parse(post.time)
+              if (Object.prototype.hasOwnProperty.call(post, "reviews")) {
+                return IncrementViewCountFunc("RECOMMEND", post.id)
+              }
+            })
+          )
+          console.log(parsedPosts)
           return parsedPosts
         }
       } catch (e) {
@@ -130,11 +121,7 @@ module.exports = {
     }
   },
   Mutation: {
-    createRecommendPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
+    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -229,11 +216,7 @@ module.exports = {
       }
     },
 
-    deleteRecommendPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
+    deleteRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostDeleteInfoInput = args.recommendPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -287,9 +270,7 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(
-        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
-      )
+      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       if (rows.length == 0) return null
 
       let postIdSql = ""

@@ -24,6 +24,10 @@ module.exports = {
         else if (domain == "draw-fit.com") result = await crawlDrawFit(args.url)
         else if (domain == "theknitcompany.com") result = await crawlTheKnitCompany(args.url)
         else if (domain == "store.musinsa.com") result = await crawlMusinsa(args.url)
+        else {
+          logWithDate("Crawler not made for this site yet!: " + args.url)
+          throw new Error("Crawler not made for this site yet!")
+        }
 
         console.log(result)
         if (validateCrawledItem(result)) return result

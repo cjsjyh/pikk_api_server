@@ -62,6 +62,7 @@
     "rate-limiter-flexible": "^1.1.6",
     "read-chunk": "^3.2.0",
     "redis": "^2.8.0",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "request-promise": "^4.2.5"
   }
 }

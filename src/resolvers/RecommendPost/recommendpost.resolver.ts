@@ -23,7 +23,6 @@ import { GetRecommendPostList } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
 import { IncrementViewCountFunc } from "../Common/util"
-import { resolve } from "dns"
 
 module.exports = {
   Query: {

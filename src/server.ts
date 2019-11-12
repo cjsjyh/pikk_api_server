@@ -16,6 +16,7 @@ import schema from "./schema"
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
 import { logWithDate } from "./resolvers/Utils/stringUtil"
+import { getHtmlRequest } from "./resolvers/Crawler/util"
 
 //Create Express Server
 const app = express()
@@ -73,18 +74,10 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
+// const axios = require("axios")
 // async function testfunc() {
-//   let htmlCode = await getHtml(
-//     "http://www.coor.kr/shop/shopdetail.html?branduid=2578832&xcode=009&mcode=007&scode=&type=X&sort=order&cur_code=009007&GfDT=Z253UA%3D%3D"
-//   )
-//   let coor_price = parseHtml(htmlCode, "number", "attribute", "#price", "", "value")
-//   let coor_saleprice = parseHtml(htmlCode, "number", "attribute", "#disprice", "", "value")
-//   let coor_itemname = parseHtml(htmlCode, "string", "value", ".info", ".tit-prd")
-//   let coor_image = parseHtml(htmlCode, "string", "attribute", ".prd-detail", "img", "src", 1)
-//   console.log(coor_price)
-//   console.log(coor_saleprice)
-//   console.log(coor_itemname)
-//   console.log(coor_image)
+//   let result = await axios.get("https://store.musinsa.com/app/brand/goods_list/maisonmined")
+//   console.log(result)
 // }
 // testfunc()
 

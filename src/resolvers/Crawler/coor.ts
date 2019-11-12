@@ -1,9 +1,9 @@
-import { getHtml, parseHtml } from "./util"
+import { getHtmlRequest, parseHtml } from "./util"
 import { CrawledItemInfo } from "./type/ReturnType"
 import { strip } from "../Utils/stringUtil"
 
 export async function crawlCoor(sourceUrl): Promise<CrawledItemInfo> {
-  let htmlCode = await getHtml(sourceUrl)
+  let htmlCode = await getHtmlRequest(sourceUrl)
 
   let price = parseHtml(htmlCode, "number", "attribute", "#price", "", "value")
   let saleprice = parseHtml(htmlCode, "number", "attribute", "#disprice", "", "value")

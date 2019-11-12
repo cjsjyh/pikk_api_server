@@ -1,9 +1,9 @@
-import { getHtml, parseHtml } from "./util"
+import { getHtmlRequest, parseHtml } from "./util"
 import { CrawledItemInfo } from "./type/ReturnType"
 import { strip } from "../Utils/stringUtil"
 
 export async function crawlGiordano(sourceUrl): Promise<CrawledItemInfo> {
-  let htmlCode = await getHtml(sourceUrl)
+  let htmlCode = await getHtmlRequest(sourceUrl)
 
   let price = parseHtml(htmlCode, "number", "value", ".price", "del")
   let saleprice = parseHtml(htmlCode, "number", "value", ".price", ".sell")
@@ -28,7 +28,7 @@ export async function crawlGiordano(sourceUrl): Promise<CrawledItemInfo> {
 
 export async function crawlGiordanoMobile(sourceUrl): Promise<CrawledItemInfo> {
   console.log("Mobile")
-  let htmlCode = await getHtml(sourceUrl)
+  let htmlCode = await getHtmlRequest(sourceUrl)
 
   let price = parseHtml(htmlCode, "number", "value", ".price", "del")
   let saleprice = parseHtml(htmlCode, "number", "value", ".price", ".sell")

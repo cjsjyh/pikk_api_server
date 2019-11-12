@@ -1,9 +1,9 @@
-import { getHtml, parseHtml } from "./util"
+import { getHtmlRequest, parseHtml } from "./util"
 import { CrawledItemInfo } from "./type/ReturnType"
 import { strip } from "../Utils/stringUtil"
 
 export async function crawlTheKnitCompany(sourceUrl): Promise<CrawledItemInfo> {
-  let htmlCode = await getHtml(sourceUrl)
+  let htmlCode = await getHtmlRequest(sourceUrl)
   let price = parseHtml(htmlCode, "number", "value", "#span_product_price_custom")
   let saleprice = parseHtml(htmlCode, "number", "value", "#span_product_price_text")
   let itemname = parseHtml(htmlCode, "string", "value", "title")

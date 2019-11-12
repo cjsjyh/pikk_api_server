@@ -3,10 +3,11 @@ import { CrawledItemInfo } from "./type/ReturnType"
 
 const cheerio = require("cheerio")
 const request = require("request")
+const axios = require("axios")
 const iconv = require("iconv-lite") //인코딩을 변환 해주는 모듈, 필자는 iconv보다 iconv-lite를 선호한다.
 const charset = require("charset") //해당 사이트의 charset값을 알 수 있게 해준다.
 
-export async function getHtml(sourceUrl: string) {
+export async function getHtmlRequest(sourceUrl: string) {
   try {
     return new Promise((resolve, reject) => {
       request(
@@ -24,6 +25,14 @@ export async function getHtml(sourceUrl: string) {
         }
       )
     })
+  } catch (e) {
+    logWithDate(e)
+  }
+}
+
+export async function getHtmlAxios(sourceUrl: string) {
+  try {
+    return axios.get(sourceUrl)
   } catch (e) {
     logWithDate(e)
   }

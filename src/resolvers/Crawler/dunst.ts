@@ -1,9 +1,9 @@
-import { getHtml, parseHtml } from "./util"
+import { getHtmlRequest, parseHtml } from "./util"
 import { CrawledItemInfo } from "./type/ReturnType"
 import { strip } from "../Utils/stringUtil"
 
 export async function crawlDunst(sourceUrl): Promise<CrawledItemInfo> {
-  let htmlCode = await getHtml(sourceUrl)
+  let htmlCode = await getHtmlRequest(sourceUrl)
 
   let price = parseHtml(htmlCode, "number", "value", ".price_box", ".sobi")
   let saleprice = parseHtml(htmlCode, "number", "value", ".price_box", ".price")

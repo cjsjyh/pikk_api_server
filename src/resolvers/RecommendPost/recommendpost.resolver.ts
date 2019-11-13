@@ -4,8 +4,20 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, UploadImage } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, logWithDate, ConvertListToString, MakeCacheNameByObject } from "../Utils/stringUtil"
+
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy3Version } from "../Utils/promiseUtil"
+import {
+  GetFormatSql,
+  MakeMultipleQuery,
+  logWithDate,
+  ConvertListToString,
+  MakeCacheNameByObject,
+  getFormatDate,
+  getFormatHour,
+  IsNewImage,
+  InsertImageIntoDeleteQueue
+} from "../Utils/stringUtil"
+
 import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, EditReview } from "../Review/util"
 import { performance } from "perf_hooks"
@@ -119,6 +131,8 @@ module.exports = {
         throw new Error("[Error] Failed to load Picked RecommendPost data from DB")
       }
     }
+
+    //getTempSavedRecommendPost: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<> => {}
   },
   Mutation: {
     createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
@@ -133,12 +147,14 @@ module.exports = {
 
       let recommendPostId: number
       try {
+        let deployImageUrl = await DeployImageBy3Version(arg.titleImageUrl)
+
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(
           `INSERT INTO "RECOMMEND_POST"
           ("FK_accountId","title","content","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") 
           VALUES (${arg.accountId}, '${arg.title}', '${arg.content}', '${arg.postType}', '${arg.styleType}', 
-          '${arg.titleType}', '${arg.titleYoutubeUrl}', '${arg.titleImageUrl}') RETURNING id`
+          '${arg.titleType}', '${arg.titleYoutubeUrl}', '${deployImageUrl}') RETURNING id`
         )
         recommendPostId = insertResult[0].id
       } catch (e) {
@@ -175,16 +191,16 @@ module.exports = {
       try {
         let setSql = await GetEditSql(arg)
         //Edit others
-        await RunSingleSQL(`
-          UPDATE "RECOMMEND_POST" SET
-          ${setSql}
-          WHERE "id"=${arg.postId}
-        `)
+        await RunSingleSQL(setSql)
         //Delete Images
         if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {
           if (arg.deletedImages.length != 0) {
+            let deleteSql = ""
+            deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "id", arg.deletedImages)
+
             let idList = ConvertListToString(arg.deletedImages)
             await RunSingleSQL(`
+            ${deleteSql}
             DELETE FROM "ITEM_REVIEW_IMAGE" WHERE id IN (${idList})
           `)
           }
@@ -192,6 +208,9 @@ module.exports = {
 
         if (Object.prototype.hasOwnProperty.call(arg, "deletedReviews")) {
           if (arg.deletedReviews.length != 0) {
+            let deleteSql = ""
+            deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "FK_reviewId", arg.deletedReviews)
+
             let idList = ConvertListToString(arg.deletedReviews)
             await RunSingleSQL(`
             DELETE FROM "ITEM_REVIEW" WHERE id IN (${idList})
@@ -227,7 +246,20 @@ module.exports = {
       }
 
       try {
-        let query = `DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`
+        let query = `
+        WITH review AS (
+          SELECT * FROM "ITEM_REVIEW" WHERE "FK_postId"=${arg.postId}
+        ),
+        bbb AS (
+          INSERT INTO "IMAGE_DELETE"("imageUrl")
+          SELECT image."imageUrl" as "imageUrl" FROM "ITEM_REVIEW_IMAGE" image,review WHERE image."FK_reviewId" = review.id
+        ),
+        ccc AS (
+          INSERT INTO "IMAGE_DELETE"("imageUrl")
+	        SELECT rec."titleImageUrl" as "imageUrl" FROM "RECOMMEND_POST" rec WHERE rec.id=${arg.postId}
+        )
+		    DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}
+        `
         let result = await RunSingleSQL(query)
 
         logWithDate(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)
@@ -236,6 +268,22 @@ module.exports = {
         logWithDate(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
         logWithDate(e)
         throw new Error(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
+      }
+    },
+
+    tempSaveRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+      let arg: ArgType.RecommendPostTempSaveInfoInput = args.recommendPostTempSaveInfo
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+
+      let cacheName = `recomCache_${String(arg.accountId)}_` + getFormatDate(new Date()) + getFormatHour(new Date())
+      try {
+        SetRedis(cacheName, arg.content, 604800)
+        logWithDate(`RecommendPost Temporary Save! Cache key: ${cacheName}`)
+        return true
+      } catch (e) {
+        logWithDate("[Error] Failed to temporarily save Recommend Post")
+        logWithDate(e)
+        return false
       }
     }
   }
@@ -291,7 +339,7 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 
 async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<string> {
   let isMultiple = false
-  let resultSql = ""
+  let resultSql = `UPDATE "RECOMMEND_POST" SET `
 
   if (Object.prototype.hasOwnProperty.call(filter, "title")) {
     if (isMultiple) resultSql += ", "
@@ -325,6 +373,10 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     isMultiple = true
   }
   if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl")) {
+    if (IsNewImage(filter.titleImageUrl)) {
+      resultSql = InsertImageIntoDeleteQueue("RECOMMEND_POST", "titleImageUrl", "id", [filter.postId]) + resultSql
+      filter.titleImageUrl = await DeployImageBy3Version(filter.titleImageUrl)
+    }
     if (isMultiple) resultSql += ", "
     resultSql += `"titleImageUrl" = '${filter.titleImageUrl}'`
     isMultiple = true
@@ -334,6 +386,8 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     resultSql += `"titleYoutubeUrl"='${filter.titleYoutubeUrl}'`
     isMultiple = true
   }
+
+  resultSql += `WHERE "id"=${filter.postId}`
 
   return resultSql
 }

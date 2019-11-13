@@ -5,7 +5,8 @@ import {
   ExtractFieldFromList,
   SequentialPromiseValue,
   MakeGroups,
-  AssignGroupsToParent
+  AssignGroupsToParent,
+  DeployImageBy3Version
 } from "../Utils/promiseUtil"
 import { ConvertListToString, ConvertListToOrderedPair, logWithDate } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
@@ -151,6 +152,19 @@ export function InsertItemReview(
         }
 
         try {
+          await Promise.all(
+            imgUrlList.map((imgUrl, index) => {
+              return new Promise(async (resolve, reject) => {
+                try {
+                  imgUrlList[index] = await DeployImageBy3Version(imgUrl)
+                  resolve()
+                } catch (e) {
+                  reject(e)
+                }
+              })
+            })
+          )
+
           let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
           await InsertImageIntoTable(imgPairs, "ITEM_REVIEW_IMAGE", "FK_reviewId")
         } catch (e) {

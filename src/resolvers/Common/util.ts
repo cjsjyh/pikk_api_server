@@ -1,5 +1,5 @@
-import { RunSingleSQL } from "../Utils/promiseUtil"
-import { logWithDate } from "../Utils/stringUtil"
+import { RunSingleSQL, DeployImageBy3Version } from "../Utils/promiseUtil"
+import { logWithDate, IsNewImage, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 import { CommunityPostEditImageInfo } from "../CommunityPost/type/ArgType"
 import { ItemReviewImgEditInfoInput } from "../Review/type/ArgType"
 
@@ -28,8 +28,7 @@ export async function InsertImageIntoTable(
   let querySql
   if (multipleValues == "")
     querySql = `INSERT INTO "${tableName}"("imageUrl","order", "${foreignKeyName}") VALUES ('${url}', ${order},${foreignKeyId})`
-  else
-    querySql = `INSERT INTO "${tableName}"("imageUrl","order", "${foreignKeyName}") VALUES ${multipleValues}`
+  else querySql = `INSERT INTO "${tableName}"("imageUrl","order", "${foreignKeyName}") VALUES ${multipleValues}`
   await RunSingleSQL(querySql)
 }
 
@@ -43,13 +42,20 @@ export async function EditImageUrlInTable(
   try {
     //Edit exsiting image
     if (Object.prototype.hasOwnProperty.call(image, "id") && image.id != null) {
-      await RunSingleSQL(
-        `UPDATE "${tableName}" SET "imageUrl"='${image.imageUrl}', "order"=${index} WHERE id=${image.id}`
-      )
+      let deployUrl = image.imageUrl
+      let deleteSql = ""
+      if (IsNewImage(image.imageUrl)) {
+        deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "id", [image.id])
+        deployUrl = await DeployImageBy3Version(deployUrl)
+      }
+      await RunSingleSQL(`
+      ${deleteSql}
+      UPDATE "${tableName}" SET "imageUrl"='${deployUrl}', "order"=${index} WHERE id=${image.id}`)
     }
     //Insert new image
     else {
-      await InsertImageIntoTable("", tableName, foreignKeyName, foreignKeyId, image.imageUrl, index)
+      let deployUrl = await DeployImageBy3Version(image.imageUrl)
+      await InsertImageIntoTable("", tableName, foreignKeyName, foreignKeyId, deployUrl, index)
     }
     return true
   } catch (e) {

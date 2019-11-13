@@ -1,4 +1,4 @@
-import { RunSingleSQL, UploadImage, SequentialPromiseValue, UploadImageWrapper } from "../Utils/promiseUtil"
+import { RunSingleSQL, SequentialPromiseValue, UploadImageWrapper } from "../Utils/promiseUtil"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { ValidateUser } from "../Utils/securityUtil"

@@ -8,7 +8,7 @@ import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
 import { SequentialPromiseValue, GetMetaData, RunSingleSQL, ExtractSelectionSet } from "../Utils/promiseUtil"
-import { GetFormatSql, logWithDate, ConvertListToOrderedPair, ConvertListToString } from "../Utils/stringUtil"
+import { GetFormatSql, logWithDate, ConvertListToOrderedPair, ConvertListToString, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
@@ -95,10 +95,16 @@ module.exports = {
         `)
 
         if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {
-          let idList = ConvertListToString(arg.deletedImages)
-          await RunSingleSQL(`
-            DELETE FROM "ITEM_REVIEW_IMAGE" WHERE id IN (${idList})
+          if (arg.deletedImages.length != 0) {
+            let deleteSql = ""
+            deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "id", arg.deletedImages)
+
+            let idList = ConvertListToString(arg.deletedImages)
+            await RunSingleSQL(`
+            ${deleteSql}
+            DELETE FROM "COMMUNITY_POST_IMAGE" WHERE id IN (${idList})
           `)
+          }
         }
 
         if (Object.prototype.hasOwnProperty.call(arg, "imageUrls")) {
@@ -121,7 +127,10 @@ module.exports = {
       let arg: ArgType.CommunityPostDeleteInfoInput = args.communityPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       try {
-        let querySql = `DELETE FROM "COMMUNITY_POST" WHERE id=${arg.postId}`
+        let deleteSql = ""
+        deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "FK_postId", [arg.postId])
+
+        let querySql = `${deleteSql} DELETE FROM "COMMUNITY_POST" WHERE id=${arg.postId}`
         let result = await RunSingleSQL(querySql)
         return true
       } catch (e) {

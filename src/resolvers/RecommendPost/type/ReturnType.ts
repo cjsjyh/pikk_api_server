@@ -26,3 +26,7 @@ export type RecommendPostInfo = {
   styleType: string
   saleEndDate: string
 }
+
+export type TempSavedRecommendPostInfo = {
+  content: string
+}

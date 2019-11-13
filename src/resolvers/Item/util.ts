@@ -1,5 +1,5 @@
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, UploadImage } from "../Utils/promiseUtil"
-import { ConvertListToString, logWithDate } from "../Utils/stringUtil"
+import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImageBy3Version } from "../Utils/promiseUtil"
+import { ConvertListToString, logWithDate, IsNewImage } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput, ItemEditInfoInput, GroupEditInfo, VariationEditInfo } from "./type/ArgType"
 import { ItemReviewInfoInput, ItemReviewEditInfoInput } from "../Review/type/ArgType"
@@ -19,7 +19,8 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
     }
 
     if (Object.prototype.hasOwnProperty.call(item, "variationInfo")) {
-      let variationSql = GetItemVariationEditSql(item.variationInfo)
+      if (IsNewImage(item.variationInfo.imageUrl)) item.variationInfo.imageUrl = await DeployImageBy3Version(item.variationInfo.imageUrl)
+      let variationSql = await GetItemVariationEditSql(item.variationInfo)
       await RunSingleSQL(`UPDATE "ITEM_VARIATION" SET ${variationSql} WHERE id=${item.variationInfo.itemId}`)
     }
     return true
@@ -27,6 +28,23 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
     logWithDate("[Error] Failed to Edit Item")
     logWithDate(e)
     return false
+  }
+}
+
+export async function CombineItem(updateId: number, deleteIds: number[]) {
+  try {
+    let querySql = `
+    WITH update_item as (
+      UPDATE "ITEM_REVIEW" SET "FK_itemId" = ${updateId} WHERE "FK_itemId" IN (${ConvertListToString(deleteIds)})
+    ),
+    delete_item as (
+      SELECT "FK_itemGroupId", id FROM "ITEM_VARIATION" WHERE id IN (${ConvertListToString(deleteIds)})
+    )
+    DELETE FROM "ITEM_GROUP" USING delete_item WHERE "ITEM_GROUP".id = delete_item."FK_itemGroupId"
+    `
+    await RunSingleSQL(querySql)
+  } catch (e) {
+    logWithDate(e)
   }
 }
 
@@ -72,8 +90,10 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
       //Insert Variation
       if (arg.variationInfo.salePrice === undefined) arg.variationInfo.salePrice = null
 
+      let deployImageUrl = await DeployImageBy3Version(arg.variationInfo.imageUrl)
+
       queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
-        VALUES ('${arg.variationInfo.name}','${arg.variationInfo.imageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
+        VALUES ('${arg.variationInfo.name}','${deployImageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
       resolve(queryResult[0].id)
     } catch (e) {
       logWithDate("[Error] Failed to Insert into ITEM_VARIATION")
@@ -300,7 +320,7 @@ function GetItemGroupEditSql(itemGroup: GroupEditInfo): string {
   return resultSql
 }
 
-function GetItemVariationEditSql(itemVar: VariationEditInfo): string {
+async function GetItemVariationEditSql(itemVar: VariationEditInfo): Promise<string> {
   let isMultiple = false
   let resultSql = ""
 
@@ -317,6 +337,7 @@ function GetItemVariationEditSql(itemVar: VariationEditInfo): string {
   }
 
   if (Object.prototype.hasOwnProperty.call(itemVar, "imageUrl")) {
+    if (IsNewImage(itemVar.imageUrl)) itemVar.imageUrl = await DeployImageBy3Version(itemVar.imageUrl)
     if (isMultiple) resultSql += ", "
     resultSql += ` "imageUrl" = '${itemVar.imageUrl}'`
     isMultiple = true

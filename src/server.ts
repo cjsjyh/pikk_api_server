@@ -84,10 +84,10 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST");
 });
 
-async function testfunc() {
-  await ReplaceImageWithResolutions();
-}
-testfunc();
+//async function testfunc() {
+//  await ReplaceImageWithResolutions();
+//}
+//testfunc();
 
 const httpServer = createServer(app);
 httpServer.listen({ port: 80 }, (): void =>

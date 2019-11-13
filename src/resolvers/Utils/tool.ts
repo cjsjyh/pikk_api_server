@@ -14,12 +14,13 @@ const readChunk = require("read-chunk");
 
 export async function ReplaceImageWithResolutions() {
   //Get table rows
-  //let imageUrls = await RunSingleSQL(    'SELECT tab."channel_titleImgUrl" as "imageUrl" from "USER_INFO" tab'  );
+  let imageUrls = await RunSingleSQL(
+    'SELECT tab."titleImageUrl" as "imageUrl" from "RECOMMEND_POST" tab'
+  );
+  //let imageUrls = await RunSingleSQL(    'SELECT tab."imageUrl" as "imageUrl" from "ITEM_VARIATION" tab'  );
   //let imageUrls = await RunSingleSQL(    'SELECT tab."channel_titleImgUrl" as "imageUrl" from "USER_INFO" tab'  );
   //let imageUrls = await RunSingleSQL(    'SELECT tab."profileImgUrl" as "imageUrl" from "USER_INFO" tab'  );
-  let imageUrls = await RunSingleSQL(
-    'SELECT tab."imageUrl" as "imageUrl" from "ITEM_REVIEW_IMAGE" tab'
-  );
+  //let imageUrls = await RunSingleSQL(    'SELECT tab."imageUrl" as "imageUrl" from "ITEM_REVIEW_IMAGE" tab'  );
   imageUrls = ExtractFieldFromList(imageUrls, "imageUrl");
   var filtered = imageUrls.filter(function(el) {
     return el != "null" && el != null;
@@ -36,13 +37,12 @@ export async function ReplaceImageWithResolutions() {
   filtered.forEach(async filteredUrl => {
     //Download From S3
     await new Promise((resolve, reject) => {
-      /*
       //------------------------------------------------------
-      let xsmallName = filteredUrl.replace(".", "_xsmall."); 
-      let smallName = filteredUrl.replace(".", "_small.");
+      //let xsmallName = filteredUrl.replace(".", "_xsmall.");
+      let smallName = filteredUrl.replace(".", "_low.");
       let mediumName = filteredUrl.replace(".", "_medium.");
-      let largeName = filteredUrl.replace(".", "_large.");
-      [lowName, highName].forEach(filename => {
+      let largeName = filteredUrl.replace(".", "_high.");
+      [smallName, largeName].forEach(filename => {
         S3.deleteObject({
           Bucket: "fashiondogam-images",
           Key: filename
@@ -51,16 +51,15 @@ export async function ReplaceImageWithResolutions() {
           .then(() => {
             console.log(filename);
             logWithDate("Successfully Deleted Image");
-            resolve();
+            //resolve();
           })
           .catch(e => {
             logWithDate("[Error] Failed to delete Image");
             logWithDate(e);
-            reject(e);
+            //reject(e);
           });
       });
       //------------------------------------------------------
-      */
 
       var param = {
         Bucket: "fashiondogam-images",
@@ -126,7 +125,7 @@ export async function ReplaceImageWithResolutions() {
         logWithDate(imageUrl);
       });
     });
-
+    /*
     await Promise.all(
       [filteredUrl, xsmallName, smallName, mediumName, largeName].map(
         filename => {
@@ -139,5 +138,6 @@ export async function ReplaceImageWithResolutions() {
         }
       )
     );
+    */
   });
 }

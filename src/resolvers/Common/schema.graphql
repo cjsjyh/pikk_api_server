@@ -8,7 +8,7 @@ type Query {
 type Mutation {
   UploadImages(images: [Upload!]!): [String!]!
   FollowTarget(followInfo: FollowInfoInput!): Int!
-  IncrementViewCount(postType: PostType!, postId: Int!): Boolean!
+  IncreaseViewCount(postType: PostType!, postId: Int!): Boolean!
 }
 
 #--------------

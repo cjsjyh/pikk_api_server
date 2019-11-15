@@ -66,11 +66,11 @@ module.exports = {
       }
     },
 
-    IncrementViewCount: async (parent: void, args: any): Promise<Boolean> => {
+    IncreaseViewCount: async (parent: void, args: any): Promise<Boolean> => {
       try {
         let query = `UPDATE "${args.postType}_POST" SET "viewCount" = "viewCount" + 1 WHERE id = ${args.postId}`
         let result = await RunSingleSQL(query)
-        logWithDate(`RecommendPost viewCount Incremented`)
+        logWithDate(`RecommendPost viewCount Increased`)
         return true
       } catch (e) {
         logWithDate(`[Error] Failed to increase view count for ${args.postType} ${args.postId}`)

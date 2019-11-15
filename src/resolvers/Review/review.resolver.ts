@@ -49,14 +49,14 @@ module.exports = {
   },
 
   Mutation: {
-    incrementReviewCount: async (parent: void, args: QueryArgInfo): Promise<Boolean> => {
+    increaseReviewCount: async (parent: void, args: QueryArgInfo): Promise<Boolean> => {
       try {
-        let query = `UPDATE "ITEM_REVIEW" SET "${args.incrementOption.type}" = "${args.incrementOption.type}" + 1 WHERE id = ${args.incrementOption.id}`
+        let query = `UPDATE "ITEM_REVIEW" SET "${args.increaseOption.type}" = "${args.increaseOption.type}" + 1 WHERE id = ${args.increaseOption.id}`
         let result = await RunSingleSQL(query)
-        logWithDate(`IncrementReviewCount Called`)
+        logWithDate(`IncreaseReviewCount Called`)
         return true
       } catch (e) {
-        logWithDate(`[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`)
+        logWithDate(`[Error] Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
         logWithDate(e)
         return false
       }

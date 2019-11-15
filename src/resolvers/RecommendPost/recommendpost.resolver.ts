@@ -24,7 +24,7 @@ import { performance } from "perf_hooks"
 import { GetRecommendPostList } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
-import { IncrementViewCountFunc } from "../Common/util"
+import { IncreaseViewCountFunc } from "../Common/util"
 
 module.exports = {
   Query: {
@@ -41,7 +41,7 @@ module.exports = {
             parsedPosts.map((post: any) => {
               post.time = Date.parse(post.time)
               if (Object.prototype.hasOwnProperty.call(post, "reviews")) {
-                return IncrementViewCountFunc("RECOMMEND", post.id)
+                return IncreaseViewCountFunc("RECOMMEND", post.id)
               }
             })
           )

@@ -22,6 +22,7 @@ module.exports = {
         commentResults.forEach(comment => {
           comment.postId = comment.FK_postId
           comment.accountId = comment.FK_accountId
+          comment.parentId = comment.FK_parentId
         })
 
         logWithDate(`GetComments Called`)
@@ -39,9 +40,9 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `INSERT INTO ${ConvertToTableName(arg.targetType)} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${
-          arg.accountId
-        },'${arg.content}')`
+        let querySql = `INSERT INTO ${ConvertToTableName(arg.targetType)} ("FK_postId","FK_accountId","FK_parentId","content") 
+        VALUES(
+          ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
         logWithDate(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
         return true

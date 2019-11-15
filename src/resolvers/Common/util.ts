@@ -3,7 +3,7 @@ import { logWithDate, IsNewImage, InsertImageIntoDeleteQueue } from "../Utils/st
 import { CommunityPostEditImageInfo } from "../CommunityPost/type/ArgType"
 import { ItemReviewImgEditInfoInput } from "../Review/type/ArgType"
 
-export function IncrementViewCountFunc(postType: string, postId: number): Promise<Boolean> {
+export function IncreaseViewCountFunc(postType: string, postId: number): Promise<Boolean> {
   return new Promise(async (resolve, reject) => {
     try {
       let query = `UPDATE "${postType}_POST" SET "viewCount" = "viewCount" + 1 WHERE id = ${postId}`

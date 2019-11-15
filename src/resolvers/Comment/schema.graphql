@@ -40,6 +40,7 @@ input CommentQuery {
 input CommentInfoInput {
   accountId: Int!
   targetId: Int!
+  parentId: Int
   targetType: PostType!
   content: String!
 }
@@ -58,6 +59,7 @@ type CommentInfo {
   id: Int!
   postId: Int!
   accountId: Int!
+  parentId: Int
   content: String!
   time: String
 }

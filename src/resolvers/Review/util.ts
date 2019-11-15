@@ -12,7 +12,7 @@ import { ConvertListToString, ConvertListToOrderedPair, logWithDate } from "../U
 import { GraphQLResolveInfo } from "graphql"
 import { FetchItemsForReview, EditItem, InsertItemForRecommendPost } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
-import { IncrementViewCountFunc, InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
+import { IncreaseViewCountFunc, InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
 
 export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, args: any): Promise<boolean> {
   try {
@@ -56,7 +56,7 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
     if (selectionSet.includes("reviews")) {
       await Promise.all(
         postResult.map(async post => {
-          return IncrementViewCountFunc("RECOMMEND", post.id)
+          return IncreaseViewCountFunc("RECOMMEND", post.id)
         })
       )
       let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", `ORDER BY "order" ASC`)

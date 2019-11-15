@@ -1,11 +1,9 @@
-const { pool } = require("../../database/connectionPool")
 import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
-import { ConvertToTableName, GetBoardName } from "./util"
-import { CloudWatchEvents } from "aws-sdk"
+import { ConvertToCommentTableName, GetBoardName } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 import { logWithDate } from "../Utils/stringUtil"
 
@@ -40,7 +38,7 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `INSERT INTO ${ConvertToTableName(arg.targetType)} ("FK_postId","FK_accountId","FK_parentId","content") 
+        let querySql = `INSERT INTO ${ConvertToCommentTableName(arg.targetType)} ("FK_postId","FK_accountId","FK_parentId","content") 
         VALUES(
           ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
@@ -57,7 +55,7 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId}`
+        let querySql = `DELETE FROM ${ConvertToCommentTableName(arg.targetType)} WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)
 
         logWithDate(`Deleted Comment on Post${arg.targetType} id ${arg.targetId}`)

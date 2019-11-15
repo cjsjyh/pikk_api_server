@@ -1,0 +1,27 @@
+type Query {
+  getUserNotification(accountId: Int!): [NotificationInfo]!
+}
+
+#--------------
+#   INPUT
+#--------------
+
+# Query
+
+enum NotificationTargetType {
+  RECOMMEND
+  COMMUNITY
+}
+
+#---------------
+#   Return
+#---------------
+
+type NotificationInfo {
+  id: Int!
+  targetId: Int!
+  targetType: NotificationTargetType!
+  targetTitle: String!
+  content: String
+  accountId: Int!
+}

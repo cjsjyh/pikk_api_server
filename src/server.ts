@@ -18,6 +18,7 @@ import schema from "./schema"
 import { logWithDate } from "./resolvers/Utils/stringUtil"
 import { getHtmlRequest } from "./resolvers/Crawler/util"
 import { ReplaceImageWithResolutions, CombineItem } from "./resolvers/Utils/tool"
+import { PushRedisQueue, PopRedisQueue } from "./database/redisConnect"
 //import { SearchElasticSearch } from "./database/elastic/elasticConnect"
 
 //Create Express Server
@@ -77,12 +78,15 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 //let elastic = require("./database/elastic/elasticConnect")
-//async function testfunc() {
-//  let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
-//  await elastic.elasticClient.indices.refresh({ index: "...customer" })
-//  result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-//}
-//testfunc()
+async function testfunc() {
+  //let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
+  //await elastic.elasticClient.indices.refresh({ index: "...customer" })
+  //result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
+  await PushRedisQueue("testlist", "first")
+  await PushRedisQueue("testlist", "second")
+  console.log(await PopRedisQueue("testlist"))
+}
+testfunc()
 
 const httpServer = createServer(app)
 httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))

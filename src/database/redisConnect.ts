@@ -11,6 +11,72 @@ export function GetRedisClient() {
   return redisConnection
 }
 
+export function PushRedisQueue(key: string, value: string): any {
+  return new Promise((resolve, reject) => {
+    let client
+    try {
+      client = GetRedisClient()
+    } catch (e) {
+      reject(e)
+    }
+
+    try {
+      client.rpush(key, value, function(err, reply) {
+        if (err) reject(err)
+        client.end(true)
+        resolve()
+      })
+    } catch (e) {
+      client.end(true)
+      reject(e)
+    }
+  })
+}
+
+export function PopRedisQueue(key: string): any {
+  return new Promise((resolve, reject) => {
+    let client
+    try {
+      client = GetRedisClient()
+    } catch (e) {
+      reject(e)
+    }
+
+    try {
+      client.lpop(key, function(err, reply) {
+        if (err) reject(err)
+        client.end(true)
+        resolve(reply)
+      })
+    } catch (e) {
+      client.end(true)
+      reject(e)
+    }
+  })
+}
+
+export function RedisQueueLength(key: string): any {
+  return new Promise((resolve, reject) => {
+    let client
+    try {
+      client = GetRedisClient()
+    } catch (e) {
+      reject(e)
+    }
+
+    try {
+      client.llen(key, function(err, reply) {
+        if (err) reject(err)
+        client.end(true)
+        resolve(reply)
+      })
+    } catch (e) {
+      client.end(true)
+      reject(e)
+    }
+  })
+}
+
 export function GetRedis(key: string): any {
   return new Promise((resolve, reject) => {
     let client

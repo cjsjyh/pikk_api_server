@@ -10,7 +10,7 @@ import { crawlTheKnitCompany } from "./theknitcompany"
 import { crawlMusinsa } from "./musinsa"
 
 module.exports = {
-  Query: {
+  Mutation: {
     crawlItem: async (parent: void, args: any): Promise<CrawledItemInfo> => {
       args.url = strip(args.url)
       let domain = extractDomain(args.url)
@@ -29,9 +29,10 @@ module.exports = {
           throw new Error("Crawler not made for this site yet!")
         }
 
-        console.log(result)
-        if (validateCrawledItem(result)) return result
-        else {
+        if (validateCrawledItem(result)) {
+          logWithDate("Item Crawled!")
+          return result
+        } else {
           logWithDate("[Error] Item crawling failed. Retry with valid URL: " + args.url)
           throw new Error("[Error] Item crawling failed. Retry with valid URL")
         }

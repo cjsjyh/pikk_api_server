@@ -53,6 +53,7 @@ module.exports = {
       try {
         let query = `UPDATE "ITEM_REVIEW" SET "${args.incrementOption.type}" = "${args.incrementOption.type}" + 1 WHERE id = ${args.incrementOption.id}`
         let result = await RunSingleSQL(query)
+        logWithDate(`IncrementReviewCount Called`)
         return true
       } catch (e) {
         logWithDate(`[Error] Failed to increase REVIEW COUNT for ${args.incrementOption.type} ${args.incrementOption.id}`)

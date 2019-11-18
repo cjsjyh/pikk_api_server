@@ -6,6 +6,7 @@ import { RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertToCommentTableName, GetBoardName } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 import { logWithDate } from "../Utils/stringUtil"
+import { InsertIntoNotificationQueue } from "../Notification/util"
 
 module.exports = {
   Query: {
@@ -43,6 +44,16 @@ module.exports = {
           ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
         logWithDate(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
+
+        //Commented to a post
+        if (arg.parentId == null) {
+          InsertIntoNotificationQueue("RECPOST_WRITER", arg.targetId, arg.targetType, "", arg.content)
+        }
+        //Comented to a comment
+        else {
+          InsertIntoNotificationQueue("COMMENT_WRITER", arg.targetId, arg.targetType, "", arg.content, arg.parentId)
+        }
+
         return true
       } catch (e) {
         logWithDate("[Error] Failed to create Comment")

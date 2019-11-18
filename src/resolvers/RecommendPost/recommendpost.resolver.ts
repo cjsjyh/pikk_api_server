@@ -25,6 +25,7 @@ import { GetRecommendPostList } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
 import { IncreaseViewCountFunc } from "../Common/util"
+import { InsertIntoNotificationQueue } from "../Notification/util"
 
 module.exports = {
   Query: {
@@ -168,6 +169,9 @@ module.exports = {
           await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId, index])
         }
         logWithDate(`Recommend Post created by User${arg.accountId}`)
+
+        InsertIntoNotificationQueue("CHANNEL_FOLLOWERS", recommendPostId, "RECOMMEND", arg.title, "", -1, arg.accountId)
+
         return true
       } catch (e) {
         logWithDate("[Error] Failed to create RecommendPost")

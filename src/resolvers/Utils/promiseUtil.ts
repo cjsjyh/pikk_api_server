@@ -202,7 +202,7 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
     logWithDate(`Deployed 3 Images`)
     return `https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}/` + imageUrl
   } catch (e) {
-    logWithDate("Failed to deploy Image")
+    logWithDate("[Error] Failed to deploy Image")
     logWithDate(e)
     return null
   }

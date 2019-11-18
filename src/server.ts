@@ -22,6 +22,7 @@ import schema from "./schema"
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
 import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
+import { CombineItem } from "./resolvers/Utils/tool"
 
 //Create Express Server
 const app = express()
@@ -81,14 +82,12 @@ app.get("/", (req: express.Request, res: express.Response) => {
 
 // let elastic = require("./database/elastic/elasticConnect")
 // async function testfunc() {
-//   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
-//   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
-//   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-//   // await PushRedisQueue("testlist", "first")
-//   // await PushRedisQueue("testlist", "second")
-//   // console.log(await PopRedisQueue("testlist"))
+//   let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
+//   await elastic.elasticClient.indices.refresh({ index: "...customer" })
+//   result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
 // }
 // testfunc()
+
 cron.schedule("*/2 * * * *", function() {
   ProcessNotificationQueue()
 })

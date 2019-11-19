@@ -1,8 +1,8 @@
-import { logWithDate } from "../Utils/stringUtil"
 import { GetBoardName } from "../Comment/util"
 import { NotificationInfo } from "./type/ReturnType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { PushRedisQueue, PopRedisQueue, RedisQueueLength } from "../../database/redisConnect"
+var logger = require("../../tools/logger")
 
 export async function ProcessNotificationQueue() {
   while ((await RedisQueueLength("Notification_Queue")) != "0") {
@@ -15,7 +15,7 @@ export async function ProcessNotificationQueue() {
     } else if (task.notiType == "COMMENT_WRITER") {
       await NotifyCommentWriter(task.targetId, task.targetType, task.content, task.parentId)
     } else {
-      logWithDate("Invalid Notification Queue notiType")
+      logger.warn("Invalid Notification Queue notiType")
     }
   }
 }
@@ -55,14 +55,14 @@ export async function InsertIntoNotificationQueue(
         parentId: parentId
       }
     } else {
-      logWithDate("Invalid Notification Queue notiType")
+      logger.warn("Invalid Notification Queue notiType")
     }
 
     await PushRedisQueue("Notification_Queue", JSON.stringify(queueData))
-    logWithDate("Inserted into Notification Queue")
+    logger.info("Inserted into Notification Queue")
   } catch (e) {
-    logWithDate("[Error] Failed to insert into notification queue")
-    logWithDate(e)
+    logger.warn("Failed to insert into notification queue")
+    logger.error(e)
   }
 }
 
@@ -84,10 +84,10 @@ async function NotifyPostWriter(postId: number, postType: string, content: strin
     INSERT INTO "NOTIFICATION"("targetId","targetType","targetTitle","content","FK_accountId") 
     VALUES (${NotiInfo.targetId},'${NotiInfo.targetType}','${NotiInfo.targetTitle}','${NotiInfo.content}',${NotiInfo.accountId})
   `)
-    logWithDate(`Notified RecPost Writer of postId: ${NotiInfo.targetId}`)
+    logger.info(`Notified RecPost Writer of postId: ${NotiInfo.targetId}`)
   } catch (e) {
-    logWithDate(`[Error] Failed to Notify RecPost Writer of postId: ${NotiInfo.targetId}`)
-    logWithDate(e)
+    logger.warn(`Failed to Notify RecPost Writer of postId: ${NotiInfo.targetId}`)
+    logger.error(e)
   }
 }
 
@@ -104,10 +104,10 @@ async function NotifyFollowers(postId: number, postType: string, postTitle: stri
       SELECT ${NotiInfo.targetId},'${NotiInfo.targetType}','${NotiInfo.targetTitle}','${NotiInfo.content}',"FK_accountId"
       FROM "CHANNEL_FOLLOWER" WHERE "FK_channelId"=${writerId}
     `)
-    logWithDate(`Notified Channel Followers of ${writerId} postId: ${NotiInfo.targetId}`)
+    logger.info(`Notified Channel Followers of ${writerId} postId: ${NotiInfo.targetId}`)
   } catch (e) {
-    logWithDate(`[Error] Failed to Notify Channel Followers of ${writerId} postId: ${NotiInfo.targetId}`)
-    logWithDate(e)
+    logger.warn(`Failed to Notify Channel Followers of ${writerId} postId: ${NotiInfo.targetId}`)
+    logger.error(e)
   }
 }
 
@@ -133,9 +133,9 @@ async function NotifyCommentWriter(postId: number, postType: string, content: st
     INSERT INTO "NOTIFICATION"("targetId","targetType","targetTitle","content","FK_accountId") 
     VALUES (${NotiInfo.targetId},'${NotiInfo.targetType}','${NotiInfo.targetTitle}','${NotiInfo.content}',${NotiInfo.accountId})
     `)
-    logWithDate(`Notified comment writer of Comment ${parentId}`)
+    logger.info(`Notified comment writer of Comment ${parentId}`)
   } catch (e) {
-    logWithDate(`[Error] Failed to Notify comment Writer of Comment ${parentId}`)
-    logWithDate(e)
+    logger.warn(`Failed to Notify comment Writer of Comment ${parentId}`)
+    logger.error(e)
   }
 }

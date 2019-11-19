@@ -1,5 +1,4 @@
-import { logWithDate } from "../resolvers/Utils/stringUtil"
-
+var logger = require("../tools/logger")
 const redis = require("redis")
 
 export function GetRedisClient() {
@@ -137,8 +136,8 @@ function scan(pattern, redisClient, cursor, resolve, reject) {
   redisClient.scan(cursor, "MATCH", pattern, "COUNT", "1000", async function(err, reply) {
     if (err) {
       redisClient.end(true)
-      logWithDate("[Error] Failed to make connection with Redis")
-      logWithDate(err)
+      logger.warn("Failed to make connection with Redis")
+      logger.error(err)
       reject(err)
     }
     cursor = reply[0]
@@ -148,8 +147,8 @@ function scan(pattern, redisClient, cursor, resolve, reject) {
         return new Promise((resolve, reject) => {
           redisClient.del(key, function(deleteErr, deleteSuccess) {
             if (deleteErr) {
-              logWithDate("[Error] Failed to delete Cache")
-              logWithDate(deleteErr)
+              logger.warn("Failed to delete Cache")
+              logger.error(deleteErr)
               reject()
             }
             resolve()

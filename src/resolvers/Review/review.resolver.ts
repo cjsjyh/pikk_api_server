@@ -4,11 +4,13 @@ import * as ArgType from "./type/ArgType"
 import { ItemReviewInfo } from "./type/ReturnType"
 import { ExtractSelectionSet } from "../Utils/promiseUtil"
 import { RunSingleSQL, SequentialPromiseValue } from "../Utils/promiseUtil"
-import { GetFormatSql, logWithDate } from "../Utils/stringUtil"
+import { GetFormatSql } from "../Utils/stringUtil"
 import { ReviewMatchGraphQL, GetSubField } from "./util"
 import { FetchItemsForReview } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
 import { ValidateUser } from "../Utils/securityUtil"
+import { decorateWithLogger } from "graphql-tools"
+var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
@@ -38,11 +40,11 @@ module.exports = {
         queryResult.forEach(review => {
           ReviewMatchGraphQL(review)
         })
-        logWithDate(`allItemReviews Called!`)
+        logger.info(`allItemReviews Called!`)
         return queryResult
       } catch (e) {
-        logWithDate("[Error] Failed to query allItemReviews")
-        logWithDate(e)
+        logger.warn("Failed to query allItemReviews")
+        logger.error(e)
         throw new Error("[Error] Failed to query allItemReviews")
       }
     }
@@ -53,11 +55,11 @@ module.exports = {
       try {
         let query = `UPDATE "ITEM_REVIEW" SET "${args.increaseOption.type}" = "${args.increaseOption.type}" + 1 WHERE id = ${args.increaseOption.id}`
         let result = await RunSingleSQL(query)
-        logWithDate(`IncreaseReviewCount Called`)
+        logger.info(`IncreaseReviewCount Called`)
         return true
       } catch (e) {
-        logWithDate(`[Error] Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
-        logWithDate(e)
+        logger.warn(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
+        logger.error(e)
         return false
       }
     }

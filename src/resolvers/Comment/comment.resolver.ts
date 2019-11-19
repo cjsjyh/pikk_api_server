@@ -5,8 +5,8 @@ import { MutationArgInfo } from "./type/ArgType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertToCommentTableName, GetBoardName } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
-import { logWithDate } from "../Utils/stringUtil"
 import { InsertIntoNotificationQueue } from "../Notification/util"
+var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
@@ -24,11 +24,11 @@ module.exports = {
           comment.parentId = comment.FK_parentId
         })
 
-        logWithDate(`GetComments Called`)
+        logger.info(`GetComments Called`)
         return commentResults
       } catch (e) {
-        logWithDate("[Error] Failed to Fetch comments")
-        logWithDate(e)
+        logger.warn("Failed to Fetch comments")
+        logger.error(e)
         throw new Error("[Error] Failed to fetch comments")
       }
     }
@@ -43,7 +43,7 @@ module.exports = {
         VALUES(
           ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
-        logWithDate(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
+        logger.info(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
 
         //Commented to a post
         if (arg.parentId == null) {
@@ -56,7 +56,8 @@ module.exports = {
 
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to create Comment")
+        logger.warn("Failed to create Comment")
+        logger.error(e)
         return false
       }
     },
@@ -69,11 +70,11 @@ module.exports = {
         let querySql = `DELETE FROM ${ConvertToCommentTableName(arg.targetType)} WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)
 
-        logWithDate(`Deleted Comment on Post${arg.targetType} id ${arg.targetId}`)
+        logger.info(`Deleted Comment on Post${arg.targetType} id ${arg.targetId}`)
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to delete Comment")
-        logWithDate(e)
+        logger.warn("Failed to delete Comment")
+        logger.error(e)
         return false
       }
     }

@@ -1,0 +1,15 @@
+undefined [INFO] - 111
+undefined [DEBUG] - 2222
+undefined [WARN] - 333
+undefined [ERROR] - 444
+2019-11-19 13:23:38 [INFO] - 111
+2019-11-19 13:23:38 [DEBUG] - 2222
+2019-11-19 13:23:38 [WARN] - 333
+2019-11-19 13:23:38 [ERROR] - 444
+2019-11-19 14:24:4 [INFO] - 111
+2019-11-19 14:24:4 [DEBUG] - 2222
+2019-11-19 14:24:4 [WARN] - 333
+2019-11-19 14:24:4 [ERROR] - 444
+2019-11-19 14:24:4 [INFO] - GraphQL is now running on http://localhost:80/graphql
+2019-11-19 14:24:54 [INFO] - GraphQL is now running on http://localhost:80/graphql
+2019-11-19 14:28:24 [INFO] - GraphQL is now running on http://localhost:80/graphql

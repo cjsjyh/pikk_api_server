@@ -8,11 +8,12 @@ import {
   AssignGroupsToParent,
   DeployImageBy3Version
 } from "../Utils/promiseUtil"
-import { ConvertListToString, ConvertListToOrderedPair, logWithDate } from "../Utils/stringUtil"
+import { ConvertListToString, ConvertListToOrderedPair } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { FetchItemsForReview, EditItem, InsertItemForRecommendPost } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
 import { IncreaseViewCountFunc, InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
+var logger = require("../../tools/logger")
 
 export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, args: any): Promise<boolean> {
   try {
@@ -44,7 +45,8 @@ export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, 
     }
     return true
   } catch (e) {
-    logWithDate(`[Error] Failed to edit Review`)
+    logger.warn(`Failed to edit Review`)
+    logger.error(e)
     throw new Error(e)
   }
 }
@@ -84,7 +86,8 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
       }
     }
   } catch (e) {
-    logWithDate(e)
+    logger.warn("Failed to fetch review by post list from DB")
+    logger.error(e)
     throw new Error("[Error] Failed to fetch review by post list from DB")
   }
 }
@@ -139,16 +142,16 @@ export function InsertItemReview(
       )
       let reviewId = insertResult[0].id
       if (!Object.prototype.hasOwnProperty.call(itemReview, "images")) {
-        logWithDate("No Images Inserted!")
+        logger.warn("No Images Inserted!")
         resolve(reviewId)
       } else {
-        logWithDate("Image Inserted!")
+        logger.info("Image Inserted!")
         let imgUrlList
         try {
           imgUrlList = ExtractFieldFromList(itemReview.images, "imageUrl")
         } catch (e) {
-          logWithDate("Failed to upload Images")
-          logWithDate(e)
+          logger.warn("Failed to upload Images")
+          logger.error(e)
         }
 
         try {
@@ -168,15 +171,15 @@ export function InsertItemReview(
           let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
           await InsertImageIntoTable(imgPairs, "ITEM_REVIEW_IMAGE", "FK_reviewId")
         } catch (e) {
-          logWithDate("Failed to Insert into ITEM_REVIEW_IMAGE")
-          logWithDate(e)
+          logger.warn("Failed to Insert into ITEM_REVIEW_IMAGE")
+          logger.error(e)
         }
 
-        logWithDate(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
+        logger.info(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
         resolve(reviewId)
       }
     } catch (e) {
-      logWithDate(e)
+      logger.error(e)
       reject(e)
     }
   })
@@ -210,6 +213,7 @@ export function GetReviewForSinglePost(post: any) {
       post.reviews = reviewResult
       resolve()
     } catch (e) {
+      logger.error(e)
       reject()
     }
   })
@@ -225,6 +229,7 @@ export function GetImagesForSingleReview(review: any) {
       review.images = imgsResult
       resolve()
     } catch (e) {
+      logger.error(e)
       reject()
     }
   })

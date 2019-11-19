@@ -1,4 +1,4 @@
-import { logWithDate } from "../resolvers/Utils/stringUtil"
+var logger = require("../tools/logger")
 
 if (process.env.MODE == "DEPLOY") {
   var whitelist = [
@@ -30,7 +30,7 @@ var corsOptions = {
       if (whitelist.indexOf(origin) !== -1) {
         callback(null, true)
       } else {
-        logWithDate(`[CORS] ${origin} Not allowed by CORS`)
+        logger.warn(`[CORS] ${origin} Not allowed by CORS`)
         callback(new Error(`[CORS] ${origin} Not allowed by CORS`))
       }
     }

@@ -1,7 +1,8 @@
 import { RunSingleSQL, DeployImageBy3Version } from "../Utils/promiseUtil"
-import { logWithDate, IsNewImage, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
+import { IsNewImage, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 import { CommunityPostEditImageInfo } from "../CommunityPost/type/ArgType"
 import { ItemReviewImgEditInfoInput } from "../Review/type/ArgType"
+var logger = require("../../tools/logger")
 
 export function IncreaseViewCountFunc(postType: string, postId: number): Promise<Boolean> {
   return new Promise(async (resolve, reject) => {
@@ -10,8 +11,8 @@ export function IncreaseViewCountFunc(postType: string, postId: number): Promise
       let result = await RunSingleSQL(query)
       resolve()
     } catch (e) {
-      logWithDate(`[Error] Failed to increase view count for ${postType} ${postId}`)
-      logWithDate(e)
+      logger.warn(`Failed to increase view count for ${postType} ${postId}`)
+      logger.error(e)
       reject()
     }
   })
@@ -59,8 +60,8 @@ export async function EditImageUrlInTable(
     }
     return true
   } catch (e) {
-    logWithDate("[Error] Failed to Edit Review Image")
-    logWithDate(e)
+    logger.warn("Failed to Edit Review Image")
+    logger.error(e)
     throw new Error(e)
   }
 }

@@ -11,7 +11,7 @@ var jwt = require("jsonwebtoken")
 require("dotenv").config()
 
 //Utility
-import { logWithDate } from "./resolvers/Utils/stringUtil"
+var logger = require("./tools/logger")
 var cron = require("node-cron")
 
 //IMPORT GRAPHQL RELATED PACKAGES
@@ -22,7 +22,7 @@ import schema from "./schema"
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
 import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
-import { CombineItem } from "./resolvers/Utils/tool"
+import { CombineItem } from "./tools/tool"
 
 //Create Express Server
 const app = express()
@@ -39,7 +39,6 @@ if (process.env.MODE == "DEPLOY") {
   const rateLimiterRedisMiddleware = require("./middleware/rateLimiter")
   app.use(rateLimiterRedisMiddleware)
 }
-app.use(require("express-status-monitor")())
 app.use(compression())
 
 //Create Apollo Server
@@ -57,8 +56,8 @@ const server = new ApolloServer({
     try {
       var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
     } catch (e) {
-      logWithDate("[Error] Failed to Verify JWT Token")
-      logWithDate(e)
+      logger.warn("Failed to Verify JWT Token")
+      logger.error(e)
       return { IsVerified: false }
     }
     let IsVerified = false
@@ -93,7 +92,7 @@ cron.schedule("*/2 * * * *", function() {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))
+httpServer.listen({ port: 80 }, (): void => logger.info(`GraphQL is now running on http://localhost:80/graphql`))
 
 /*
 process.on("SIGINT", async function() {

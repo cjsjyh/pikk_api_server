@@ -9,7 +9,6 @@ import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy3Versio
 import {
   GetFormatSql,
   MakeMultipleQuery,
-  logWithDate,
   ConvertListToString,
   MakeCacheNameByObject,
   getFormatDate,
@@ -26,6 +25,7 @@ import { ValidateUser } from "../Utils/securityUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
 import { IncreaseViewCountFunc } from "../Common/util"
 import { InsertIntoNotificationQueue } from "../Notification/util"
+var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
@@ -46,12 +46,12 @@ module.exports = {
               }
             })
           )
-          logWithDate("allRecommendPosts Cache Return")
+          logger.info("allRecommendPosts Cache Return")
           return parsedPosts
         }
       } catch (e) {
-        logWithDate("[Error] Redis Command Error")
-        logWithDate(e)
+        logger.warn("Redis Command Error")
+        logger.error(e)
       }
 
       try {
@@ -81,15 +81,16 @@ module.exports = {
         ${formatSql}
         `
         let postResult = await GetRecommendPostList(postSql, info)
-        logWithDate(`allRecommendPosts Called`)
+        logger.info(`allRecommendPosts Called`)
         try {
           await SetRedis(cacheName, JSON.stringify(postResult), 180)
         } catch (e) {
-          logWithDate(e)
+          logger.warn(`Failed to set recommend post cache`)
+          logger.error(e)
         }
         return postResult
       } catch (e) {
-        logWithDate(e)
+        logger.error(e)
         throw new Error("[Error] Failed to load RecommendPost data from DB")
       }
     },
@@ -124,10 +125,11 @@ module.exports = {
           INNER JOIN "USER_INFO" user_info ON user_info."FK_accountId" = post."FK_accountId"
           ${formatSql}`
         let postResult = await GetRecommendPostList(postSql, info)
-        logWithDate(`userPickkRecommendPost Called`)
+        logger.info(`userPickkRecommendPost Called`)
         return postResult
       } catch (e) {
-        logWithDate(e)
+        logger.warn("Failed to load Picked RecommendPost data from DB")
+        logger.error(e)
         throw new Error("[Error] Failed to load Picked RecommendPost data from DB")
       }
     }
@@ -141,8 +143,10 @@ module.exports = {
 
       try {
         await DelCacheByPattern("allRecom*")
+        logger.info(`Deleted recommend post cache`)
       } catch (e) {
-        logWithDate(e)
+        logger.warn(`Faield to delete recommend post cache`)
+        logger.error(e)
       }
 
       let recommendPostId: number
@@ -158,8 +162,8 @@ module.exports = {
         )
         recommendPostId = insertResult[0].id
       } catch (e) {
-        logWithDate("[Error] Failed to Insert into RECOMMEND_POST")
-        logWithDate(e)
+        logger.warn("Failed to Insert into RECOMMEND_POST")
+        logger.error(e)
         return false
       }
 
@@ -168,14 +172,14 @@ module.exports = {
         for (let index = 0; index < arg.reviews.length; index++) {
           await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId, index])
         }
-        logWithDate(`Recommend Post created by User${arg.accountId}`)
+        logger.info(`Recommend Post created by User${arg.accountId}`)
 
         InsertIntoNotificationQueue("CHANNEL_FOLLOWERS", recommendPostId, "RECOMMEND", arg.title, "", -1, arg.accountId)
 
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to create RecommendPost")
-        logWithDate(e)
+        logger.warn("Failed to create RecommendPost")
+        logger.error(e)
         await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
         return false
       }
@@ -187,8 +191,10 @@ module.exports = {
 
       try {
         await DelCacheByPattern("allRecom*")
+        logger.info(`Deleted recommend post cache`)
       } catch (e) {
-        logWithDate(e)
+        logger.warn(`Faield to delete recommend post cache`)
+        logger.error(e)
       }
 
       try {
@@ -229,11 +235,11 @@ module.exports = {
             })
           )
         }
-        logWithDate(`Edited RecommendPost ${arg.postId}`)
+        logger.info(`Edited RecommendPost ${arg.postId}`)
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to Edit RecommendPost")
-        logWithDate(e)
+        logger.warn("Failed to Edit RecommendPost")
+        logger.error(e)
         return false
       }
     },
@@ -244,8 +250,10 @@ module.exports = {
 
       try {
         await DelCacheByPattern("allRecom*")
+        logger.info(`Deleted recommend post cache`)
       } catch (e) {
-        logWithDate(e)
+        logger.warn(`Faield to delete recommend post cache`)
+        logger.error(e)
       }
 
       try {
@@ -265,11 +273,11 @@ module.exports = {
         `
         let result = await RunSingleSQL(query)
 
-        logWithDate(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)
+        logger.info(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)
         return true
       } catch (e) {
-        logWithDate(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
-        logWithDate(e)
+        logger.warn(`Delete RecommendPost id: ${arg.postId} Failed!`)
+        logger.error(e)
         throw new Error(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
       }
     },
@@ -281,11 +289,11 @@ module.exports = {
       let cacheName = `recomCache_${String(arg.accountId)}_` + getFormatDate(new Date()) + getFormatHour(new Date())
       try {
         SetRedis(cacheName, arg.content, 604800)
-        logWithDate(`RecommendPost Temporary Save! Cache key: ${cacheName}`)
+        logger.info(`RecommendPost Temporary Save! Cache key: ${cacheName}`)
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to temporarily save Recommend Post")
-        logWithDate(e)
+        logger.warn("Failed to temporarily save Recommend Post")
+        logger.error(e)
         return false
       }
     }

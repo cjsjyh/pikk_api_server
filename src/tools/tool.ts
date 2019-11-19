@@ -1,12 +1,13 @@
-import { RunSingleSQL, ExtractFieldFromList, Make4VersionsOfImage } from "./promiseUtil"
-import { logWithDate, ConvertListToString } from "./stringUtil"
-const { S3 } = require("../../database/aws_s3")
+import { RunSingleSQL, ExtractFieldFromList, Make4VersionsOfImage } from "../resolvers/Utils/promiseUtil"
+import { ConvertListToString } from "../resolvers/Utils/stringUtil"
+const { S3 } = require("../database/aws_s3")
 
 const fs = require("fs")
 var sizeOf = require("image-size")
 const sharp = require("sharp")
 const imageType = require("image-type")
 const readChunk = require("read-chunk")
+var logger = require("../tools/logger")
 
 export async function CombineItem(updateId: number, deleteIds: number[]) {
   try {
@@ -20,9 +21,9 @@ export async function CombineItem(updateId: number, deleteIds: number[]) {
     DELETE FROM "ITEM_GROUP" USING delete_item WHERE "ITEM_GROUP".id = delete_item."FK_itemGroupId"
     `
     await RunSingleSQL(querySql)
-    logWithDate("Combine Done")
+    logger.info("Combine Done")
   } catch (e) {
-    logWithDate(e)
+    logger.error(e)
   }
 }
 
@@ -58,13 +59,12 @@ export async function ReplaceImageWithResolutions() {
         })
           .promise()
           .then(() => {
-            console.log(filename)
-            logWithDate("Successfully Deleted Image")
+            logger.info("Successfully Deleted Image")
             //resolve();
           })
           .catch(e => {
-            logWithDate("[Error] Failed to delete Image")
-            logWithDate(e)
+            logger.warn("Failed to delete Image")
+            logger.error(e)
             //reject(e);
           })
       })
@@ -77,13 +77,12 @@ export async function ReplaceImageWithResolutions() {
 
       S3.getObject(param, (err, data) => {
         if (err) {
-          logWithDate(decodeURIComponent(filteredUrl))
-          logWithDate(err)
+          logger.error(err)
           return
         }
         fs.writeFile(`./${filteredUrl}`, data.Body, function(err) {
-          if (err) logWithDate(err)
-          logWithDate("Image saved from AWS")
+          if (err) logger.error(err)
+          logger.info("Image saved from AWS")
           resolve()
         })
       })
@@ -102,7 +101,6 @@ export async function ReplaceImageWithResolutions() {
 
     //Upload Images
     ;[xsmallName, smallName, mediumName, largeName].forEach(filename => {
-      logWithDate(`Uploading ./${filename}`)
       let cutfilename = filename.replace("image/", "")
       let buffer = readChunk.sync(`./${filename}`, 0, fs.statSync(`./${filename}`)["size"])
       let param2 = {
@@ -114,10 +112,10 @@ export async function ReplaceImageWithResolutions() {
       }
       S3.upload(param2, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
         if (err) {
-          logWithDate(err)
+          logger.error(err)
         }
         let imageUrl = data.Location
-        logWithDate(imageUrl)
+        logger.info(imageUrl)
       })
     })
     /*

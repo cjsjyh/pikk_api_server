@@ -58,7 +58,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to create Comment")
         logger.error(e)
-        return false
+        throw new Error(`Failed to create Comment`)
       }
     },
 
@@ -75,7 +75,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to delete Comment")
         logger.error(e)
-        return false
+        throw new Error("Failed to delete Comment")
       }
     }
   }

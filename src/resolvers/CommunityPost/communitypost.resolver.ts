@@ -82,7 +82,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to Insert into COMMUNITY_POST")
         logger.error(e)
-        return false
+        throw new Error(`Failed to Insert into COMMUNITY_POST`)
       }
     },
 
@@ -121,7 +121,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to edit Community Post")
         logger.error(e)
-        return false
+        throw new Error(`Failed to edit Community Post`)
       }
     },
 

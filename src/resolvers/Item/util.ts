@@ -28,7 +28,7 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
   } catch (e) {
     logger.warn("Failed to Edit Item")
     logger.error(e)
-    return false
+    throw new Error("Failed to Edit Item")
   }
 }
 

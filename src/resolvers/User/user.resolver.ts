@@ -70,7 +70,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to Insert into USER_INFO")
         logger.error(e)
-        return false
+        throw new Error("Failed to Insert into USER_INFO")
       }
     },
 
@@ -111,7 +111,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to update user channel info")
         logger.error(e)
-        return false
+        throw new Error("Failed to update user channel info")
       }
     },
 
@@ -128,7 +128,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to update USER_INFO")
         logger.error(e)
-        return false
+        throw new Error("Failed to update USER_INFO")
       }
     },
 

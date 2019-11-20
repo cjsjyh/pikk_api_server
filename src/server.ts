@@ -18,6 +18,9 @@ var cron = require("node-cron")
 import depthLimit from "graphql-depth-limit"
 import schema from "./schema"
 
+//Constants
+const port = 80
+
 //-------------------------------
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
@@ -92,7 +95,7 @@ cron.schedule("*/2 * * * *", function() {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 80 }, (): void => logger.info(`GraphQL is now running on http://localhost:80/graphql`))
+httpServer.listen({ port: port }, (): void => logger.info(`GraphQL is now running on http://localhost:${port}/graphql`))
 
 /*
 process.on("SIGINT", async function() {

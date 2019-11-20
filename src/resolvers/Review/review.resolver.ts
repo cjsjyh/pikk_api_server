@@ -60,7 +60,7 @@ module.exports = {
       } catch (e) {
         logger.warn(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
         logger.error(e)
-        return false
+        throw new Error(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
       }
     }
   }

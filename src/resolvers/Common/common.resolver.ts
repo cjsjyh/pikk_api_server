@@ -75,7 +75,7 @@ module.exports = {
       } catch (e) {
         logger.warn(`Failed to increase view count for ${args.postType} ${args.postId}`)
         logger.error(e)
-        return false
+        throw new Error(`Failed to increase view count for ${args.postType} ${args.postId}`)
       }
     }
   }

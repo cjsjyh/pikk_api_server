@@ -24,6 +24,7 @@ module.exports = {
           comment.accountId = comment.FK_accountId
         })
 
+        logWithDate(`GetComments Called`)
         return commentResults
       } catch (e) {
         logWithDate("[Error] Failed to Fetch comments")
@@ -38,15 +39,11 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `INSERT INTO ${ConvertToTableName(
-          arg.targetType
-        )} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${arg.accountId},'${
-          arg.content
-        }')`
+        let querySql = `INSERT INTO ${ConvertToTableName(arg.targetType)} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${
+          arg.accountId
+        },'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
-        logWithDate(
-          `Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`
-        )
+        logWithDate(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
         return true
       } catch (e) {
         logWithDate("[Error] Failed to create Comment")
@@ -59,12 +56,10 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${
-          arg.targetId
-        }`
+        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)
 
-        logWithDate(`Comment on Post${arg.targetType} id ${arg.targetId}`)
+        logWithDate(`Deleted Comment on Post${arg.targetType} id ${arg.targetId}`)
         return true
       } catch (e) {
         logWithDate("[Error] Failed to delete Comment")

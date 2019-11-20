@@ -48,6 +48,7 @@ module.exports = {
             post.imageUrls.push(image.imageUrl)
           })
         })
+        logWithDate(`AllCommunityPosts Called!`)
         return postResult
       } catch (e) {
         logWithDate("[Error] Failed to fetch community post from DB")
@@ -132,6 +133,7 @@ module.exports = {
 
         let querySql = `${deleteSql} DELETE FROM "COMMUNITY_POST" WHERE id=${arg.postId}`
         let result = await RunSingleSQL(querySql)
+        logWithDate(`Deleted CommunityPost id ${arg.accountId}`)
         return true
       } catch (e) {
         logWithDate(`[Error] Delete CommunityPost id: ${arg.postId} Failed!`)

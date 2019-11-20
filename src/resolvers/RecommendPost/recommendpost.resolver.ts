@@ -36,7 +36,6 @@ module.exports = {
         cacheName += MakeCacheNameByObject(arg.postFilter)
         let recomPostCache: any = await GetRedis(cacheName)
         if (recomPostCache != null) {
-          logWithDate("allRecommendPosts Cache Return")
           let parsedPosts: ReturnType.RecommendPostInfo[] = JSON.parse(recomPostCache)
           await Promise.all(
             parsedPosts.map((post: any) => {
@@ -46,7 +45,7 @@ module.exports = {
               }
             })
           )
-          console.log(parsedPosts)
+          logWithDate("allRecommendPosts Cache Return")
           return parsedPosts
         }
       } catch (e) {

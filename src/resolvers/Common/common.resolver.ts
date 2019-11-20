@@ -26,6 +26,7 @@ module.exports = {
 
         let query = `SELECT "FK_accountId" FROM "${tableName}_FOLLOWER" WHERE "FK_accountId"=${arg.accountId} and "FK_${variableName}"=${arg.targetId}`
         let result = await RunSingleSQL(query)
+        logWithDate(`IsFollowingTarget Called!`)
         if (result.length == 0) return false
         else return true
       } catch (e) {
@@ -69,6 +70,7 @@ module.exports = {
       try {
         let query = `UPDATE "${args.postType}_POST" SET "viewCount" = "viewCount" + 1 WHERE id = ${args.postId}`
         let result = await RunSingleSQL(query)
+        logWithDate(`RecommendPost viewCount Incremented`)
         return true
       } catch (e) {
         logWithDate(`[Error] Failed to increase view count for ${args.postType} ${args.postId}`)

@@ -104,6 +104,7 @@ module.exports = {
           ${setSql}
           WHERE "FK_accountId"=${arg.accountId}
         `)
+        logWithDate(`User Channel Info Updated! id ${arg.accountId}`)
         return true
       } catch (e) {
         logWithDate("[Error] Failed to update user channel info")
@@ -170,6 +171,7 @@ module.exports = {
         let channelIdList = ExtractFieldFromList(followingChannelList, "FK_channelId")
         let requestSql = UserInfoSelectionField(info)
         let final_result = await GetUserInfoByIdList(channelIdList, requestSql, formatSql)
+        logWithDate(`User Pick Channel called id ${arg.userId}`)
         return final_result
       } catch (e) {
         logWithDate("[Error] Failed to fetch Picked UserInfo from DB")

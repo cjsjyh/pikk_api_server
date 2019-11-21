@@ -65,7 +65,7 @@ module.exports = {
     deleteComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommentDeleteInput = args.commentInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
-      if (!CheckWriter(ConvertToCommentTableName(arg.targetType), arg.targetId, arg.accountId))
+      if (!(await CheckWriter(ConvertToCommentTableName(arg.targetType), arg.targetId, arg.accountId)))
         throw new Error(`[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`)
 
       try {

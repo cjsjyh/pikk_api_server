@@ -146,11 +146,13 @@ export async function downloadImage(url, image_path) {
 }
 
 export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
+  let isSelfHosted = false
   let folderName = "image"
   if (process.env.MODE != "DEPLOY") folderName = "testimage"
 
   try {
     if (imageUrl.includes("https://fashiondogam-images")) {
+      isSelfHosted = true
       //Download Image From S3
       imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")
       await new Promise((resolve, reject) => {
@@ -169,14 +171,20 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
           })
         })
       })
-      //Delete S3 original image
-      await DeleteImage(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
     } else {
       let newImageName
       newImageName = imageUrl.split(".").pop()
       let date = getFormatDate(new Date())
       let hour = getFormatHour(new Date())
       newImageName = date + hour + "." + newImageName
+
+      if (imageUrl[0] != "h") {
+        let i = 0
+        while (imageUrl[i] == "/") i += 1
+        imageUrl = imageUrl.substr(i, imageUrl.length)
+        imageUrl = "http://" + imageUrl
+      }
+
       await downloadImage(imageUrl, newImageName)
       imageUrl = newImageName
     }
@@ -213,6 +221,9 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
         })
       })
     )
+
+    //Delete S3 original image
+    if (isSelfHosted) await DeleteImage(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
 
     //Delete file from local
     await Promise.all(

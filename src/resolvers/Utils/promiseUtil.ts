@@ -5,6 +5,7 @@ var sizeOf = require("image-size")
 const sharp = require("sharp")
 const imageType = require("image-type")
 const readChunk = require("read-chunk")
+var axios = require("axios")
 
 import * as AWS from "aws-sdk"
 import { getFormatDate, getFormatHour, replaceLastOccurence } from "./stringUtil"
@@ -130,29 +131,55 @@ export async function UploadImageWrapper(imgObj: any): Promise<string> {
   })
 }
 
+export async function downloadImage(url, image_path) {
+  return new Promise((resolve, reject) => {
+    axios({
+      url,
+      responseType: "stream"
+    }).then(response => {
+      response.data
+        .pipe(fs.createWriteStream(`./${image_path}`))
+        .on("finish", () => resolve())
+        .on("error", e => reject(e))
+    })
+  })
+}
+
 export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
   let folderName = "image"
   if (process.env.MODE != "DEPLOY") folderName = "testimage"
 
   try {
-    imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")
-    //Download Image
-    await new Promise((resolve, reject) => {
-      var param = {
-        Bucket: "fashiondogam-images",
-        Key: decodeURIComponent(`${folderName}_temp/${imageUrl}`)
-      }
-      S3.getObject(param, (e, data) => {
-        if (e) {
-          logger.error(e.stack)
-          reject(e)
+    if (imageUrl.includes("https://fashiondogam-images")) {
+      //Download Image From S3
+      imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")
+      await new Promise((resolve, reject) => {
+        var param = {
+          Bucket: "fashiondogam-images",
+          Key: decodeURIComponent(`${folderName}_temp/${imageUrl}`)
         }
-        fs.writeFile(`./${imageUrl}`, data.Body, function(e) {
-          if (e) logger.error(e.stack)
-          resolve()
+        S3.getObject(param, (e, data) => {
+          if (e) {
+            logger.error(e.stack)
+            reject(e)
+          }
+          fs.writeFile(`./${imageUrl}`, data.Body, function(e) {
+            if (e) logger.error(e.stack)
+            resolve()
+          })
         })
       })
-    })
+      //Delete S3 original image
+      await DeleteImage(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
+    } else {
+      let newImageName
+      newImageName = imageUrl.split(".").pop()
+      let date = getFormatDate(new Date())
+      let hour = getFormatHour(new Date())
+      newImageName = date + hour + "." + newImageName
+      await downloadImage(imageUrl, newImageName)
+      imageUrl = newImageName
+    }
 
     //Make 3sizes
     var dimensions = sizeOf(`./${imageUrl}`)
@@ -186,9 +213,6 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
         })
       })
     )
-
-    //Delete S3 original image
-    await DeleteImage(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
 
     //Delete file from local
     await Promise.all(

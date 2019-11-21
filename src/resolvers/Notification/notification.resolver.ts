@@ -33,7 +33,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to Set User Notification")
         logger.error(e.stack)
-        return false
+        throw new Error("Failed to Set User Notification")
       }
     }
   }

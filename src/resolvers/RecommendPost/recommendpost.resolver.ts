@@ -164,7 +164,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to Insert into RECOMMEND_POST")
         logger.error(e.stack)
-        return false
+        throw new Error("Failed to Insert into RECOMMEND_POST")
       }
 
       try {
@@ -178,10 +178,10 @@ module.exports = {
 
         return true
       } catch (e) {
-        logger.warn("Failed to create RecommendPost")
+        logger.warn("Failed to insert Item or Review for RecommendPost")
         logger.error(e.stack)
         //await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
-        return false
+        throw new Error("Failed to insert Item or Review for RecommendPost")
       }
     },
 
@@ -243,7 +243,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to Edit RecommendPost")
         logger.error(e.stack)
-        return false
+        throw new Error("Failed to Edit RecommendPost")
       }
     },
 
@@ -301,7 +301,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to temporarily save Recommend Post")
         logger.error(e.stack)
-        return false
+        throw new Error("Failed to temporarily save Recommend Post")
       }
     }
   }

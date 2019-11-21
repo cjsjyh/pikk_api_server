@@ -46,7 +46,7 @@ export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, 
     return true
   } catch (e) {
     logger.warn(`Failed to edit Review`)
-    logger.error(e)
+    logger.error(e.stack)
     throw new Error(e)
   }
 }
@@ -87,7 +87,7 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
     }
   } catch (e) {
     logger.warn("Failed to fetch review by post list from DB")
-    logger.error(e)
+    logger.error(e.stack)
     throw new Error("[Error] Failed to fetch review by post list from DB")
   }
 }
@@ -151,7 +151,7 @@ export function InsertItemReview(
           imgUrlList = ExtractFieldFromList(itemReview.images, "imageUrl")
         } catch (e) {
           logger.warn("Failed to upload Images")
-          logger.error(e)
+          logger.error(e.stack)
         }
 
         try {
@@ -172,14 +172,14 @@ export function InsertItemReview(
           await InsertImageIntoTable(imgPairs, "ITEM_REVIEW_IMAGE", "FK_reviewId")
         } catch (e) {
           logger.warn("Failed to Insert into ITEM_REVIEW_IMAGE")
-          logger.error(e)
+          logger.error(e.stack)
         }
 
         logger.info(`Inserted ReviewID: ${reviewId} for PostID: ${postId}`)
         resolve(reviewId)
       }
     } catch (e) {
-      logger.error(e)
+      logger.error(e.stack)
       reject(e)
     }
   })
@@ -213,7 +213,7 @@ export function GetReviewForSinglePost(post: any) {
       post.reviews = reviewResult
       resolve()
     } catch (e) {
-      logger.error(e)
+      logger.error(e.stack)
       reject()
     }
   })
@@ -229,7 +229,7 @@ export function GetImagesForSingleReview(review: any) {
       review.images = imgsResult
       resolve()
     } catch (e) {
-      logger.error(e)
+      logger.error(e.stack)
       reject()
     }
   })

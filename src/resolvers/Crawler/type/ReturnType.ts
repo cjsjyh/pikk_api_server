@@ -4,5 +4,5 @@ export type CrawledItemInfo = {
   originalPrice: number
   salePrice: number
   purchaseUrl: string
-  imageUrl: string
+  imageUrl: string[]
 }

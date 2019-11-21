@@ -11,5 +11,5 @@ type CrawledItemInfo {
   originalPrice: Int!
   salePrice: Int
   purchaseUrl: String!
-  imageUrl: String!
+  imageUrl: [String!]!
 }

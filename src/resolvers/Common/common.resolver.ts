@@ -31,7 +31,7 @@ module.exports = {
         else return true
       } catch (e) {
         logger.warn("Failed to check following status")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to check following status")
       }
     }
@@ -44,7 +44,7 @@ module.exports = {
         return imageUrls
       } catch (e) {
         logger.warn("Failed to Upload Image")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to Upload Image")
       }
     },
@@ -61,7 +61,7 @@ module.exports = {
         return result[0]
       } catch (e) {
         logger.warn("Failed to Insert into FOLLOWER")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to Insert into FOLLOWER")
       }
     },
@@ -74,7 +74,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn(`Failed to increase view count for ${args.postType} ${args.postId}`)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`Failed to increase view count for ${args.postType} ${args.postId}`)
       }
     }

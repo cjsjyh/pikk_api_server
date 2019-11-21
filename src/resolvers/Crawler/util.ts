@@ -26,7 +26,7 @@ export async function getHtmlRequest(sourceUrl: string) {
       )
     })
   } catch (e) {
-    logger.error(e)
+    logger.error(e.stack)
   }
 }
 
@@ -34,7 +34,7 @@ export async function getHtmlAxios(sourceUrl: string) {
   try {
     return axios.get(sourceUrl)
   } catch (e) {
-    logger.error(e)
+    logger.error(e.stack)
   }
 }
 

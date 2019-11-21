@@ -8,6 +8,7 @@ import { crawlDunst } from "./dunst"
 import { crawlDrawFit } from "./drawfit"
 import { crawlTheKnitCompany } from "./theknitcompany"
 import { crawlMusinsa } from "./musinsa"
+import { crawlOthers } from "./crawlOthers"
 
 var logger = require("../../tools/logger")
 
@@ -27,8 +28,7 @@ module.exports = {
         else if (domain == "theknitcompany.com") result = await crawlTheKnitCompany(args.url)
         else if (domain == "store.musinsa.com") result = await crawlMusinsa(args.url)
         else {
-          logger.info("Crawler not made for this site yet!: " + args.url)
-          throw new Error("Crawler not made for this site yet!")
+          result = await crawlOthers(args.url)
         }
 
         if (validateCrawledItem(result)) {
@@ -40,7 +40,7 @@ module.exports = {
         }
       } catch (e) {
         logger.warn("Item crawling failed. Retry with valid URL: " + args.url)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Item crawling failed. Retry with valid URL")
       }
     }

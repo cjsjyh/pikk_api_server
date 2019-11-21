@@ -26,6 +26,7 @@ const port = 80
 //-------------------------------
 import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
 import { CombineItem } from "./tools/tool"
+import { crawlOthers } from "./resolvers/Crawler/crawlOthers"
 
 //Create Express Server
 const app = express()
@@ -60,7 +61,7 @@ const server = new ApolloServer({
       var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
     } catch (e) {
       logger.warn("Failed to Verify JWT Token")
-      logger.error(e)
+      logger.error(e.stack)
       return { IsVerified: false }
     }
     let IsVerified = false
@@ -90,7 +91,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 // }
 // testfunc()
 
-cron.schedule("*/2 * * * *", function() {
+cron.schedule("*/1 * * * *", function() {
   ProcessNotificationQueue()
 })
 

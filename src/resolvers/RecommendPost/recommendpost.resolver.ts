@@ -51,7 +51,7 @@ module.exports = {
         }
       } catch (e) {
         logger.warn("Redis Command Error")
-        logger.error(e)
+        logger.error(e.stack)
       }
 
       try {
@@ -86,11 +86,11 @@ module.exports = {
           await SetRedis(cacheName, JSON.stringify(postResult), 180)
         } catch (e) {
           logger.warn(`Failed to set recommend post cache`)
-          logger.error(e)
+          logger.error(e.stack)
         }
         return postResult
       } catch (e) {
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to load RecommendPost data from DB")
       }
     },
@@ -129,7 +129,7 @@ module.exports = {
         return postResult
       } catch (e) {
         logger.warn("Failed to load Picked RecommendPost data from DB")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to load Picked RecommendPost data from DB")
       }
     }
@@ -146,7 +146,7 @@ module.exports = {
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
         logger.warn(`Faield to delete recommend post cache`)
-        logger.error(e)
+        logger.error(e.stack)
       }
 
       let recommendPostId: number
@@ -163,7 +163,7 @@ module.exports = {
         recommendPostId = insertResult[0].id
       } catch (e) {
         logger.warn("Failed to Insert into RECOMMEND_POST")
-        logger.error(e)
+        logger.error(e.stack)
         return false
       }
 
@@ -179,8 +179,8 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to create RecommendPost")
-        logger.error(e)
-        await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
+        logger.error(e.stack)
+        //await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
         return false
       }
     },
@@ -197,7 +197,7 @@ module.exports = {
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
         logger.warn(`Faield to delete recommend post cache`)
-        logger.error(e)
+        logger.error(e.stack)
       }
 
       try {
@@ -242,7 +242,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to Edit RecommendPost")
-        logger.error(e)
+        logger.error(e.stack)
         return false
       }
     },
@@ -260,7 +260,7 @@ module.exports = {
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
         logger.warn(`Faield to delete recommend post cache`)
-        logger.error(e)
+        logger.error(e.stack)
       }
 
       try {
@@ -284,7 +284,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn(`Delete RecommendPost id: ${arg.postId} Failed!`)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`[Error] Delete RecommendPost id: ${arg.postId} Failed!`)
       }
     },
@@ -300,7 +300,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to temporarily save Recommend Post")
-        logger.error(e)
+        logger.error(e.stack)
         return false
       }
     }

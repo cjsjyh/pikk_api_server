@@ -15,7 +15,7 @@ module.exports = {
         return result
       } catch (e) {
         logger.warn(`Failed to Get User Notification id: ${arg.accountId}`)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`[Error] Failed to Get User Notification id: ${arg.accountId}`)
       }
     }
@@ -32,7 +32,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to Set User Notification")
-        logger.error(e)
+        logger.error(e.stack)
         return false
       }
     }

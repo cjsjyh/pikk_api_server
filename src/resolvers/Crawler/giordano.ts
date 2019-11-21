@@ -44,7 +44,7 @@ export async function crawlGiordanoMobile(sourceUrl): Promise<CrawledItemInfo> {
     originalPrice: price,
     salePrice: saleprice,
     name: strip(itemname),
-    imageUrl: image,
+    imageUrl: [image],
     purchaseUrl: sourceUrl
   }
   return result

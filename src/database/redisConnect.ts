@@ -3,8 +3,7 @@ const redis = require("redis")
 
 export function GetRedisClient() {
   var redisConnection
-  if(process.env.MODE != "DEPLOY")
-  {
+  if (process.env.MODE != "DEPLOY") {
     redisConnection = redis.createClient({
       host: process.env.REDIS_HOST,
       port: 6379,
@@ -31,8 +30,8 @@ export function PushRedisQueue(key: string, value: string): any {
     }
 
     try {
-      client.rpush(key, value, function(err, reply) {
-        if (err) reject(err)
+      client.rpush(key, value, function(e, reply) {
+        if (e) reject(e)
         client.end(true)
         resolve()
       })
@@ -53,8 +52,8 @@ export function PopRedisQueue(key: string): any {
     }
 
     try {
-      client.lpop(key, function(err, reply) {
-        if (err) reject(err)
+      client.lpop(key, function(e, reply) {
+        if (e) reject(e)
         client.end(true)
         resolve(reply)
       })
@@ -75,8 +74,8 @@ export function RedisQueueLength(key: string): any {
     }
 
     try {
-      client.llen(key, function(err, reply) {
-        if (err) reject(err)
+      client.llen(key, function(e, reply) {
+        if (e) reject(e)
         client.end(true)
         resolve(reply)
       })
@@ -97,8 +96,8 @@ export function GetRedis(key: string): any {
     }
 
     try {
-      client.get(key, function(err, reply) {
-        if (err) reject(err)
+      client.get(key, function(e, reply) {
+        if (e) reject(e)
         client.end(true)
         resolve(reply)
       })
@@ -119,8 +118,8 @@ export function SetRedis(key: string, value: string, timer: number = 3600): any 
     }
 
     try {
-      client.set(key, value, "EX", timer, function(err, reply) {
-        if (err) reject(err)
+      client.set(key, value, "EX", timer, function(e, reply) {
+        if (e) reject(e)
         client.end(true)
         resolve()
       })
@@ -144,22 +143,22 @@ export function DelCacheByPattern(pattern: string) {
 }
 
 function scan(pattern, redisClient, cursor, resolve, reject) {
-  redisClient.scan(cursor, "MATCH", pattern, "COUNT", "1000", async function(err, reply) {
-    if (err) {
+  redisClient.scan(cursor, "MATCH", pattern, "COUNT", "1000", async function(e, reply) {
+    if (e) {
       redisClient.end(true)
       logger.warn("Failed to make connection with Redis")
-      logger.error(err)
-      reject(err)
+      logger.error(e.stack)
+      reject(e)
     }
     cursor = reply[0]
     var keys = reply[1]
     await Promise.all(
       keys.map(key => {
         return new Promise((resolve, reject) => {
-          redisClient.del(key, function(deleteErr, deleteSuccess) {
-            if (deleteErr) {
+          redisClient.del(key, function(e, deleteSuccess) {
+            if (e) {
               logger.warn("Failed to delete Cache")
-              logger.error(deleteErr)
+              logger.error(e.stack)
               reject()
             }
             resolve()

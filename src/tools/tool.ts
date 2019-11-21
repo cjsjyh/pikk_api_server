@@ -23,7 +23,7 @@ export async function CombineItem(updateId: number, deleteIds: number[]) {
     await RunSingleSQL(querySql)
     logger.info("Combine Done")
   } catch (e) {
-    logger.error(e)
+    logger.error(e.stack)
   }
 }
 
@@ -64,7 +64,7 @@ export async function ReplaceImageWithResolutions() {
           })
           .catch(e => {
             logger.warn("Failed to delete Image")
-            logger.error(e)
+            logger.error(e.stack)
             //reject(e);
           })
       })
@@ -75,13 +75,13 @@ export async function ReplaceImageWithResolutions() {
         Key: decodeURIComponent(filteredUrl)
       }
 
-      S3.getObject(param, (err, data) => {
-        if (err) {
-          logger.error(err)
+      S3.getObject(param, (e, data) => {
+        if (e) {
+          logger.error(e.stack)
           return
         }
-        fs.writeFile(`./${filteredUrl}`, data.Body, function(err) {
-          if (err) logger.error(err)
+        fs.writeFile(`./${filteredUrl}`, data.Body, function(e) {
+          if (e) logger.error(e.stack)
           logger.info("Image saved from AWS")
           resolve()
         })
@@ -110,9 +110,9 @@ export async function ReplaceImageWithResolutions() {
         Body: fs.createReadStream(`./${filename}`),
         ContentType: imageType(buffer)["mime"]
       }
-      S3.upload(param2, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-        if (err) {
-          logger.error(err)
+      S3.upload(param2, function(e: Error, data: AWS.S3.ManagedUpload.SendData) {
+        if (e) {
+          logger.error(e.stack)
         }
         let imageUrl = data.Location
         logger.info(imageUrl)
@@ -123,8 +123,8 @@ export async function ReplaceImageWithResolutions() {
       [filteredUrl, xsmallName, smallName, mediumName, largeName].map(
         filename => {
           return new Promise((resolve, reject) => {
-            fs.unlink(filename, function(err) {
-              if (err) reject(err);
+            fs.unlink(filename, function(e) {
+              if (e) reject(e);
               resolve();
             });
           });

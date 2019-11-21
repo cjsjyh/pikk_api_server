@@ -28,7 +28,7 @@ module.exports = {
         return commentResults
       } catch (e) {
         logger.warn("Failed to Fetch comments")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to fetch comments")
       }
     }
@@ -57,7 +57,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to create Comment")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`Failed to create Comment`)
       }
     },
@@ -77,7 +77,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to delete Comment")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("Failed to delete Comment")
       }
     }

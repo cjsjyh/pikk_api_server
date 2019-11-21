@@ -48,7 +48,7 @@ module.exports = {
         return userAccount
       } catch (e) {
         logger.warn("Failed to create User")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to create User")
       }
     },
@@ -69,7 +69,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to Insert into USER_INFO")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("Failed to Insert into USER_INFO")
       }
     },
@@ -111,7 +111,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to update user channel info")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("Failed to update user channel info")
       }
     },
@@ -128,7 +128,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to update USER_INFO")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("Failed to update USER_INFO")
       }
     },
@@ -143,7 +143,7 @@ module.exports = {
         return false
       } catch (e) {
         logger.warn(`Failed to check Duplicate for ${args.name}`)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`[Error] Failed to check Duplicate for ${args.name}`)
       }
     }
@@ -158,7 +158,7 @@ module.exports = {
         return result[0]
       } catch (e) {
         logger.warn("Failed to fetch UserInfo from DB")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to fetch UserInfo from DB")
       }
     },
@@ -178,7 +178,7 @@ module.exports = {
         return final_result
       } catch (e) {
         logger.warn("Failed to fetch Picked UserInfo from DB")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to fetch UserInfo from DB")
       }
     },
@@ -198,7 +198,7 @@ module.exports = {
         return userList
       } catch (e) {
         logger.warn("Faield to load Channel Ranking")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Faield to load Channel Ranking")
       }
     }
@@ -231,7 +231,7 @@ function UserInfoSelectionField(info: GraphQLResolveInfo) {
     }
     return result
   } catch (e) {
-    logger.error(e)
+    logger.error(e.stack)
   }
 }
 

@@ -98,8 +98,10 @@ export function RunSingleSQL(sql: string, args?: any): Promise<any> {
   })
 }
 
-export async function GetMetaData(tableName: string): Promise<number> {
-  let rows = await RunSingleSQL(`SELECT COUNT(*) FROM "${tableName}"`)
+export async function GetMetaData(tableName: string, column: string = "", value: string = ""): Promise<number> {
+  let filterSql = ""
+  if (column != "") filterSql = `WHERE "${column}" = ${value}`
+  let rows = await RunSingleSQL(`SELECT COUNT(*) FROM "${tableName}" ${filterSql}`)
   return rows[0].count
 }
 

@@ -38,8 +38,8 @@ export async function GetRecommendPostListById(idList: number[]) {
 
 export async function GetRecommendPostRankingId(postOption: string) {
   let queryResult = await RunSingleSQL(`
-  WITH post_group as
-  (
+    WITH post_group as
+    (
     WITH review_group as
     (
       SELECT review.*, COUNT(img)

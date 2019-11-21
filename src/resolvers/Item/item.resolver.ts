@@ -38,7 +38,13 @@ module.exports = {
     },
 
     _allItemsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
-      return GetMetaData("ITEM_VARIATION")
+      let arg: ArgType.ItemMetadataFilter = args.itemMetadataOption
+      let itemCount = await RunSingleSQL(`
+        SELECT COUNT(*) FROM "ITEM_VARIATION" var 
+        INNER JOIN "ITEM_GROUP" gr ON var."FK_itemGroupId" = gr.id
+        ${GetItemFilterSql(arg)}
+      `)
+      return itemCount
     },
 
     getUserPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {

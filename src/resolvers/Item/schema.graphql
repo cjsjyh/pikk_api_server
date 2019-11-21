@@ -1,6 +1,6 @@
 type Query {
   allItems(itemOption: ItemQuery!): [ItemInfo!]
-  _allItemsMetadata: Int!
+  _allItemsMetadata(itemMetadataOption: ItemMetadataFilter): Int!
   getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
   getItemRanking(itemRankingOption: ItemRankingFilter!): [ItemInfo!]
 }
@@ -59,6 +59,12 @@ input ItemRankingFilter {
   itemMinorType: ItemMinorType
   itemFinalType: ItemFinalType
   filterGeneral: ItemSimpleFilterGeneral
+}
+
+input ItemMetadataFilter {
+  itemMajorType: ItemMajorType
+  itemMinorType: ItemMinorType
+  itemFinalType: ItemFinalType
 }
 
 #------------------

@@ -222,7 +222,13 @@ export async function GetItemIdInRanking(filterSql: string, formatSql: string): 
       item_var.*,
       item_gr."itemMajorType",
       item_gr."itemMinorType",
-      item_gr."itemFinalType"
+      item_gr."itemFinalType",
+      (
+        CASE WHEN item_var."salePrice" is null 
+        THEN item_gr."originalPrice" 
+      ELSE item_var."salePrice" 
+      END
+      ) as price
     FROM "ITEM_VARIATION" item_var
     INNER JOIN "ITEM_GROUP" item_gr
     ON item_gr.id = item_var."FK_itemGroupId"
@@ -235,6 +241,7 @@ export async function GetItemIdInRanking(filterSql: string, formatSql: string): 
       items."itemMinorType",
       items."itemMajorType",
       items."itemFinalType",
+      items."price",
       (SELECT COUNT(review_temp.score) FROM "ITEM_REVIEW" review_temp INNER JOIN items ON items.id = review_temp."FK_itemId" WHERE review_temp.score >=4)*${reviewScore} as reviewer_score,
       SUM(review."detailPageClickCount")*${detailPageClickScore} as detail_click,
       SUM(review."urlClickCount")*${purchaseLinkClikcScore} as purchase_click,
@@ -242,15 +249,16 @@ export async function GetItemIdInRanking(filterSql: string, formatSql: string): 
     FROM items
     INNER JOIN "ITEM_REVIEW" review
     ON items.id = review."FK_itemId"
-    GROUP BY items.id, items."itemMinorType",items."itemMajorType",items."itemFinalType"
+    GROUP BY items.id, items."itemMinorType",items."itemMajorType",items."itemFinalType",items."price"
   )
   SELECT 
-    review_score."itemId" as id,
+    review_score."itemId" as id, review_score.price,
     (review_score.reviewer_score + review_score.detail_click + review_score.purchase_click + review_score.purchase_count +
     (SELECT COUNT(*) as follow_count FROM "ITEM_FOLLOWER" follow WHERE follow."FK_itemId" = review_score."itemId")*${followScore}
-     ) as final_score
-  FROM review_score ORDER BY final_score DESC, review_score."itemId" DESC ${formatSql}
+     ) as "rankScore"
+  FROM review_score ${formatSql}
   `
+  console.log(querySql)
   let ItemRank = await RunSingleSQL(querySql)
 
   return ItemRank

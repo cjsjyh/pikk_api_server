@@ -77,6 +77,7 @@ module.exports = {
     updateUserChannelInfo: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.UserChannelInfoInput = args.userChannelInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+
       try {
         let setSql = ""
         let isFirst = true

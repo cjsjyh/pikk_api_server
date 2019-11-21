@@ -21,7 +21,7 @@ import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertItemReview, EditReview } from "../Review/util"
 import { performance } from "perf_hooks"
 import { GetRecommendPostList } from "./util"
-import { ValidateUser } from "../Utils/securityUtil"
+import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
 import { IncreaseViewCountFunc } from "../Common/util"
 import { InsertIntoNotificationQueue } from "../Notification/util"
@@ -188,6 +188,8 @@ module.exports = {
     editRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostEditInfoInput = args.recommendPostEditInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+      if (!CheckWriter("RECOMMEND_POST", arg.postId, arg.accountId))
+        throw new Error(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
 
       try {
         await DelCacheByPattern("allRecom*")
@@ -247,6 +249,8 @@ module.exports = {
     deleteRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostDeleteInfoInput = args.recommendPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+      if (!CheckWriter("RECOMMEND_POST", arg.postId, arg.accountId))
+        throw new Error(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
 
       try {
         await DelCacheByPattern("allRecom*")

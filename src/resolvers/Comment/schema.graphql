@@ -26,7 +26,7 @@ enum CommentSortableField {
 input CommentFilterGeneral {
   start: Int = 0
   first: Int = 50
-  sort: SortDirection = DESC
+  sort: SortDirection = ASC
   sortBy: CommentSortableField = time
 }
 

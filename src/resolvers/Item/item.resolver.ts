@@ -80,7 +80,7 @@ module.exports = {
         }
 
         let filterSql = GetItemFilterSql(arg)
-        let formatSql = GetFormatSql(arg)
+        let formatSql = GetFormatSql(arg, `, review_score."itemId" DESC `)
         let rankList = await GetItemIdInRanking(filterSql, formatSql)
         let itemIdList = ExtractFieldFromList(rankList, "id")
 

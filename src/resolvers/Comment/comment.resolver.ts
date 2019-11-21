@@ -4,7 +4,7 @@ import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertToCommentTableName, GetBoardName } from "./util"
-import { ValidateUser } from "../Utils/securityUtil"
+import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
 import { InsertIntoNotificationQueue } from "../Notification/util"
 var logger = require("../../tools/logger")
 
@@ -65,9 +65,11 @@ module.exports = {
     deleteComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommentDeleteInput = args.commentInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+      if (!CheckWriter(ConvertToCommentTableName(arg.targetType), arg.targetId, arg.accountId))
+        throw new Error(`[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`)
 
       try {
-        let querySql = `DELETE FROM ${ConvertToCommentTableName(arg.targetType)} WHERE id = ${arg.targetId}`
+        let querySql = `DELETE FROM "${ConvertToCommentTableName(arg.targetType)}" WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)
 
         logger.info(`Deleted Comment on Post${arg.targetType} id ${arg.targetId}`)

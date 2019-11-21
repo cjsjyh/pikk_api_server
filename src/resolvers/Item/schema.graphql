@@ -24,6 +24,11 @@ enum ItemSortableField {
   itemFinalType
 }
 
+enum ItemRankingSortableField {
+  price
+  rankScore
+}
+
 #--------------
 #   INPUT
 #--------------
@@ -37,9 +42,11 @@ input ItemFilterGeneral {
   sortBy: ItemSortableField = averageScore
 }
 
-input ItemSimpleFilterGeneral {
+input ItemRankingFilterGeneral {
   start: Int = 0
   first: Int = 50
+  sort: SortDirection = DESC
+  sortBy: ItemRankingSortableField = rankScore
 }
 
 input ItemQueryFilter {
@@ -58,7 +65,7 @@ input ItemRankingFilter {
   itemMajorType: ItemMajorType
   itemMinorType: ItemMinorType
   itemFinalType: ItemFinalType
-  filterGeneral: ItemSimpleFilterGeneral
+  filterGeneral: ItemRankingFilterGeneral
 }
 
 input ItemMetadataFilter {

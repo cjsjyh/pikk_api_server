@@ -188,9 +188,10 @@ module.exports = {
     editRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostEditInfoInput = args.recommendPostEditInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
-      if (!(await CheckWriter("RECOMMEND_POST", arg.postId, arg.accountId)))
+      if (!(await CheckWriter("RECOMMEND_POST", arg.postId, arg.accountId))) {
+        logger.warn(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
         throw new Error(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
-
+      }
       try {
         await DelCacheByPattern("allRecom*")
         logger.info(`Deleted recommend post cache`)
@@ -249,8 +250,10 @@ module.exports = {
     deleteRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.RecommendPostDeleteInfoInput = args.recommendPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
-      if (!(await CheckWriter("RECOMMEND_POST", arg.postId, arg.accountId)))
+      if (!(await CheckWriter("RECOMMEND_POST", arg.postId, arg.accountId))) {
+        logger.warn(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
         throw new Error(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
+      }
 
       try {
         await DelCacheByPattern("allRecom*")

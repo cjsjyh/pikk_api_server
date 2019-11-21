@@ -89,9 +89,10 @@ module.exports = {
     editCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommunityPostEditInfoInput = args.communityPostEditInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
-      if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId)))
+      if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))) {
+        logger.warn(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
         throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
-
+      }
       try {
         let querySql = GetCommunityPostEditSql(arg)
         await RunSingleSQL(`UPDATE "COMMUNITY_POST" SET
@@ -131,8 +132,10 @@ module.exports = {
     deleteCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommunityPostDeleteInfoInput = args.communityPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
-      if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId)))
+      if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))) {
+        logger.warn(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
         throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
+      }
 
       try {
         let deleteSql = ""

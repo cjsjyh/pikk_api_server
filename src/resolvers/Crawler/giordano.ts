@@ -27,7 +27,6 @@ export async function crawlGiordano(sourceUrl): Promise<CrawledItemInfo> {
 }
 
 export async function crawlGiordanoMobile(sourceUrl): Promise<CrawledItemInfo> {
-  console.log("Mobile")
   let htmlCode = await getHtmlRequest(sourceUrl)
 
   let price = parseHtml(htmlCode, "number", "value", ".price", "del")

@@ -65,9 +65,10 @@ module.exports = {
     deleteComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommentDeleteInput = args.commentInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
-      if (!(await CheckWriter(ConvertToCommentTableName(arg.targetType), arg.targetId, arg.accountId)))
+      if (!(await CheckWriter(ConvertToCommentTableName(arg.targetType), arg.targetId, arg.accountId))) {
+        logger.warn(`[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`)
         throw new Error(`[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`)
-
+      }
       try {
         let querySql = `DELETE FROM "${ConvertToCommentTableName(arg.targetType)}" WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)

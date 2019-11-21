@@ -204,6 +204,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   ) as item_full
   INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId" ${formatSql}
   `
+  console.log(querySql)
   let itemInfo = await RunSingleSQL(querySql)
 
   return itemInfo

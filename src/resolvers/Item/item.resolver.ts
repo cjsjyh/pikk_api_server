@@ -82,16 +82,13 @@ module.exports = {
         let filterSql = GetItemFilterSql(arg)
         let formatSql = GetFormatSql(arg, `, review_score."itemId" DESC `)
         let rankList = await GetItemIdInRanking(filterSql, formatSql)
-        console.log(rankList)
         let itemIdList = ExtractFieldFromList(rankList, "id")
-        console.log(itemIdList)
         let customFilterSql = `
         JOIN (
           VALUES
         ${ConvertListToOrderedPair(itemIdList)}
-        ) AS x (id,ordering) ON item_var.id = x.id
+        ) AS x (id,ordering) ON item_var.id = x.id ORDER BY ordering ASC
       `
-        console.log(customFilterSql)
         if (itemIdList.length == 0) return []
         let itemList = await GetItemsById(itemIdList, "", customFilterSql)
         await SetRedis(cacheName, JSON.stringify(itemList), 1800)

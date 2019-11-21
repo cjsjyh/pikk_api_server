@@ -53,7 +53,7 @@ module.exports = {
         return postResult
       } catch (e) {
         logger.warn("Failed to fetch community post from DB")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to fetch community post from DB")
       }
     },
@@ -81,7 +81,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to Insert into COMMUNITY_POST")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`Failed to Insert into COMMUNITY_POST`)
       }
     },
@@ -124,7 +124,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn("Failed to edit Community Post")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`Failed to edit Community Post`)
       }
     },
@@ -147,7 +147,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn(`Delete CommunityPost id: ${arg.postId} Failed!`)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`[Error] Delete CommunityPost id: ${arg.postId} Failed!`)
       }
     }
@@ -171,7 +171,7 @@ function CommunityPostSelectionField(info: GraphQLResolveInfo) {
     return result
   } catch (e) {
     logger.warn(`Failed to make SQL for CommunityPost SelectionField`)
-    logger.error(e)
+    logger.error(e.stack)
   }
 }
 

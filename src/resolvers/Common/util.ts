@@ -12,7 +12,7 @@ export function IncreaseViewCountFunc(postType: string, postId: number): Promise
       resolve()
     } catch (e) {
       logger.warn(`Failed to increase view count for ${postType} ${postId}`)
-      logger.error(e)
+      logger.error(e.stack)
       reject()
     }
   })
@@ -61,7 +61,7 @@ export async function EditImageUrlInTable(
     return true
   } catch (e) {
     logger.warn("Failed to Edit Review Image")
-    logger.error(e)
+    logger.error(e.stack)
     throw new Error(e)
   }
 }

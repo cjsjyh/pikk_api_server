@@ -32,7 +32,7 @@ module.exports = {
         return itemResult
       } catch (e) {
         logger.warn("Failed to fetch all Items")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to fetch Item data from DB")
       }
     },
@@ -61,7 +61,7 @@ module.exports = {
         return itemResult
       } catch (e) {
         logger.warn(`Failed to fetch user pickk item for userId ${arg.userId}`)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`[Error] Failed to fetch user pickk item for userId ${arg.userId}`)
       }
     },
@@ -97,7 +97,7 @@ module.exports = {
         return itemList
       } catch (e) {
         logger.warn(`get Item Ranking failed`)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`[Error] get Item Ranking failed`)
       }
     }
@@ -113,7 +113,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn(`Failed to create Item`)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to create Item!")
       }
     }

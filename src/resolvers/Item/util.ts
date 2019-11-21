@@ -27,7 +27,7 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
     return true
   } catch (e) {
     logger.warn("Failed to Edit Item")
-    logger.error(e)
+    logger.error(e.stack)
     throw new Error("Failed to Edit Item")
   }
 }
@@ -81,7 +81,7 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
       resolve(queryResult[0].id)
     } catch (e) {
       logger.warn("Failed to Insert into ITEM_VARIATION")
-      logger.error(e)
+      logger.error(e.stack)
       reject()
     }
   })
@@ -94,7 +94,7 @@ export function FetchItemsForReview(review: any): Promise<{}> {
       review.itemInfo = queryResult[0]
       resolve()
     } catch (e) {
-      logger.error(e)
+      logger.error(e.stack)
       reject()
     }
   })
@@ -109,7 +109,7 @@ export async function GetSimpleItemListByPostList(postResult: any, info: GraphQL
     }
   } catch (e) {
     logger.warn("Failed to fetch simpleItemList")
-    logger.error(e)
+    logger.error(e.stack)
     throw new Error("[ERROR] Failed to fetch simpleItemList")
   }
 }
@@ -204,7 +204,6 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   ) as item_full
   INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId" ${formatSql}
   `
-  console.log(querySql)
   let itemInfo = await RunSingleSQL(querySql)
 
   return itemInfo
@@ -259,7 +258,6 @@ export async function GetItemIdInRanking(filterSql: string, formatSql: string): 
      ) as "rankScore"
   FROM review_score ${formatSql}
   `
-  console.log(querySql)
   let ItemRank = await RunSingleSQL(querySql)
 
   return ItemRank

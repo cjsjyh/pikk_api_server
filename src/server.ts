@@ -26,6 +26,9 @@ const port = 80
 //-------------------------------
 import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
 import { CombineItem } from "./tools/tool"
+import { crawlOthers } from "./resolvers/Crawler/crawlOthers"
+import { getFormatDate, getFormatHour } from "./resolvers/Utils/stringUtil"
+import { downloadImage, DeployImageBy3Version } from "./resolvers/Utils/promiseUtil"
 
 //Create Express Server
 const app = express()
@@ -60,7 +63,7 @@ const server = new ApolloServer({
       var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
     } catch (e) {
       logger.warn("Failed to Verify JWT Token")
-      logger.error(e)
+      logger.error(e.stack)
       return { IsVerified: false }
     }
     let IsVerified = false
@@ -82,15 +85,17 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
-// let elastic = require("./database/elastic/elasticConnect")
 // async function testfunc() {
-//   let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
-//   await elastic.elasticClient.indices.refresh({ index: "...customer" })
-//   result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
+//   // let elastic = require("./database/elastic/elasticConnect")
+//   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
+//   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
+//   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
+//   let imageUrl = "http://www.bloter.net/wp-content/uploads/2019/11/191120_line-dev-kyenote-1.jpg"
+//   await DeployImageBy3Version(imageUrl)
 // }
 // testfunc()
 
-cron.schedule("*/2 * * * *", function() {
+cron.schedule("*/1 * * * *", function() {
   ProcessNotificationQueue()
 })
 

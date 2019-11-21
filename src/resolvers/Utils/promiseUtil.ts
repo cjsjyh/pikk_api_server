@@ -5,9 +5,10 @@ var sizeOf = require("image-size")
 const sharp = require("sharp")
 const imageType = require("image-type")
 const readChunk = require("read-chunk")
+var axios = require("axios")
 
 import * as AWS from "aws-sdk"
-import { getFormatDate, getFormatHour } from "./stringUtil"
+import { getFormatDate, getFormatHour, replaceLastOccurence } from "./stringUtil"
 var logger = require("../../tools/logger")
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<any> {
@@ -78,7 +79,7 @@ export function RunSingleSQL(sql: string, args?: any): Promise<any> {
         client = await pool.connect()
       } catch (e) {
         logger.warn("Failed to Connect to DB")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed Connecting to DB")
       }
     }
@@ -92,7 +93,7 @@ export function RunSingleSQL(sql: string, args?: any): Promise<any> {
       resolve(queryResult.rows)
     } catch (e) {
       client.release()
-      logger.error(e)
+      logger.error(e.stack)
       reject("Failed")
     }
   })
@@ -130,37 +131,71 @@ export async function UploadImageWrapper(imgObj: any): Promise<string> {
   })
 }
 
+export async function downloadImage(url, image_path) {
+  return new Promise((resolve, reject) => {
+    axios({
+      url,
+      responseType: "stream"
+    }).then(response => {
+      response.data
+        .pipe(fs.createWriteStream(`./${image_path}`))
+        .on("finish", () => resolve())
+        .on("error", e => reject(e))
+    })
+  })
+}
+
 export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
+  let isSelfHosted = false
   let folderName = "image"
   if (process.env.MODE != "DEPLOY") folderName = "testimage"
 
   try {
-    imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")
-    //Download Image
-    await new Promise((resolve, reject) => {
-      var param = {
-        Bucket: "fashiondogam-images",
-        Key: decodeURIComponent(`${folderName}_temp/${imageUrl}`)
-      }
-      S3.getObject(param, (err, data) => {
-        if (err) {
-          logger.error(err)
-          reject(err)
+    if (imageUrl.includes("https://fashiondogam-images")) {
+      isSelfHosted = true
+      //Download Image From S3
+      imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")
+      await new Promise((resolve, reject) => {
+        var param = {
+          Bucket: "fashiondogam-images",
+          Key: decodeURIComponent(`${folderName}_temp/${imageUrl}`)
         }
-        fs.writeFile(`./${imageUrl}`, data.Body, function(err) {
-          if (err) logger.error(err)
-          resolve()
+        S3.getObject(param, (e, data) => {
+          if (e) {
+            logger.error(e.stack)
+            reject(e)
+          }
+          fs.writeFile(`./${imageUrl}`, data.Body, function(e) {
+            if (e) logger.error(e.stack)
+            resolve()
+          })
         })
       })
-    })
+    } else {
+      let newImageName
+      newImageName = imageUrl.split(".").pop()
+      let date = getFormatDate(new Date())
+      let hour = getFormatHour(new Date())
+      newImageName = date + hour + "." + newImageName
+
+      if (imageUrl[0] != "h") {
+        let i = 0
+        while (imageUrl[i] == "/") i += 1
+        imageUrl = imageUrl.substr(i, imageUrl.length)
+        imageUrl = "http://" + imageUrl
+      }
+
+      await downloadImage(imageUrl, newImageName)
+      imageUrl = newImageName
+    }
 
     //Make 3sizes
     var dimensions = sizeOf(`./${imageUrl}`)
 
-    let xsmallName = imageUrl.replace(".", "_xsmall.")
-    let smallName = imageUrl.replace(".", "_small.")
-    let mediumName = imageUrl.replace(".", "_medium.")
-    let largeName = imageUrl.replace(".", "_large.")
+    let xsmallName = replaceLastOccurence(imageUrl, ".", "_xsmall.")
+    let smallName = replaceLastOccurence(imageUrl, ".", "_small.")
+    let mediumName = replaceLastOccurence(imageUrl, ".", "_medium.")
+    let largeName = replaceLastOccurence(imageUrl, ".", "_large.")
 
     await Make4VersionsOfImage(imageUrl, dimensions, xsmallName, smallName, mediumName, largeName)
 
@@ -176,10 +211,10 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
             Body: fs.createReadStream(`./${filename}`),
             ContentType: imageType(buffer)["mime"]
           }
-          S3.upload(param2, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-            if (err) {
-              logger.error(err)
-              reject(err)
+          S3.upload(param2, function(e: Error, data: AWS.S3.ManagedUpload.SendData) {
+            if (e) {
+              logger.error(e.stack)
+              reject(e)
             }
             resolve()
           })
@@ -188,14 +223,14 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
     )
 
     //Delete S3 original image
-    await DeleteImage(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
+    if (isSelfHosted) await DeleteImage(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
 
     //Delete file from local
     await Promise.all(
       [imageUrl, xsmallName, smallName, mediumName, largeName].map(filename => {
         return new Promise((resolve, reject) => {
-          fs.unlink(filename, function(err) {
-            if (err) reject(err)
+          fs.unlink(filename, function(e) {
+            if (e) reject(e)
             resolve()
           })
         })
@@ -206,7 +241,7 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
     return `https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}/` + imageUrl
   } catch (e) {
     logger.warn("Failed to deploy Image")
-    logger.error(e)
+    logger.error(e.stack)
     return null
   }
 }
@@ -239,13 +274,13 @@ export async function DeployImage(imageUrl: string): Promise<string> {
             })
             .catch(e => {
               logger.warn("Failed to deploy Image")
-              logger.error(e)
+              logger.error(e.stack)
               reject(e)
             })
         })
         .catch(e => {
           logger.warn("Failed to deploy Image")
-          logger.error(e)
+          logger.error(e.stack)
           reject(e)
         })
     })
@@ -253,7 +288,7 @@ export async function DeployImage(imageUrl: string): Promise<string> {
     return `https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}/` + imageUrl
   } catch (e) {
     logger.warn("Failed to deploy Image")
-    logger.error(e)
+    logger.error(e.stack)
     return null
   }
 }
@@ -277,10 +312,10 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
 
   try {
     let imageUrl: string = await new Promise((resolve, reject) => {
-      S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-        if (err) {
-          logger.error(err)
-          reject(err)
+      S3.upload(param, function(e: Error, data: AWS.S3.ManagedUpload.SendData) {
+        if (e) {
+          logger.error(e.stack)
+          reject(e)
         }
         let imageUrl = data.Location
         resolve(imageUrl)
@@ -290,7 +325,7 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
     return imageUrl
   } catch (e) {
     logger.warn("Failed to Upload Image")
-    logger.error(e)
+    logger.error(e.stack)
     return null
   }
 }
@@ -319,7 +354,7 @@ export async function DeleteImage(imageUrl: string) {
       })
       .catch(e => {
         logger.warn("Failed to delete Image")
-        logger.error(e)
+        logger.error(e.stack)
         reject(e)
       })
   })

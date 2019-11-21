@@ -33,6 +33,7 @@ export async function crawlGiordanoMobile(sourceUrl): Promise<CrawledItemInfo> {
   let saleprice = parseHtml(htmlCode, "number", "value", ".price", ".sell")
   let itemname = parseHtml(htmlCode, "string", "value", ".prd_name")
   let image = parseHtml(htmlCode, "string", "attribute", ".swiper-slide", "img", "src")
+  image = image.replace("#addimg", "")
 
   if (price == null && saleprice != 0) {
     price = saleprice
@@ -44,7 +45,7 @@ export async function crawlGiordanoMobile(sourceUrl): Promise<CrawledItemInfo> {
     originalPrice: price,
     salePrice: saleprice,
     name: strip(itemname),
-    imageUrl: image,
+    imageUrl: [image],
     purchaseUrl: sourceUrl
   }
   return result

@@ -44,7 +44,7 @@ module.exports = {
         return queryResult
       } catch (e) {
         logger.warn("Failed to query allItemReviews")
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error("[Error] Failed to query allItemReviews")
       }
     }
@@ -59,7 +59,7 @@ module.exports = {
         return true
       } catch (e) {
         logger.warn(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
-        logger.error(e)
+        logger.error(e.stack)
         throw new Error(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
       }
     }

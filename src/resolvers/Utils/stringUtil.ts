@@ -2,6 +2,29 @@ export function logWithDate(content: any) {
   console.log(`[${getDateTime()}] ` + content)
 }
 
+export function hasNumber(myStr: string): boolean {
+  return /\d/.test(myStr)
+}
+
+export function extractNumber(myStr: string): number {
+  return Number(myStr.match(/\d+/g).join(""))
+}
+
+export function hasCurrency(myStr: string) {
+  let currencyList = ["원", "won", "$"]
+  let result = false
+  currencyList.forEach(element => {
+    if (myStr.includes(element) && !result) result = true
+  })
+  return result
+}
+
+export function replaceLastOccurence(myStr, pattern, replaceBy) {
+  let pos = myStr.lastIndexOf(pattern)
+  myStr = myStr.substring(0, pos) + replaceBy + myStr.substring(pos + 1)
+  return myStr
+}
+
 export function getDateTime() {
   let today = new Date()
   let date = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate()

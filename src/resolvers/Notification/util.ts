@@ -62,7 +62,7 @@ export async function InsertIntoNotificationQueue(
     logger.info("Inserted into Notification Queue")
   } catch (e) {
     logger.warn("Failed to insert into notification queue")
-    logger.error(e)
+    logger.error(e.stack)
   }
 }
 
@@ -87,7 +87,7 @@ async function NotifyPostWriter(postId: number, postType: string, content: strin
     logger.info(`Notified RecPost Writer of postId: ${NotiInfo.targetId}`)
   } catch (e) {
     logger.warn(`Failed to Notify RecPost Writer of postId: ${NotiInfo.targetId}`)
-    logger.error(e)
+    logger.error(e.stack)
   }
 }
 
@@ -107,7 +107,7 @@ async function NotifyFollowers(postId: number, postType: string, postTitle: stri
     logger.info(`Notified Channel Followers of ${writerId} postId: ${NotiInfo.targetId}`)
   } catch (e) {
     logger.warn(`Failed to Notify Channel Followers of ${writerId} postId: ${NotiInfo.targetId}`)
-    logger.error(e)
+    logger.error(e.stack)
   }
 }
 
@@ -136,6 +136,6 @@ async function NotifyCommentWriter(postId: number, postType: string, content: st
     logger.info(`Notified comment writer of Comment ${parentId}`)
   } catch (e) {
     logger.warn(`Failed to Notify comment Writer of Comment ${parentId}`)
-    logger.error(e)
+    logger.error(e.stack)
   }
 }

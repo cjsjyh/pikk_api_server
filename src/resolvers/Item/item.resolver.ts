@@ -38,7 +38,13 @@ module.exports = {
     },
 
     _allItemsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
-      return GetMetaData("ITEM_VARIATION")
+      let arg: ArgType.ItemMetadataFilter = args.itemMetadataOption
+      let itemCount = await RunSingleSQL(`
+        SELECT COUNT(*) FROM "ITEM_VARIATION" var 
+        INNER JOIN "ITEM_GROUP" gr ON var."FK_itemGroupId" = gr.id
+        ${GetItemFilterSql(arg)}
+      `)
+      return itemCount
     },
 
     getUserPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
@@ -74,7 +80,7 @@ module.exports = {
         }
 
         let filterSql = GetItemFilterSql(arg)
-        let formatSql = GetFormatSql(arg)
+        let formatSql = GetFormatSql(arg, `, review_score."itemId" DESC `)
         let rankList = await GetItemIdInRanking(filterSql, formatSql)
         let itemIdList = ExtractFieldFromList(rankList, "id")
 

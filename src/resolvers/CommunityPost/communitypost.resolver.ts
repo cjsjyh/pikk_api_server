@@ -12,7 +12,7 @@ import { GetFormatSql, ConvertListToOrderedPair, ConvertListToString, InsertImag
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
-import { ValidateUser } from "../Utils/securityUtil"
+import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
 var logger = require("../../tools/logger")
 
 module.exports = {
@@ -89,6 +89,9 @@ module.exports = {
     editCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommunityPostEditInfoInput = args.communityPostEditInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+      if (!CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))
+        throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
+
       try {
         let querySql = GetCommunityPostEditSql(arg)
         await RunSingleSQL(`UPDATE "COMMUNITY_POST" SET
@@ -128,6 +131,9 @@ module.exports = {
     deleteCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommunityPostDeleteInfoInput = args.communityPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+      if (!CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))
+        throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
+
       try {
         let deleteSql = ""
         deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "FK_postId", [arg.postId])

@@ -2,11 +2,22 @@ var logger = require("../tools/logger")
 const redis = require("redis")
 
 export function GetRedisClient() {
-  var redisConnection = redis.createClient({
-    host: process.env.REDIS_HOST,
-    port: 6379,
-    enable_offline_queue: true
-  })
+  var redisConnection
+  if(process.env.MODE != "DEPLOY")
+  {
+    redisConnection = redis.createClient({
+      host: process.env.REDIS_HOST,
+      port: 6379,
+      password: process.env.REDIS_PASSWORD,
+      enable_offline_queue: true
+    })
+  } else {
+    redisConnection = redis.createClient({
+      host: process.env.REDIS_HOST,
+      port: 6379,
+      enable_offline_queue: true
+    })
+  }
   return redisConnection
 }
 

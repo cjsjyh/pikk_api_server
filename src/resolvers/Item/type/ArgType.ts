@@ -66,6 +66,7 @@ export type QueryArgInfo = {
   itemOption: ItemQuery
   pickkItemOption: PickkItemQuery
   itemRankingOption: ItemRankingFilter
+  itemMetadataOption: ItemMetadataFilter
 }
 
 type ItemFilterGeneral = {
@@ -75,9 +76,11 @@ type ItemFilterGeneral = {
   sortBy: string
 }
 
-export type ItemSimpleFilterGeneral = {
+export type ItemRankingFilterGeneral = {
   start: number
   first: number
+  sort: string
+  sortBy: string
 }
 
 export type ItemQueryFilter = {
@@ -91,7 +94,13 @@ export type ItemRankingFilter = {
   itemMajorType: string
   itemMinorType: string
   itemFinalType: string
-  filterGeneral: ItemSimpleFilterGeneral
+  filterGeneral: ItemRankingFilterGeneral
+}
+
+export type ItemMetadataFilter = {
+  itemMajorType: string
+  itemMinorType: string
+  itemFinalType: string
 }
 
 export interface ItemQuery {

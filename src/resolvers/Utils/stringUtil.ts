@@ -36,11 +36,12 @@ export function strip(str) {
   return str.replace(/^\s+|\s+$/g, "")
 }
 
-export function GetFormatSql(filter: any): string {
+export function GetFormatSql(filter: any, orderAddOn: string = ""): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
-    if (Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") && Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort"))
-      filterSql += ` ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} NULLS LAST`
+    if (Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") && Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")) {
+      filterSql += ` ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} ${orderAddOn} NULLS LAST`
+    }
     if (filter.filterGeneral.first > 30) filter.filterGeneral.first = 30
     filterSql += " LIMIT " + filter.filterGeneral.first + " OFFSET " + filter.filterGeneral.start
   } else {

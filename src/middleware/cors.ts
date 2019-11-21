@@ -10,6 +10,7 @@ if (process.env.MODE == "DEPLOY") {
     "http://pickkapiserver.online",
     "www.pickkapiserver.online",
     "pickkapiserver.online",
+    "54.180.156.137",
     "https://pickk-cli.greatsumini.now.sh",
     "http://pickk-cli.greatsumini.now.sh",
     "www.pickk-cli.greatsumini.now.sh",

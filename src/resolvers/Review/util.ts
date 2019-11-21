@@ -162,7 +162,12 @@ export function InsertItemReview(
                   imgUrlList[index] = await DeployImageBy3Version(imgUrl)
                   resolve()
                 } catch (e) {
-                  reject(e)
+                  try {
+                    imgUrlList[index] = await DeployImageBy3Version(imgUrl)
+                    resolve()
+                  } catch (e) {
+                    reject(e)
+                  }
                 }
               })
             })

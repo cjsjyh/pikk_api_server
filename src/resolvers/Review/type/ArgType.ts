@@ -28,7 +28,7 @@ export type ItemReviewImgInfoInput = {
   imageUrl: any
 }
 
-export type IncrementReviewCount = {
+export type IncreaseReviewCount = {
   id: number
   type: string
 }
@@ -51,7 +51,7 @@ export type ItemReviewEditInfoInput = {
 //--------------
 export type QueryArgInfo = {
   reviewOption: ReviewQuery
-  incrementOption: IncrementReviewCount
+  increaseOption: IncreaseReviewCount
 }
 type ReviewFilterGeneral = {
   start: number

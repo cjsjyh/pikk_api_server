@@ -9,6 +9,7 @@ export type MutationArgInfo = {
 export type CommentInfoInput = {
   accountId: number
   targetId: number
+  parentId: number
   targetType: string
   content: string
 }

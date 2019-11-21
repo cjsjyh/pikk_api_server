@@ -1,5 +1,3 @@
-import { logWithDate } from "../resolvers/Utils/stringUtil"
-
 const { RateLimiterRedis } = require("rate-limiter-flexible")
 const { GetRedisClient } = require("../database/redisConnect")
 
@@ -18,7 +16,7 @@ const rateLimiterMiddleware = (req, res, next) => {
       next()
     })
     .catch(() => {
-      logWithDate(`[RATE LIMITER] ${req.ip} sending too many requests`)
+      logger.warn(`[RATE LIMITER] ${req.ip} sending too many requests`)
       res.status(429).send("Too Many Requests")
     })
 }

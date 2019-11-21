@@ -1,5 +1,4 @@
-import { logWithDate } from "../resolvers/Utils/stringUtil"
-
+var logger = require("../tools/logger")
 const redis = require("redis")
 
 export function GetRedisClient() {
@@ -9,6 +8,72 @@ export function GetRedisClient() {
     enable_offline_queue: true
   })
   return redisConnection
+}
+
+export function PushRedisQueue(key: string, value: string): any {
+  return new Promise((resolve, reject) => {
+    let client
+    try {
+      client = GetRedisClient()
+    } catch (e) {
+      reject(e)
+    }
+
+    try {
+      client.rpush(key, value, function(err, reply) {
+        if (err) reject(err)
+        client.end(true)
+        resolve()
+      })
+    } catch (e) {
+      client.end(true)
+      reject(e)
+    }
+  })
+}
+
+export function PopRedisQueue(key: string): any {
+  return new Promise((resolve, reject) => {
+    let client
+    try {
+      client = GetRedisClient()
+    } catch (e) {
+      reject(e)
+    }
+
+    try {
+      client.lpop(key, function(err, reply) {
+        if (err) reject(err)
+        client.end(true)
+        resolve(reply)
+      })
+    } catch (e) {
+      client.end(true)
+      reject(e)
+    }
+  })
+}
+
+export function RedisQueueLength(key: string): any {
+  return new Promise((resolve, reject) => {
+    let client
+    try {
+      client = GetRedisClient()
+    } catch (e) {
+      reject(e)
+    }
+
+    try {
+      client.llen(key, function(err, reply) {
+        if (err) reject(err)
+        client.end(true)
+        resolve(reply)
+      })
+    } catch (e) {
+      client.end(true)
+      reject(e)
+    }
+  })
 }
 
 export function GetRedis(key: string): any {
@@ -71,8 +136,8 @@ function scan(pattern, redisClient, cursor, resolve, reject) {
   redisClient.scan(cursor, "MATCH", pattern, "COUNT", "1000", async function(err, reply) {
     if (err) {
       redisClient.end(true)
-      logWithDate("[Error] Failed to make connection with Redis")
-      logWithDate(err)
+      logger.warn("Failed to make connection with Redis")
+      logger.error(err)
       reject(err)
     }
     cursor = reply[0]
@@ -82,8 +147,8 @@ function scan(pattern, redisClient, cursor, resolve, reject) {
         return new Promise((resolve, reject) => {
           redisClient.del(key, function(deleteErr, deleteSuccess) {
             if (deleteErr) {
-              logWithDate("[Error] Failed to delete Cache")
-              logWithDate(deleteErr)
+              logger.warn("Failed to delete Cache")
+              logger.error(deleteErr)
               reject()
             }
             resolve()

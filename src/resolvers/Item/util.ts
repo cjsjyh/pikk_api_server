@@ -1,10 +1,11 @@
 import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImageBy3Version } from "../Utils/promiseUtil"
-import { ConvertListToString, logWithDate, IsNewImage } from "../Utils/stringUtil"
+import { ConvertListToString, IsNewImage } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput, ItemEditInfoInput, GroupEditInfo, VariationEditInfo } from "./type/ArgType"
 import { ItemReviewInfoInput, ItemReviewEditInfoInput } from "../Review/type/ArgType"
 import { GraphQLResolveInfo } from "graphql"
 import { GetSubField } from "../Review/util"
+var logger = require("../../tools/logger")
 
 export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
   try {
@@ -25,9 +26,9 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
     }
     return true
   } catch (e) {
-    logWithDate("[Error] Failed to Edit Item")
-    logWithDate(e)
-    return false
+    logger.warn("Failed to Edit Item")
+    logger.error(e)
+    throw new Error("Failed to Edit Item")
   }
 }
 
@@ -79,8 +80,8 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
         VALUES ('${arg.variationInfo.name}','${deployImageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
       resolve(queryResult[0].id)
     } catch (e) {
-      logWithDate("[Error] Failed to Insert into ITEM_VARIATION")
-      logWithDate(e)
+      logger.warn("Failed to Insert into ITEM_VARIATION")
+      logger.error(e)
       reject()
     }
   })
@@ -93,6 +94,7 @@ export function FetchItemsForReview(review: any): Promise<{}> {
       review.itemInfo = queryResult[0]
       resolve()
     } catch (e) {
+      logger.error(e)
       reject()
     }
   })
@@ -106,8 +108,8 @@ export async function GetSimpleItemListByPostList(postResult: any, info: GraphQL
       await GetSimpleItemInfoByPostId(postResult)
     }
   } catch (e) {
-    logWithDate("[ERROR] Failed to fetch simpleItemList")
-    logWithDate(e)
+    logger.warn("Failed to fetch simpleItemList")
+    logger.error(e)
     throw new Error("[ERROR] Failed to fetch simpleItemList")
   }
 }

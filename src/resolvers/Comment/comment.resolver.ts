@@ -1,13 +1,12 @@
-const { pool } = require("../../database/connectionPool")
 import * as ArgType from "./type/ArgType"
 import { QueryArgInfo } from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
-import { ConvertToTableName, GetBoardName } from "./util"
-import { CloudWatchEvents } from "aws-sdk"
+import { ConvertToCommentTableName, GetBoardName } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
-import { logWithDate } from "../Utils/stringUtil"
+import { InsertIntoNotificationQueue } from "../Notification/util"
+var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
@@ -22,13 +21,14 @@ module.exports = {
         commentResults.forEach(comment => {
           comment.postId = comment.FK_postId
           comment.accountId = comment.FK_accountId
+          comment.parentId = comment.FK_parentId
         })
 
-        logWithDate(`GetComments Called`)
+        logger.info(`GetComments Called`)
         return commentResults
       } catch (e) {
-        logWithDate("[Error] Failed to Fetch comments")
-        logWithDate(e)
+        logger.warn("Failed to Fetch comments")
+        logger.error(e)
         throw new Error("[Error] Failed to fetch comments")
       }
     }
@@ -39,15 +39,26 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `INSERT INTO ${ConvertToTableName(arg.targetType)} ("FK_postId","FK_accountId","content") VALUES(${arg.targetId},${
-          arg.accountId
-        },'${arg.content}')`
+        let querySql = `INSERT INTO ${ConvertToCommentTableName(arg.targetType)} ("FK_postId","FK_accountId","FK_parentId","content") 
+        VALUES(
+          ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
-        logWithDate(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
+        logger.info(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
+
+        //Commented to a post
+        if (arg.parentId == null) {
+          InsertIntoNotificationQueue("RECPOST_WRITER", arg.targetId, arg.targetType, "", arg.content)
+        }
+        //Comented to a comment
+        else {
+          InsertIntoNotificationQueue("COMMENT_WRITER", arg.targetId, arg.targetType, "", arg.content, arg.parentId)
+        }
+
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to create Comment")
-        return false
+        logger.warn("Failed to create Comment")
+        logger.error(e)
+        throw new Error(`Failed to create Comment`)
       }
     },
 
@@ -56,15 +67,15 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let querySql = `DELETE FROM ${ConvertToTableName(arg.targetType)} WHERE id = ${arg.targetId}`
+        let querySql = `DELETE FROM ${ConvertToCommentTableName(arg.targetType)} WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)
 
-        logWithDate(`Deleted Comment on Post${arg.targetType} id ${arg.targetId}`)
+        logger.info(`Deleted Comment on Post${arg.targetType} id ${arg.targetId}`)
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to delete Comment")
-        logWithDate(e)
-        return false
+        logger.warn("Failed to delete Comment")
+        logger.error(e)
+        throw new Error("Failed to delete Comment")
       }
     }
   }

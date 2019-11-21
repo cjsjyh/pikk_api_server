@@ -74,6 +74,8 @@ enum ItemMajorType {
 }
 
 enum ItemMinorType {
+  MUFFLER
+  ETC_ACCESSORY
   ALL
   JACKET
   JUMPER

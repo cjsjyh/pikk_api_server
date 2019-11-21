@@ -8,11 +8,12 @@ import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
 import { SequentialPromiseValue, GetMetaData, RunSingleSQL, ExtractSelectionSet } from "../Utils/promiseUtil"
-import { GetFormatSql, logWithDate, ConvertListToOrderedPair, ConvertListToString, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
+import { GetFormatSql, ConvertListToOrderedPair, ConvertListToString, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
 import { ValidateUser } from "../Utils/securityUtil"
+var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
@@ -48,11 +49,11 @@ module.exports = {
             post.imageUrls.push(image.imageUrl)
           })
         })
-        logWithDate(`AllCommunityPosts Called!`)
+        logger.info(`AllCommunityPosts Called!`)
         return postResult
       } catch (e) {
-        logWithDate("[Error] Failed to fetch community post from DB")
-        logWithDate(e)
+        logger.warn("Failed to fetch community post from DB")
+        logger.error(e)
         throw new Error("[Error] Failed to fetch community post from DB")
       }
     },
@@ -76,12 +77,12 @@ module.exports = {
           let imgPairs = ConvertListToOrderedPair(arg.imageUrls, `,${String(postId[0].id)}`, false)
           await InsertImageIntoTable(imgPairs, "COMMUNITY_POST_IMAGE", "FK_postId")
         }
-        logWithDate(`Community Post has been created by User ${arg.accountId}`)
+        logger.info(`Community Post has been created by User ${arg.accountId}`)
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to Insert into COMMUNITY_POST")
-        logWithDate(e)
-        return false
+        logger.warn("Failed to Insert into COMMUNITY_POST")
+        logger.error(e)
+        throw new Error(`Failed to Insert into COMMUNITY_POST`)
       }
     },
 
@@ -115,12 +116,12 @@ module.exports = {
             })
           )
         }
-        logWithDate(`EditCommunityPost Done PostId:${arg.postId} userId:${arg.accountId}`)
+        logger.info(`EditCommunityPost Done PostId:${arg.postId} userId:${arg.accountId}`)
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to edit Community Post")
-        logWithDate(e)
-        return false
+        logger.warn("Failed to edit Community Post")
+        logger.error(e)
+        throw new Error(`Failed to edit Community Post`)
       }
     },
 
@@ -133,11 +134,11 @@ module.exports = {
 
         let querySql = `${deleteSql} DELETE FROM "COMMUNITY_POST" WHERE id=${arg.postId}`
         let result = await RunSingleSQL(querySql)
-        logWithDate(`Deleted CommunityPost id ${arg.accountId}`)
+        logger.info(`Deleted CommunityPost id ${arg.accountId}`)
         return true
       } catch (e) {
-        logWithDate(`[Error] Delete CommunityPost id: ${arg.postId} Failed!`)
-        logWithDate(e)
+        logger.warn(`Delete CommunityPost id: ${arg.postId} Failed!`)
+        logger.error(e)
         throw new Error(`[Error] Delete CommunityPost id: ${arg.postId} Failed!`)
       }
     }
@@ -160,7 +161,8 @@ function CommunityPostSelectionField(info: GraphQLResolveInfo) {
 
     return result
   } catch (e) {
-    logWithDate(e)
+    logger.warn(`Failed to make SQL for CommunityPost SelectionField`)
+    logger.error(e)
   }
 }
 

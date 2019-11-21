@@ -7,12 +7,14 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, ConvertListToOrderedPair, logWithDate, MakeCacheNameByObject } from "../Utils/stringUtil"
+import { GetFormatSql, MakeMultipleQuery, ConvertListToOrderedPair, MakeCacheNameByObject } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertItem, GetItemsById, GetItemIdInRanking } from "./util"
 import { GetRedis, SetRedis } from "../../database/redisConnect"
 import { performance } from "perf_hooks"
+
+var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
@@ -26,10 +28,11 @@ module.exports = {
           filterSql = GetItemFilterSql(arg.itemFilter)
         }
         let itemResult = await GetItemsById(idList, formatSql, filterSql)
-        logWithDate(`AllItemsCalled`)
+        logger.info(`AllItemsCalled`)
         return itemResult
       } catch (e) {
-        logWithDate(e)
+        logger.warn("Failed to fetch all Items")
+        logger.error(e)
         throw new Error("[Error] Failed to fetch Item data from DB")
       }
     },
@@ -41,45 +44,57 @@ module.exports = {
     getUserPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.PickkItemQuery = args.pickkItemOption
 
-      let formatSql = GetFormatSql(arg)
-      let queryResult = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
-      if (queryResult.length == 0) return []
-      let idList = ExtractFieldFromList(queryResult, "FK_itemId")
+      try {
+        let formatSql = GetFormatSql(arg)
+        let queryResult = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
+        if (queryResult.length == 0) return []
+        let idList = ExtractFieldFromList(queryResult, "FK_itemId")
 
-      let itemResult = await GetItemsById(idList, formatSql)
-      logWithDate(`User ${arg.userId} queried PickItem`)
-      return itemResult
+        let itemResult = await GetItemsById(idList, formatSql)
+        logger.info(`User ${arg.userId} queried PickItem`)
+        return itemResult
+      } catch (e) {
+        logger.warn(`Failed to fetch user pickk item for userId ${arg.userId}`)
+        logger.error(e)
+        throw new Error(`[Error] Failed to fetch user pickk item for userId ${arg.userId}`)
+      }
     },
 
     getItemRanking: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.ItemRankingFilter = args.itemRankingOption
 
-      let cacheName = "itemRank"
-      cacheName += MakeCacheNameByObject(arg)
-      cacheName += MakeCacheNameByObject(arg.filterGeneral)
-      let itemRankCache: any = await GetRedis(cacheName)
-      if (itemRankCache != null) {
-        logWithDate("getItemRank Cache Return")
-        return JSON.parse(itemRankCache)
-      }
+      try {
+        let cacheName = "itemRank"
+        cacheName += MakeCacheNameByObject(arg)
+        cacheName += MakeCacheNameByObject(arg.filterGeneral)
+        let itemRankCache: any = await GetRedis(cacheName)
+        if (itemRankCache != null) {
+          logger.info("getItemRank Cache Return")
+          return JSON.parse(itemRankCache)
+        }
 
-      let filterSql = GetItemFilterSql(arg)
-      let formatSql = GetFormatSql(arg)
-      let rankList = await GetItemIdInRanking(filterSql, formatSql)
-      let itemIdList = ExtractFieldFromList(rankList, "id")
+        let filterSql = GetItemFilterSql(arg)
+        let formatSql = GetFormatSql(arg)
+        let rankList = await GetItemIdInRanking(filterSql, formatSql)
+        let itemIdList = ExtractFieldFromList(rankList, "id")
 
-      let customFilterSql = `
+        let customFilterSql = `
         JOIN (
           VALUES
         ${ConvertListToOrderedPair(itemIdList)}
         ) AS x (id,ordering) ON item_var.id = x.id
       `
-      if (itemIdList.length == 0) return []
-      let itemList = await GetItemsById(itemIdList, "", customFilterSql)
-      await SetRedis(cacheName, JSON.stringify(itemList), 1800)
+        if (itemIdList.length == 0) return []
+        let itemList = await GetItemsById(itemIdList, "", customFilterSql)
+        await SetRedis(cacheName, JSON.stringify(itemList), 1800)
 
-      logWithDate("ItemRanking Called")
-      return itemList
+        logger.info("ItemRanking Called")
+        return itemList
+      } catch (e) {
+        logger.warn(`get Item Ranking failed`)
+        logger.error(e)
+        throw new Error(`[Error] get Item Ranking failed`)
+      }
     }
   },
   Mutation: {
@@ -89,9 +104,11 @@ module.exports = {
 
       try {
         let queryResult = await InsertItem(arg)
-        logWithDate(`createItem Success! itemId: ${queryResult}`)
+        logger.info(`createItem Success! itemId: ${queryResult}`)
         return true
       } catch (e) {
+        logger.warn(`Failed to create Item`)
+        logger.error(e)
         throw new Error("[Error] Failed to create Item!")
       }
     }

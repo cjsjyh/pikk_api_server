@@ -1,6 +1,6 @@
 import { CrawledItemInfo } from "./type/ReturnType"
 import { validateCrawledItem, extractDomain } from "./util"
-import { strip, logWithDate } from "../Utils/stringUtil"
+import { strip } from "../Utils/stringUtil"
 
 import { crawlCoor } from "./coor"
 import { crawlGiordano, crawlGiordanoMobile } from "./giordano"
@@ -8,6 +8,8 @@ import { crawlDunst } from "./dunst"
 import { crawlDrawFit } from "./drawfit"
 import { crawlTheKnitCompany } from "./theknitcompany"
 import { crawlMusinsa } from "./musinsa"
+
+var logger = require("../../tools/logger")
 
 module.exports = {
   Mutation: {
@@ -25,19 +27,20 @@ module.exports = {
         else if (domain == "theknitcompany.com") result = await crawlTheKnitCompany(args.url)
         else if (domain == "store.musinsa.com") result = await crawlMusinsa(args.url)
         else {
-          logWithDate("Crawler not made for this site yet!: " + args.url)
+          logger.info("Crawler not made for this site yet!: " + args.url)
           throw new Error("Crawler not made for this site yet!")
         }
 
         if (validateCrawledItem(result)) {
-          logWithDate("Item Crawled!")
+          logger.info("Item Crawled!")
           return result
         } else {
-          logWithDate("[Error] Item crawling failed. Retry with valid URL: " + args.url)
-          throw new Error("[Error] Item crawling failed. Retry with valid URL")
+          logger.warn("Item crawling missing some fields: " + args.url)
+          throw new Error("[Error] Item crawling missing some fields")
         }
       } catch (e) {
-        logWithDate("[Error] Item crawling failed. Retry with valid URL: " + args.url)
+        logger.warn("Item crawling failed. Retry with valid URL: " + args.url)
+        logger.error(e)
         throw new Error("[Error] Item crawling failed. Retry with valid URL")
       }
     }

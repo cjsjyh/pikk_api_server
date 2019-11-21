@@ -3,22 +3,29 @@ import express from "express"
 import { ApolloServer } from "apollo-server-express"
 import { createServer } from "http"
 import compression from "compression"
-import cors from "cors"
 const path = require("path")
+
+//Security
+import cors from "cors"
 var jwt = require("jsonwebtoken")
 require("dotenv").config()
+
+//Utility
+var logger = require("./tools/logger")
+var cron = require("node-cron")
 
 //IMPORT GRAPHQL RELATED PACKAGES
 import depthLimit from "graphql-depth-limit"
 import schema from "./schema"
 
+//Constants
+const port = 80
+
 //-------------------------------
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
-import { logWithDate } from "./resolvers/Utils/stringUtil"
-import { getHtmlRequest } from "./resolvers/Crawler/util"
-import { ReplaceImageWithResolutions, CombineItem } from "./resolvers/Utils/tool"
-//import { SearchElasticSearch } from "./database/elastic/elasticConnect"
+import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
+import { CombineItem } from "./tools/tool"
 
 //Create Express Server
 const app = express()
@@ -35,7 +42,6 @@ if (process.env.MODE == "DEPLOY") {
   const rateLimiterRedisMiddleware = require("./middleware/rateLimiter")
   app.use(rateLimiterRedisMiddleware)
 }
-app.use(require("express-status-monitor")())
 app.use(compression())
 
 //Create Apollo Server
@@ -53,8 +59,8 @@ const server = new ApolloServer({
     try {
       var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
     } catch (e) {
-      logWithDate("[Error] Failed to Verify JWT Token")
-      logWithDate(e)
+      logger.warn("Failed to Verify JWT Token")
+      logger.error(e)
       return { IsVerified: false }
     }
     let IsVerified = false
@@ -76,16 +82,20 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
-//let elastic = require("./database/elastic/elasticConnect")
-//async function testfunc() {
-//  let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
-//  await elastic.elasticClient.indices.refresh({ index: "...customer" })
-//  result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-//}
-//testfunc()
+// let elastic = require("./database/elastic/elasticConnect")
+// async function testfunc() {
+//   let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
+//   await elastic.elasticClient.indices.refresh({ index: "...customer" })
+//   result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
+// }
+// testfunc()
+
+cron.schedule("*/2 * * * *", function() {
+  ProcessNotificationQueue()
+})
 
 const httpServer = createServer(app)
-httpServer.listen({ port: 80 }, (): void => logWithDate(`GraphQL is now running on http://localhost:80/graphql`))
+httpServer.listen({ port: port }, (): void => logger.info(`GraphQL is now running on http://localhost:${port}/graphql`))
 
 /*
 process.on("SIGINT", async function() {

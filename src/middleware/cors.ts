@@ -1,4 +1,4 @@
-import { logWithDate } from "../resolvers/Utils/stringUtil"
+var logger = require("../tools/logger")
 
 if (process.env.MODE == "DEPLOY") {
   var whitelist = [
@@ -6,9 +6,6 @@ if (process.env.MODE == "DEPLOY") {
     "https://www.pickk.one",
     "www.pickk.one",
     "pickk.one",
-    "https://pickk.now.sh",
-    "https://www.pickk.now.sh",
-    "www.pickk.now.sh",
     "https://pickkapiserver.online",
     "http://pickkapiserver.online",
     "www.pickkapiserver.online",
@@ -34,8 +31,8 @@ var corsOptions = {
       if (whitelist.indexOf(origin) !== -1) {
         callback(null, true)
       } else {
-        logWithDate(`[CORS] ${origin} Not allowed by CORS`)
-        callback(new Error("Not allowed by CORS"))
+        logger.warn(`[CORS] ${origin} Not allowed by CORS`)
+        callback(new Error(`[CORS] ${origin} Not allowed by CORS`))
       }
     }
   }

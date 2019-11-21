@@ -1,0 +1,36 @@
+type Query {
+  getUserNotification(accountId: Int!): [NotificationInfo]!
+}
+
+type Mutation {
+  setUserNotification(notificationSetInfoInput: NotificationSetInfoInput): Boolean!
+}
+
+#--------------
+#   INPUT
+#--------------
+
+# Query
+enum NotificationTargetType {
+  RECOMMEND
+  COMMUNITY
+}
+
+# Mutation
+input NotificationSetInfoInput {
+  notificationId: Int!
+  accountId: Int!
+}
+
+#---------------
+#   Return
+#---------------
+
+type NotificationInfo {
+  id: Int!
+  targetId: Int!
+  targetType: NotificationTargetType!
+  targetTitle: String!
+  content: String
+  accountId: Int!
+}

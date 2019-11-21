@@ -7,7 +7,8 @@ const imageType = require("image-type")
 const readChunk = require("read-chunk")
 
 import * as AWS from "aws-sdk"
-import { getFormatDate, getFormatHour, logWithDate } from "./stringUtil"
+import { getFormatDate, getFormatHour } from "./stringUtil"
+var logger = require("../../tools/logger")
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<any> {
   return new Promise(async (resolve, reject) => {
@@ -76,8 +77,8 @@ export function RunSingleSQL(sql: string, args?: any): Promise<any> {
         pool = resetPool()
         client = await pool.connect()
       } catch (e) {
-        logWithDate("[Error] Failed to Connect to DB")
-        logWithDate(e)
+        logger.warn("Failed to Connect to DB")
+        logger.error(e)
         throw new Error("[Error] Failed Connecting to DB")
       }
     }
@@ -91,7 +92,7 @@ export function RunSingleSQL(sql: string, args?: any): Promise<any> {
       resolve(queryResult.rows)
     } catch (e) {
       client.release()
-      logWithDate(e)
+      logger.error(e)
       reject("Failed")
     }
   })
@@ -141,11 +142,11 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
       }
       S3.getObject(param, (err, data) => {
         if (err) {
-          logWithDate(err)
+          logger.error(err)
           reject(err)
         }
         fs.writeFile(`./${imageUrl}`, data.Body, function(err) {
-          if (err) logWithDate(err)
+          if (err) logger.error(err)
           resolve()
         })
       })
@@ -175,7 +176,7 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
           }
           S3.upload(param2, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
             if (err) {
-              logWithDate(err)
+              logger.error(err)
               reject(err)
             }
             resolve()
@@ -199,11 +200,11 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
       })
     )
 
-    logWithDate(`Deployed 3 Images`)
+    logger.info(`Deployed 3 Images`)
     return `https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}/` + imageUrl
   } catch (e) {
-    logWithDate("Failed to deploy Image")
-    logWithDate(e)
+    logger.warn("Failed to deploy Image")
+    logger.error(e)
     return null
   }
 }
@@ -231,26 +232,26 @@ export async function DeployImage(imageUrl: string): Promise<string> {
           })
             .promise()
             .then(() => {
-              logWithDate("Successfully Deployed Image")
+              logger.info("Successfully Deployed Image")
               resolve()
             })
             .catch(e => {
-              logWithDate("[Error] Failed to deploy Image")
-              logWithDate(e)
+              logger.warn("Failed to deploy Image")
+              logger.error(e)
               reject(e)
             })
         })
         .catch(e => {
-          logWithDate("[Error] Failed to deploy Image")
-          logWithDate(e)
+          logger.warn("Failed to deploy Image")
+          logger.error(e)
           reject(e)
         })
     })
 
     return `https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}/` + imageUrl
   } catch (e) {
-    logWithDate("Failed to deploy Image")
-    logWithDate(e)
+    logger.warn("Failed to deploy Image")
+    logger.error(e)
     return null
   }
 }
@@ -276,18 +277,18 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
     let imageUrl: string = await new Promise((resolve, reject) => {
       S3.upload(param, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
         if (err) {
-          logWithDate(err)
+          logger.error(err)
           reject(err)
         }
         let imageUrl = data.Location
         resolve(imageUrl)
       })
     })
-    logWithDate("image Upload Temporary")
+    logger.info("image Upload Temporary")
     return imageUrl
   } catch (e) {
-    logWithDate("Failed to Upload Image")
-    logWithDate(e)
+    logger.warn("Failed to Upload Image")
+    logger.error(e)
     return null
   }
 }
@@ -311,13 +312,12 @@ export async function DeleteImage(imageUrl: string) {
     })
       .promise()
       .then(() => {
-        console.log(imageUrl)
-        logWithDate("Successfully Deleted Image")
+        logger.info("Successfully Deleted Image")
         resolve()
       })
       .catch(e => {
-        logWithDate("[Error] Failed to delete Image")
-        logWithDate(e)
+        logger.warn("Failed to delete Image")
+        logger.error(e)
         reject(e)
       })
   })

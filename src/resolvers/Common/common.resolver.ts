@@ -2,7 +2,7 @@ import { RunSingleSQL, SequentialPromiseValue, UploadImageWrapper } from "../Uti
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { ValidateUser } from "../Utils/securityUtil"
-import { logWithDate } from "../Utils/stringUtil"
+var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
@@ -26,12 +26,12 @@ module.exports = {
 
         let query = `SELECT "FK_accountId" FROM "${tableName}_FOLLOWER" WHERE "FK_accountId"=${arg.accountId} and "FK_${variableName}"=${arg.targetId}`
         let result = await RunSingleSQL(query)
-        logWithDate(`IsFollowingTarget Called!`)
+        logger.info(`IsFollowingTarget Called!`)
         if (result.length == 0) return false
         else return true
       } catch (e) {
-        logWithDate("[Error] Failed to check following status")
-        logWithDate(e)
+        logger.warn("Failed to check following status")
+        logger.error(e)
         throw new Error("[Error] Failed to check following status")
       }
     }
@@ -43,8 +43,8 @@ module.exports = {
         let imageUrls: string[] = await SequentialPromiseValue(args.images, UploadImageWrapper)
         return imageUrls
       } catch (e) {
-        logWithDate("[Error] Failed to Upload Image")
-        logWithDate(e)
+        logger.warn("Failed to Upload Image")
+        logger.error(e)
         throw new Error("[Error] Failed to Upload Image")
       }
     },
@@ -57,25 +57,25 @@ module.exports = {
         let query = `SELECT toggle${arg.targetType}Follow(${arg.accountId},${arg.targetId})`
         let result = await RunSingleSQL(query)
         result = Object.values(result[0])
-        logWithDate(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)
+        logger.info(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)
         return result[0]
       } catch (e) {
-        logWithDate("[Error] Failed to Insert into FOLLOWER")
-        logWithDate(e)
+        logger.warn("Failed to Insert into FOLLOWER")
+        logger.error(e)
         throw new Error("[Error] Failed to Insert into FOLLOWER")
       }
     },
 
-    IncrementViewCount: async (parent: void, args: any): Promise<Boolean> => {
+    IncreaseViewCount: async (parent: void, args: any): Promise<Boolean> => {
       try {
         let query = `UPDATE "${args.postType}_POST" SET "viewCount" = "viewCount" + 1 WHERE id = ${args.postId}`
         let result = await RunSingleSQL(query)
-        logWithDate(`RecommendPost viewCount Incremented`)
+        logger.info(`RecommendPost viewCount Increased`)
         return true
       } catch (e) {
-        logWithDate(`[Error] Failed to increase view count for ${args.postType} ${args.postId}`)
-        logWithDate(e)
-        return false
+        logger.warn(`Failed to increase view count for ${args.postType} ${args.postId}`)
+        logger.error(e)
+        throw new Error(`Failed to increase view count for ${args.postType} ${args.postId}`)
       }
     }
   }

@@ -5,11 +5,12 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, ConvertListToOrderedPair, logWithDate, InsertImageIntoDeleteQueue, IsNewImage } from "../Utils/stringUtil"
+import { GetFormatSql, ConvertListToOrderedPair, InsertImageIntoDeleteQueue, IsNewImage } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 import { InsertImageIntoTable } from "../Common/util"
+var logger = require("../../tools/logger")
 
 module.exports = {
   Mutation: {
@@ -43,10 +44,11 @@ module.exports = {
           userAccount.isNewUser = true
           userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
         }
-        logWithDate(`User ${userAccount.id} Created`)
+        logger.info(`User ${userAccount.id} Created`)
         return userAccount
       } catch (e) {
-        logWithDate(e)
+        logger.warn("Failed to create User")
+        logger.error(e)
         throw new Error("[Error] Failed to create User")
       }
     },
@@ -63,12 +65,12 @@ module.exports = {
           [arg.accountId, arg.name, arg.email, arg.age, arg.height, arg.weight, arg.profileImageUrl, arg.phoneNum, arg.address]
         )
 
-        logWithDate(`User Info for User ${arg.accountId} created`)
+        logger.info(`User Info for User ${arg.accountId} created`)
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to Insert into USER_INFO")
-        logWithDate(e)
-        return false
+        logger.warn("Failed to Insert into USER_INFO")
+        logger.error(e)
+        throw new Error("Failed to Insert into USER_INFO")
       }
     },
 
@@ -104,12 +106,12 @@ module.exports = {
           ${setSql}
           WHERE "FK_accountId"=${arg.accountId}
         `)
-        logWithDate(`User Channel Info Updated! id ${arg.accountId}`)
+        logger.info(`User Channel Info Updated! id ${arg.accountId}`)
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to update user channel info")
-        logWithDate(e)
-        return false
+        logger.warn("Failed to update user channel info")
+        logger.error(e)
+        throw new Error("Failed to update user channel info")
       }
     },
 
@@ -121,12 +123,12 @@ module.exports = {
         let querySql = await GetUpdateUserInfoSql(arg)
 
         let qResult = await RunSingleSQL(querySql)
-        logWithDate(`User Info for User ${arg.accountId} updated`)
+        logger.info(`User Info for User ${arg.accountId} updated`)
         return true
       } catch (e) {
-        logWithDate("[Error] Failed to update USER_INFO")
-        logWithDate(e)
-        return false
+        logger.warn("Failed to update USER_INFO")
+        logger.error(e)
+        throw new Error("Failed to update USER_INFO")
       }
     },
 
@@ -134,13 +136,13 @@ module.exports = {
       try {
         let query = `SELECT * FROM "USER_INFO" WHERE name='${args.name}'`
         let result = await RunSingleSQL(query)
-        logWithDate(`Checked DuplicateName ${args.name}`)
+        logger.info(`Checked DuplicateName ${args.name}`)
 
         if (result.length != 0) return true
         return false
       } catch (e) {
-        logWithDate(`[Error] Failed to check Duplicate for ${args.name}`)
-        logWithDate(e)
+        logger.warn(`Failed to check Duplicate for ${args.name}`)
+        logger.error(e)
         throw new Error(`[Error] Failed to check Duplicate for ${args.name}`)
       }
     }
@@ -151,11 +153,11 @@ module.exports = {
       try {
         let requestSql = UserInfoSelectionField(info)
         let result: ReturnType.UserInfo[] = await GetUserInfoByIdList([arg.id], requestSql)
-        logWithDate(`Retrieve UserInfo for ${arg.id}`)
+        logger.info(`Retrieve UserInfo for ${arg.id}`)
         return result[0]
       } catch (e) {
-        logWithDate("[Error] Failed to fetch UserInfo from DB")
-        logWithDate(e)
+        logger.warn("Failed to fetch UserInfo from DB")
+        logger.error(e)
         throw new Error("[Error] Failed to fetch UserInfo from DB")
       }
     },
@@ -171,11 +173,11 @@ module.exports = {
         let channelIdList = ExtractFieldFromList(followingChannelList, "FK_channelId")
         let requestSql = UserInfoSelectionField(info)
         let final_result = await GetUserInfoByIdList(channelIdList, requestSql, formatSql)
-        logWithDate(`User Pick Channel called id ${arg.userId}`)
+        logger.info(`User Pick Channel called id ${arg.userId}`)
         return final_result
       } catch (e) {
-        logWithDate("[Error] Failed to fetch Picked UserInfo from DB")
-        logWithDate(e)
+        logger.warn("Failed to fetch Picked UserInfo from DB")
+        logger.error(e)
         throw new Error("[Error] Failed to fetch UserInfo from DB")
       }
     },
@@ -191,11 +193,11 @@ module.exports = {
         order by x.ordering
         `
         let userList = await GetUserInfoByIdList(idList, "", orderSql)
-        logWithDate("CHANNEL RANK FETCH DONE")
+        logger.info("CHANNEL RANK FETCH DONE")
         return userList
       } catch (e) {
-        logWithDate("[Error] Faield to load Channel Ranking")
-        logWithDate(e)
+        logger.warn("Faield to load Channel Ranking")
+        logger.error(e)
         throw new Error("[Error] Faield to load Channel Ranking")
       }
     }
@@ -228,7 +230,7 @@ function UserInfoSelectionField(info: GraphQLResolveInfo) {
     }
     return result
   } catch (e) {
-    logWithDate(e)
+    logger.error(e)
   }
 }
 
@@ -245,7 +247,7 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
       resultSql += `"profileImgUrl"='${arg.profileImageUrl}'`
       isMultiple = true
     } catch (e) {
-      throw new Error("[Error] Image Upload Failed!")
+      throw new Error("[Error] ProfileImage Upload Failed!")
     }
   }
 

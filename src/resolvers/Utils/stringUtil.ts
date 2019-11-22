@@ -2,6 +2,16 @@ export function logWithDate(content: any) {
   console.log(`[${getDateTime()}] ` + content)
 }
 
+export function formatUrl(imageUrl: string): string {
+  if (imageUrl[0] != "h") {
+    let i = 0
+    while (imageUrl[i] == "/") i += 1
+    imageUrl = imageUrl.substr(i, imageUrl.length)
+    imageUrl = "http://" + imageUrl
+  }
+  return imageUrl
+}
+
 export function hasNumber(myStr: string): boolean {
   return /\d/.test(myStr)
 }

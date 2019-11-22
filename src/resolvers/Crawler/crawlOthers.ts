@@ -52,7 +52,6 @@ export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
     purchaseUrl: sourceUrl
   }
 
-  console.log(result)
   return result
 }
 

@@ -9,6 +9,7 @@ import { crawlDrawFit } from "./drawfit"
 import { crawlTheKnitCompany } from "./theknitcompany"
 import { crawlMusinsa } from "./musinsa"
 import { crawlOthers } from "./crawlOthers"
+import { crawlLlude } from "./llude"
 
 var logger = require("../../tools/logger")
 
@@ -27,8 +28,10 @@ module.exports = {
         else if (domain == "draw-fit.com") result = await crawlDrawFit(args.url)
         else if (domain == "theknitcompany.com") result = await crawlTheKnitCompany(args.url)
         else if (domain == "store.musinsa.com") result = await crawlMusinsa(args.url)
+        else if (domain == "llud.co.kr") result = await crawlLlude(args.url)
         else {
           result = await crawlOthers(args.url)
+          logger.debug(result.purchaseUrl)
         }
 
         if (validateCrawledItem(result)) {

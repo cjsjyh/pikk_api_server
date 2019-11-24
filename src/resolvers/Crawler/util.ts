@@ -66,13 +66,11 @@ export function parseHtml(
       value = $(parentSelector)
         .find($(childSelector))
         .eq(index)
-        .contents()
         .first()
         .text()
     else
       value = $(parentSelector)
         .eq(index)
-        .contents()
         .first()
         .text()
   }

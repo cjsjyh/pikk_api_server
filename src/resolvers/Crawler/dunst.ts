@@ -7,6 +7,11 @@ export async function crawlDunst(sourceUrl): Promise<CrawledItemInfo> {
 
   let price = parseHtml(htmlCode, "number", "value", ".price_box", ".sobi")
   let saleprice = parseHtml(htmlCode, "number", "value", ".price_box", ".price")
+  if (price == null || price < saleprice) {
+    price = saleprice
+    saleprice = null
+  }
+
   let itemname = parseHtml(htmlCode, "string", "value", ".name_box")
   let image = parseHtml(htmlCode, "string", "attribute", ".xans-product-image", "img", "src")
 

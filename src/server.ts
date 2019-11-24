@@ -24,9 +24,14 @@ const port = 80
 //-------------------------------
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
-import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
+import {
+  InsertIntoNotificationQueue,
+  ProcessNotificationQueue
+} from "./resolvers/Notification/util"
 import { CombineItem } from "./tools/tool"
 import { crawlLfmall } from "./resolvers/Crawler/lfmall"
+import { crawlMustIt } from "./resolvers/Crawler/mustit"
+import { crawlEbay } from "./resolvers/Crawler/ebay"
 
 //Create Express Server
 const app = express()
@@ -51,9 +56,15 @@ const server = new ApolloServer({
 
   context: ({ req }) => {
     const header: any = req.headers
-    if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")) {
+    if (
+      !Object.prototype.hasOwnProperty.call(header, "authorizationtoken") ||
+      !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")
+    ) {
       return { IsVerified: false }
-    } else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined") {
+    } else if (
+      header.authorizationtoken == "undefined" ||
+      header.authorizationuserid == "undefined"
+    ) {
       return { IsVerified: false }
     }
 
@@ -88,6 +99,16 @@ async function testfunc() {
   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
+  // console.log(
+  //   await crawlEbay(
+  //     "https://www.ebay.com/itm/Drone-X-Pro-WIFI-FPV-1080P-HD-Camera-3-Batteries-Foldable-Selfie-RC-Quadcopter/254299218396?_trkparms=pageci%3A4483fe09-0ebd-11ea-9b31-74dbd180777b%7Cparentrq%3A9d92a96116e0a4ea9b3947e1ffe28772%7Ciid%3A1"
+  //   )
+  // )
+  // console.log(
+  //   await crawlEbay(
+  //     "https://www.ebay.com/itm/Global-Xiaomi-70MAI-Smart-Dash-Cam-130-Degree-1S-Car-DVR-1080P-HD-Car-Recorder/362671241737?_trkparms=pageci%3A4483fe09-0ebd-11ea-9b31-74dbd180777b%7Cparentrq%3A9d92a96116e0a4ea9b3947e1ffe28772%7Ciid%3A1"
+  //   )
+  // )
 }
 testfunc()
 
@@ -96,7 +117,9 @@ cron.schedule("*/1 * * * *", function() {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: port }, (): void => logger.info(`GraphQL is now running on http://localhost:${port}/graphql`))
+httpServer.listen({ port: port }, (): void =>
+  logger.info(`GraphQL is now running on http://localhost:${port}/graphql`)
+)
 
 /*
 process.on("SIGINT", async function() {

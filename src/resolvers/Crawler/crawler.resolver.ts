@@ -10,6 +10,9 @@ import { crawlTheKnitCompany } from "./theknitcompany"
 import { crawlMusinsa } from "./musinsa"
 import { crawlOthers } from "./crawlOthers"
 import { crawlLlude } from "./llude"
+import { crawlLfmall } from "./lfmall"
+import { crawlEbay } from "./ebay"
+import { crawlMustIt } from "./mustit"
 
 var logger = require("../../tools/logger")
 
@@ -29,6 +32,9 @@ module.exports = {
         else if (domain == "theknitcompany.com") result = await crawlTheKnitCompany(args.url)
         else if (domain == "store.musinsa.com") result = await crawlMusinsa(args.url)
         else if (domain == "llud.co.kr") result = await crawlLlude(args.url)
+        else if (domain == "lfmall.co.kr") result = await crawlLfmall(args.url)
+        else if (domain == "mustit.co.kr") result = await crawlMustIt(args.url)
+        else if (domain == "ebay.com") result = await crawlEbay(args.url)
         else {
           result = await crawlOthers(args.url)
           logger.debug(result.purchaseUrl)

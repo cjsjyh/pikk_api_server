@@ -31,6 +31,8 @@ import { crawlMustIt } from "./resolvers/Crawler/mustit"
 import { crawlEbay } from "./resolvers/Crawler/ebay"
 import { crawlMatchesFashion } from "./resolvers/Crawler/machesfashion"
 import { crawlSSG } from "./resolvers/Crawler/ssg"
+import { crawlWConcept } from "./resolvers/Crawler/wconcept"
+import { crawlOco } from "./resolvers/Crawler/oco"
 
 //Create Express Server
 const app = express()
@@ -92,8 +94,8 @@ async function testfunc() {
   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-  // console.log(await crawlSSG("http://www.ssg.com/item/itemView.ssg?itemId=1000030100709&siteNo=6009&salestrNo=1013"))
-  // console.log(await crawlSSG("http://www.ssg.com/item/itemView.ssg?itemId=0000000022754&siteNo=6009&salestrNo=1004"))
+  // console.log(await crawlOco("https://www.ocokorea.com/shop/goods/product_view.do?pid=30192&pcid=132&pcid1=70&pcid2=132&pcid3=&pcid4="))
+  // console.log(await crawlOco("https://www.ocokorea.com/shop/goods/product_view.do?pid=30165&pcid=132&pcid1=70&pcid2=132&pcid3=&pcid4="))
 }
 testfunc()
 

@@ -14,6 +14,8 @@ import { crawlLfmall } from "./lfmall"
 import { crawlEbay } from "./ebay"
 import { crawlMustIt } from "./mustit"
 import { crawlMatchesFashion } from "./machesfashion"
+import { crawlWConcept } from "./wconcept"
+import { crawlOco } from "./oco"
 
 var logger = require("../../tools/logger")
 
@@ -36,6 +38,8 @@ module.exports = {
         else if (domain == "mustit.co.kr") result = await crawlMustIt(args.url)
         else if (domain == "ebay.com") result = await crawlEbay(args.url)
         else if (domain == "matchesfashion.com") result = await crawlMatchesFashion(args.url)
+        else if (domain == "wconcept.co.kr") result = await crawlWConcept(args.url)
+        else if (domain == "ocokorea.com") result = await crawlOco(args.url)
         else {
           result = await crawlOthers(args.url)
           logger.debug(result.purchaseUrl)

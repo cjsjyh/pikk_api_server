@@ -7,9 +7,9 @@ type Mutation {
 #----------
 type CrawledItemInfo {
   brandKor: String
-  name: String!
-  originalPrice: Int!
+  name: String
+  originalPrice: Int
   salePrice: Int
-  purchaseUrl: String!
-  imageUrl: [String!]!
+  purchaseUrl: String
+  imageUrl: [String]
 }

@@ -38,15 +38,11 @@ module.exports = {
         else {
           result = await crawlOthers(args.url)
           logger.debug(result.purchaseUrl)
+          logger.debug(JSON.stringify(result, null, 4))
         }
 
-        if (validateCrawledItem(result)) {
-          logger.info("Item Crawled!")
-          return result
-        } else {
-          logger.warn("Item crawling missing some fields: " + args.url)
-          throw new Error("[Error] Item crawling missing some fields")
-        }
+        logger.info("Item Crawled!")
+        return result
       } catch (e) {
         logger.warn("Item crawling failed. Retry with valid URL: " + args.url)
         logger.error(e.stack)

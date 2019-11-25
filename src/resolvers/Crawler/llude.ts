@@ -10,6 +10,7 @@ export async function crawlLlude(sourceUrl): Promise<CrawledItemInfo> {
   let saleprice = parseHtml(htmlCode, "number", "value", ".cont", ".price")
   let itemname = parseHtml(htmlCode, "string", "value", ".info_text", ".name")
   let image = parseHtml(htmlCode, "string", "attribute", ".xans-product .xans-product-image", "img", "src")
+  if (price == saleprice) saleprice = null
 
   let result: CrawledItemInfo = {
     brandKor: brand,

@@ -96,15 +96,6 @@ function convertStringToNumber(str: string): number {
   return Number(removed)
 }
 
-export function validateCrawledItem(result: CrawledItemInfo): boolean {
-  if (result.brandKor == null) return false
-  if (result.imageUrl == null) return false
-  if (result.name == null) return false
-  if (result.originalPrice == null) return false
-  if (result.purchaseUrl == null) return false
-  return true
-}
-
 export function extractDomain(url: string): string {
   url = url.replace("https://", "")
   url = url.replace("http://", "")

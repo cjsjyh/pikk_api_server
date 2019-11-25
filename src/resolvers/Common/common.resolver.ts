@@ -2,6 +2,7 @@ import { RunSingleSQL, SequentialPromiseValue, UploadImageWrapper } from "../Uti
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { ValidateUser } from "../Utils/securityUtil"
+import { DelCacheByPattern } from "../../database/redisConnect"
 var logger = require("../../tools/logger")
 
 module.exports = {
@@ -54,6 +55,11 @@ module.exports = {
       let arg: ReturnType.FollowInfo = args.followInfo
 
       try {
+        if (arg.targetType == "RECOMMENDPOST") {
+          await DelCacheByPattern("allRecom*10DESC*")
+          await DelCacheByPattern("allRecom050DESCtime" + String(arg.targetId) + "*")
+        }
+
         let query = `SELECT toggle${arg.targetType}Follow(${arg.accountId},${arg.targetId})`
         let result = await RunSingleSQL(query)
         result = Object.values(result[0])

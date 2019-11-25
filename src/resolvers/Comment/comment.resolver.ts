@@ -6,6 +6,7 @@ import { RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertToCommentTableName, GetBoardName } from "./util"
 import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
 import { InsertIntoNotificationQueue } from "../Notification/util"
+import { DelCacheByPattern } from "../../database/redisConnect"
 var logger = require("../../tools/logger")
 
 module.exports = {
@@ -39,6 +40,11 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
+        if (arg.targetType == "RECOMMEND") {
+          await DelCacheByPattern("allRecom*10DESC*")
+          await DelCacheByPattern("allRecom050DESCtime" + String(arg.targetId) + "*")
+        }
+
         let querySql = `INSERT INTO ${ConvertToCommentTableName(arg.targetType)} ("FK_postId","FK_accountId","FK_parentId","content") 
         VALUES(
           ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`
@@ -70,6 +76,9 @@ module.exports = {
         throw new Error(`[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`)
       }
       try {
+        await DelCacheByPattern("allRecom*10DESC*")
+        await DelCacheByPattern("allRecom050DESCtime" + String(arg.targetId) + "*")
+
         let querySql = `DELETE FROM "${ConvertToCommentTableName(arg.targetType)}" WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)
 

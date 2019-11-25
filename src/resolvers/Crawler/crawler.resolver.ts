@@ -1,5 +1,5 @@
 import { CrawledItemInfo } from "./type/ReturnType"
-import { validateCrawledItem, extractDomain } from "./util"
+import { extractDomain } from "./util"
 import { strip } from "../Utils/stringUtil"
 
 import { crawlCoor } from "./coor"
@@ -13,6 +13,7 @@ import { crawlLlude } from "./llude"
 import { crawlLfmall } from "./lfmall"
 import { crawlEbay } from "./ebay"
 import { crawlMustIt } from "./mustit"
+import { crawlMatchesFashion } from "./machesfashion"
 
 var logger = require("../../tools/logger")
 
@@ -21,7 +22,6 @@ module.exports = {
     crawlItem: async (parent: void, args: any): Promise<CrawledItemInfo> => {
       args.url = strip(args.url)
       let domain = extractDomain(args.url)
-
       try {
         let result: CrawledItemInfo
         if (domain == "coor.kr") result = await crawlCoor(args.url)
@@ -35,10 +35,10 @@ module.exports = {
         else if (domain == "lfmall.co.kr") result = await crawlLfmall(args.url)
         else if (domain == "mustit.co.kr") result = await crawlMustIt(args.url)
         else if (domain == "ebay.com") result = await crawlEbay(args.url)
+        else if (domain == "matchesfashion.com") result = await crawlMatchesFashion(args.url)
         else {
           result = await crawlOthers(args.url)
           logger.debug(result.purchaseUrl)
-          logger.debug(JSON.stringify(result, null, 4))
         }
 
         logger.info("Item Crawled!")

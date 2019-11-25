@@ -30,6 +30,7 @@ import { crawlLfmall } from "./resolvers/Crawler/lfmall"
 import { crawlMustIt } from "./resolvers/Crawler/mustit"
 import { crawlEbay } from "./resolvers/Crawler/ebay"
 import { crawlMatchesFashion } from "./resolvers/Crawler/machesfashion"
+import { crawlSSG } from "./resolvers/Crawler/ssg"
 
 //Create Express Server
 const app = express()
@@ -91,8 +92,8 @@ async function testfunc() {
   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-  console.log(await crawlMatchesFashion("https://www.matchesfashion.com/products/Balmain-Multi-pocket-cotton-parka-1238810"))
-  console.log(await crawlMatchesFashion("https://www.matchesfashion.com/products/Gucci-GG-jacquard-side-stripe-technical-track-jacket-1311887"))
+  // console.log(await crawlSSG("http://www.ssg.com/item/itemView.ssg?itemId=1000030100709&siteNo=6009&salestrNo=1013"))
+  // console.log(await crawlSSG("http://www.ssg.com/item/itemView.ssg?itemId=0000000022754&siteNo=6009&salestrNo=1004"))
 }
 testfunc()
 

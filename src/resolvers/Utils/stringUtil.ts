@@ -12,6 +12,12 @@ export function formatUrl(imageUrl: string): string {
   return imageUrl
 }
 
+export function convertToWon(price: any, currency: "pound" | "dollar"): number {
+  if (price == null) return null
+  if (currency == "pound") return price * 1500
+  else if (currency == "dollar") return price * 1175
+}
+
 export function hasNumber(myStr: string): boolean {
   return /\d/.test(myStr)
 }

@@ -21,7 +21,8 @@ export async function crawlGiordano(sourceUrl): Promise<CrawledItemInfo> {
     salePrice: saleprice,
     name: strip(itemname),
     imageUrl: [formatUrl(image)],
-    purchaseUrl: sourceUrl
+    purchaseUrl: sourceUrl,
+    isEstimated: false
   }
   return result
 }
@@ -46,7 +47,8 @@ export async function crawlGiordanoMobile(sourceUrl): Promise<CrawledItemInfo> {
     salePrice: saleprice,
     name: strip(itemname),
     imageUrl: [formatUrl(image)],
-    purchaseUrl: sourceUrl
+    purchaseUrl: sourceUrl,
+    isEstimated: false
   }
   return result
 }

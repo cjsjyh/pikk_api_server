@@ -21,7 +21,8 @@ export async function crawlDrawFit(sourceUrl): Promise<CrawledItemInfo> {
     salePrice: saleprice,
     name: strip(itemname),
     imageUrl: [formatUrl(image)],
-    purchaseUrl: sourceUrl
+    purchaseUrl: sourceUrl,
+    isEstimated: false
   }
   return result
 }

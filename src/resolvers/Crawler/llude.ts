@@ -18,7 +18,8 @@ export async function crawlLlude(sourceUrl): Promise<CrawledItemInfo> {
     salePrice: saleprice,
     name: strip(itemname),
     imageUrl: [formatUrl(image)],
-    purchaseUrl: sourceUrl
+    purchaseUrl: sourceUrl,
+    isEstimated: false
   }
   return result
 }

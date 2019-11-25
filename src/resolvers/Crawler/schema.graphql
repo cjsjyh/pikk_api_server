@@ -12,4 +12,5 @@ type CrawledItemInfo {
   salePrice: Int
   purchaseUrl: String
   imageUrl: [String]
+  isEstimated: Boolean
 }

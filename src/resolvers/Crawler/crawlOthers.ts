@@ -56,7 +56,8 @@ export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
     salePrice: null,
     name: strip(itemname),
     imageUrl: images,
-    purchaseUrl: sourceUrl
+    purchaseUrl: sourceUrl,
+    isEstimated: false
   }
 
   return result

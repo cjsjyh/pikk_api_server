@@ -1,6 +1,6 @@
-import { getHtmlRequest, parseHtml, getHtmlAxios } from "./util"
-import { CrawledItemInfo } from "./type/ReturnType"
-import { strip, hasNumber, hasCurrency, extractNumber, formatUrl } from "../Utils/stringUtil"
+import { getHtmlRequest, parseHtml, getHtmlAxios } from "../util"
+import { CrawledItemInfo } from "../type/ReturnType"
+import { strip, hasNumber, hasCurrency, extractNumber, formatUrl } from "../../Utils/stringUtil"
 
 const cheerio = require("cheerio")
 

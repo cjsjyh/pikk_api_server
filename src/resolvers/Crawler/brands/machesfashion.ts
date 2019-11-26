@@ -1,6 +1,6 @@
-import { getHtmlRequest, parseHtml } from "./util"
-import { CrawledItemInfo } from "./type/ReturnType"
-import { strip, formatUrl, convertToWon } from "../Utils/stringUtil"
+import { getHtmlRequest, parseHtml } from "../util"
+import { CrawledItemInfo } from "../type/ReturnType"
+import { strip, formatUrl, convertToWon } from "../../Utils/stringUtil"
 
 export async function crawlMatchesFashion(sourceUrl): Promise<CrawledItemInfo> {
   let htmlCode = await getHtmlRequest(sourceUrl)

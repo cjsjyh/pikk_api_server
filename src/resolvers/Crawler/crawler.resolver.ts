@@ -1,5 +1,5 @@
 import { CrawledItemInfo } from "./type/ReturnType"
-import { validateCrawledItem, extractDomain } from "./util"
+import { extractDomain } from "./util"
 import { strip } from "../Utils/stringUtil"
 
 import { crawlCoor } from "./coor"
@@ -9,6 +9,13 @@ import { crawlDrawFit } from "./drawfit"
 import { crawlTheKnitCompany } from "./theknitcompany"
 import { crawlMusinsa } from "./musinsa"
 import { crawlOthers } from "./crawlOthers"
+import { crawlLlude } from "./llude"
+import { crawlLfmall } from "./lfmall"
+import { crawlEbay } from "./ebay"
+import { crawlMustIt } from "./mustit"
+import { crawlMatchesFashion } from "./machesfashion"
+import { crawlWConcept } from "./wconcept"
+import { crawlOco } from "./oco"
 
 var logger = require("../../tools/logger")
 
@@ -17,7 +24,6 @@ module.exports = {
     crawlItem: async (parent: void, args: any): Promise<CrawledItemInfo> => {
       args.url = strip(args.url)
       let domain = extractDomain(args.url)
-
       try {
         let result: CrawledItemInfo
         if (domain == "coor.kr") result = await crawlCoor(args.url)
@@ -27,17 +33,20 @@ module.exports = {
         else if (domain == "draw-fit.com") result = await crawlDrawFit(args.url)
         else if (domain == "theknitcompany.com") result = await crawlTheKnitCompany(args.url)
         else if (domain == "store.musinsa.com") result = await crawlMusinsa(args.url)
+        else if (domain == "llud.co.kr") result = await crawlLlude(args.url)
+        else if (domain == "lfmall.co.kr") result = await crawlLfmall(args.url)
+        else if (domain == "mustit.co.kr") result = await crawlMustIt(args.url)
+        else if (domain == "ebay.com") result = await crawlEbay(args.url)
+        else if (domain == "matchesfashion.com") result = await crawlMatchesFashion(args.url)
+        else if (domain == "wconcept.co.kr") result = await crawlWConcept(args.url)
+        else if (domain == "ocokorea.com") result = await crawlOco(args.url)
         else {
           result = await crawlOthers(args.url)
+          logger.debug(result.purchaseUrl)
         }
 
-        if (validateCrawledItem(result)) {
-          logger.info("Item Crawled!")
-          return result
-        } else {
-          logger.warn("Item crawling missing some fields: " + args.url)
-          throw new Error("[Error] Item crawling missing some fields")
-        }
+        logger.info("Item Crawled!")
+        return result
       } catch (e) {
         logger.warn("Item crawling failed. Retry with valid URL: " + args.url)
         logger.error(e.stack)

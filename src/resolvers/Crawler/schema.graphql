@@ -6,10 +6,11 @@ type Mutation {
 # Return
 #----------
 type CrawledItemInfo {
-  brandKor: String!
-  name: String!
-  originalPrice: Int!
+  brandKor: String
+  name: String
+  originalPrice: Int
   salePrice: Int
-  purchaseUrl: String!
-  imageUrl: [String!]!
+  purchaseUrl: String
+  imageUrl: [String]
+  isEstimated: Boolean
 }

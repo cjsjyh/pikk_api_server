@@ -1,6 +1,6 @@
 import { getHtmlRequest, parseHtml } from "./util"
 import { CrawledItemInfo } from "./type/ReturnType"
-import { strip } from "../Utils/stringUtil"
+import { strip, formatUrl } from "../Utils/stringUtil"
 
 export async function crawlCoor(sourceUrl): Promise<CrawledItemInfo> {
   let htmlCode = await getHtmlRequest(sourceUrl)
@@ -15,8 +15,9 @@ export async function crawlCoor(sourceUrl): Promise<CrawledItemInfo> {
     originalPrice: price,
     salePrice: saleprice,
     name: strip(itemname),
-    imageUrl: [image],
-    purchaseUrl: sourceUrl
+    imageUrl: [formatUrl(image)],
+    purchaseUrl: sourceUrl,
+    isEstimated: false
   }
   return result
 }

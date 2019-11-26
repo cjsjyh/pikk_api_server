@@ -142,7 +142,7 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        await DelCacheByPattern("allRecom*")
+        await DelCacheByPattern("allRecom*10DESC*")
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
         logger.warn(`Faield to delete recommend post cache`)
@@ -193,7 +193,8 @@ module.exports = {
         throw new Error(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
       }
       try {
-        await DelCacheByPattern("allRecom*")
+        await DelCacheByPattern("allRecom*10DESC*")
+        await DelCacheByPattern("allRecom050DESCtime" + String(arg.postId) + "*")
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
         logger.warn(`Faield to delete recommend post cache`)
@@ -256,7 +257,7 @@ module.exports = {
       }
 
       try {
-        await DelCacheByPattern("allRecom*")
+        await DelCacheByPattern("allRecom*10DESC*")
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
         logger.warn(`Faield to delete recommend post cache`)

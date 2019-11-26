@@ -5,4 +5,5 @@ export type CrawledItemInfo = {
   salePrice: number
   purchaseUrl: string
   imageUrl: string[]
+  isEstimated: boolean
 }

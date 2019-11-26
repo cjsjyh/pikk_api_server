@@ -1,12 +1,17 @@
 import { getHtmlRequest, parseHtml } from "./util"
 import { CrawledItemInfo } from "./type/ReturnType"
-import { strip } from "../Utils/stringUtil"
+import { strip, formatUrl } from "../Utils/stringUtil"
 
 export async function crawlDunst(sourceUrl): Promise<CrawledItemInfo> {
   let htmlCode = await getHtmlRequest(sourceUrl)
 
   let price = parseHtml(htmlCode, "number", "value", ".price_box", ".sobi")
   let saleprice = parseHtml(htmlCode, "number", "value", ".price_box", ".price")
+  if (price == null || price < saleprice) {
+    price = saleprice
+    saleprice = null
+  }
+
   let itemname = parseHtml(htmlCode, "string", "value", ".name_box")
   let image = parseHtml(htmlCode, "string", "attribute", ".xans-product-image", "img", "src")
 
@@ -15,8 +20,9 @@ export async function crawlDunst(sourceUrl): Promise<CrawledItemInfo> {
     originalPrice: price,
     salePrice: saleprice,
     name: strip(itemname),
-    imageUrl: [image],
-    purchaseUrl: sourceUrl
+    imageUrl: [formatUrl(image)],
+    purchaseUrl: sourceUrl,
+    isEstimated: false
   }
   return result
 }

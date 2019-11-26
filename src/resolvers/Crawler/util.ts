@@ -14,13 +14,16 @@ export async function getHtmlRequest(sourceUrl: string) {
       request(
         {
           url: sourceUrl, // 원하는 url값을 입력
-          encoding: null //해당 값을 null로 해주어야 제대로 iconv가 제대로 decode 해준다.
+          encoding: null, //해당 값을 null로 해주어야 제대로 iconv가 제대로 decode 해준다.
+          headers: { "User-Agent": "Mozilla/5.0" }
         },
         function(error, res, body) {
           if (!error && res.statusCode == 200) {
             const enc = charset(res.headers, body) // 해당 사이트의 charset값을 획득
             const i_result = iconv.decode(body, enc) // 획득한 charset값으로 body를 디코딩
             resolve(i_result)
+          } else {
+            reject(error)
           }
         }
       )
@@ -32,7 +35,9 @@ export async function getHtmlRequest(sourceUrl: string) {
 
 export async function getHtmlAxios(sourceUrl: string) {
   try {
-    return axios.get(sourceUrl)
+    return axios.get(sourceUrl, {
+      headers: { "User-Agent": "Mozilla/5.0" }
+    })
   } catch (e) {
     logger.error(e.stack)
   }
@@ -66,13 +71,11 @@ export function parseHtml(
       value = $(parentSelector)
         .find($(childSelector))
         .eq(index)
-        .contents()
         .first()
         .text()
     else
       value = $(parentSelector)
         .eq(index)
-        .contents()
         .first()
         .text()
   }
@@ -96,15 +99,6 @@ function convertSelectorListToString(selectors: string[]): string {
 function convertStringToNumber(str: string): number {
   let removed = str.replace(/[^\d.-]/g, "")
   return Number(removed)
-}
-
-export function validateCrawledItem(result: CrawledItemInfo): boolean {
-  if (result.brandKor == null) return false
-  if (result.imageUrl == null) return false
-  if (result.name == null) return false
-  if (result.originalPrice == null) return false
-  if (result.purchaseUrl == null) return false
-  return true
 }
 
 export function extractDomain(url: string): string {

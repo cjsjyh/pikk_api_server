@@ -36,10 +36,10 @@ export async function getHtmlRequest(sourceUrl: string) {
 export async function getHtmlAxios(sourceUrl: string) {
   try {
     return axios.get(sourceUrl, {
-      headers: { "User-Agent": "Mozilla/5.0" }
+      headers: { "User-Agent": "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)" }
     })
   } catch (e) {
-    logger.error(e.stack)
+    logger.error(e.response)
   }
 }
 

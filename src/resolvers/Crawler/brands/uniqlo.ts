@@ -10,17 +10,6 @@ export async function crawlUniqlo(sourceUrl): Promise<CrawledItemInfo> {
 
   let price = parseHtml(htmlCode, "number", "value", "#salePrice")
 
-  // let result22: CrawledItemInfo = {
-  //   brandKor: brand,
-  //   originalPrice: price,
-  //   salePrice: saleprice,
-  //   name: itemname,
-  //   imageUrl: [image],
-  //   purchaseUrl: sourceUrl,
-  //   isEstimated: false
-  // }
-  // console.log(result22)
-
   let result: CrawledItemInfo = {
     brandKor: "유니클로",
     originalPrice: price,

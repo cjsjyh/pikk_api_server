@@ -26,13 +26,10 @@ const port = 80
 //-------------------------------
 import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
 import { CombineItem } from "./tools/tool"
-import { crawlLfmall } from "./resolvers/Crawler/lfmall"
-import { crawlMustIt } from "./resolvers/Crawler/mustit"
-import { crawlEbay } from "./resolvers/Crawler/ebay"
-import { crawlMatchesFashion } from "./resolvers/Crawler/machesfashion"
-import { crawlSSG } from "./resolvers/Crawler/ssg"
-import { crawlWConcept } from "./resolvers/Crawler/wconcept"
-import { crawlOco } from "./resolvers/Crawler/oco"
+import { crawlZara } from "./resolvers/Crawler/brands/zara"
+import { crawlUniqlo } from "./resolvers/Crawler/brands/uniqlo"
+import { crawlHandM } from "./resolvers/Crawler/brands/HandM"
+import { crawlNike } from "./resolvers/Crawler/brands/nike"
 
 //Create Express Server
 const app = express()
@@ -94,8 +91,8 @@ async function testfunc() {
   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-  // console.log(await crawlOco("https://www.ocokorea.com/shop/goods/product_view.do?pid=30192&pcid=132&pcid1=70&pcid2=132&pcid3=&pcid4="))
-  // console.log(await crawlOco("https://www.ocokorea.com/shop/goods/product_view.do?pid=30165&pcid=132&pcid1=70&pcid2=132&pcid3=&pcid4="))
+  console.log(await crawlNike("https://www.nike.com/kr/ko_kr/t/men/ap/nike-sportswear/BV4752-010/iyvt63/as-m-nsw-dwn-fill-prka-hd"))
+  console.log(await crawlNike("https://www.nike.com/kr/ko_kr/t/men/fw/nike-sportswear/CQ7512-046/jzfr83/nike-air-max-97"))
 }
 testfunc()
 

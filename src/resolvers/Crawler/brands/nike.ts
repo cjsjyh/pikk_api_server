@@ -1,9 +1,10 @@
-import { getHtmlRequest, parseHtml } from "../util"
+import { getHtmlRequest, parseHtml, getHtmlAxios } from "../util"
 import { CrawledItemInfo } from "../type/ReturnType"
 import { strip, formatUrl } from "../../Utils/stringUtil"
 
 export async function crawlNike(sourceUrl): Promise<CrawledItemInfo> {
-  let htmlCode = await getHtmlRequest(sourceUrl)
+  let htmlCode = await getHtmlAxios(sourceUrl)
+  htmlCode = htmlCode.data
 
   let itemname = parseHtml(htmlCode, "string", "value", ".title-wrap", ".tit")
   let image = parseHtml(htmlCode, "string", "attribute", ".prd-gutter", "img", "src")
@@ -16,16 +17,16 @@ export async function crawlNike(sourceUrl): Promise<CrawledItemInfo> {
     saleprice = null
   }
 
-  // let result22: CrawledItemInfo = {
-  //   brandKor: brand,
-  //   originalPrice: price,
-  //   salePrice: saleprice,
-  //   name: itemname,
-  //   imageUrl: [image],
-  //   purchaseUrl: sourceUrl,
-  //   isEstimated: false
-  // }
-  // console.log(result22)
+  let result22: CrawledItemInfo = {
+    brandKor: "나이키",
+    originalPrice: price,
+    salePrice: saleprice,
+    name: itemname,
+    imageUrl: [image],
+    purchaseUrl: sourceUrl,
+    isEstimated: false
+  }
+  console.log(result22)
 
   let result: CrawledItemInfo = {
     brandKor: "나이키",

@@ -9,8 +9,12 @@ export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
   try {
     htmlCode = await getHtmlRequest(sourceUrl)
   } catch (e) {
-    htmlCode = await getHtmlAxios(sourceUrl)
-    throw new Error("Failed to crawl")
+    try {
+      htmlCode = await getHtmlAxios(sourceUrl)
+      htmlCode = htmlCode.data
+    } catch (e) {
+      throw new Error("Failed to crawl")
+    }
   }
   const $ = cheerio.load(htmlCode, { decodeEntities: false })
   let images = []

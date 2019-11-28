@@ -11,6 +11,7 @@ export async function crawlZara(sourceUrl): Promise<CrawledItemInfo> {
   // const page = await browser.newPage()
   // await page.goto(sourceUrl)
   // let htmlCode = page.content()
+  // await browser.close()
   let htmlCode = await getHtmlRequest(sourceUrl)
 
   let itemname = parseHtml(htmlCode, "string", "value", ".info-section", ".product-name")

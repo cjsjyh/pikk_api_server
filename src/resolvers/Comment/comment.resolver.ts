@@ -45,7 +45,7 @@ module.exports = {
           await DelCacheByPattern("allRecom050DESCtime" + String(arg.targetId) + "*")
         }
 
-        let querySql = `INSERT INTO ${ConvertToCommentTableName(arg.targetType)} ("FK_postId","FK_accountId","FK_parentId","content") 
+        let querySql = `INSERT INTO "${ConvertToCommentTableName(arg.targetType)}" ("FK_postId","FK_accountId","FK_parentId","content") 
         VALUES(
           ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
@@ -76,8 +76,10 @@ module.exports = {
         throw new Error(`[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`)
       }
       try {
-        await DelCacheByPattern("allRecom*10DESC*")
-        await DelCacheByPattern("allRecom050DESCtime" + String(arg.targetId) + "*")
+        if (arg.targetType == "RECOMMEND") {
+          await DelCacheByPattern("allRecom*10DESC*")
+          await DelCacheByPattern("allRecom050DESCtime" + String(arg.targetId) + "*")
+        }
 
         let querySql = `DELETE FROM "${ConvertToCommentTableName(arg.targetType)}" WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)

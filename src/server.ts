@@ -25,11 +25,13 @@ const port = 80
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
 import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
-import { CombineItem } from "./tools/tool"
+import { CombineItem, FindAndCombineDuplicateItem } from "./tools/tool"
 import { crawlZara } from "./resolvers/Crawler/brands/zara"
 import { crawlUniqlo } from "./resolvers/Crawler/brands/uniqlo"
 import { crawlHandM } from "./resolvers/Crawler/brands/HandM"
 import { crawlNike } from "./resolvers/Crawler/brands/nike"
+import { crawlAdidas } from "./resolvers/Crawler/brands/adidas"
+import { crawl29cm } from "./resolvers/Crawler/brands/29cm"
 
 //Create Express Server
 const app = express()
@@ -91,8 +93,10 @@ async function testfunc() {
   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-  console.log(await crawlNike("https://www.nike.com/kr/ko_kr/t/men/ap/nike-sportswear/BV4752-010/iyvt63/as-m-nsw-dwn-fill-prka-hd"))
-  console.log(await crawlNike("https://www.nike.com/kr/ko_kr/t/men/fw/nike-sportswear/CQ7512-046/jzfr83/nike-air-max-97"))
+  //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=FL9023"))
+  //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=DV1577"))
+  //console.log(await crawl29cm("https://www.29cm.co.kr/product/178591"))
+  console.log(await FindAndCombineDuplicateItem())
 }
 testfunc()
 

@@ -59,6 +59,8 @@
     "merge-graphql-schemas": "^1.7.0",
     "node-cron": "^2.0.3",
     "pg": "^7.12.1",
+    "puppeteer": "^2.0.0",
+    "puppeteer-autoscroll-down": "^0.1.2",
     "rate-limiter-flexible": "^1.1.6",
     "read-chunk": "^3.2.0",
     "redis": "^2.8.0",

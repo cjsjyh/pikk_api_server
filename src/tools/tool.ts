@@ -21,10 +21,41 @@ export async function CombineItem(updateId: number, deleteIds: number[]) {
     DELETE FROM "ITEM_GROUP" USING delete_item WHERE "ITEM_GROUP".id = delete_item."FK_itemGroupId"
     `
     await RunSingleSQL(querySql)
-    logger.info("Combine Done")
   } catch (e) {
     logger.error(e.stack)
   }
+}
+
+export async function FindAndCombineDuplicateItem() {
+  try {
+    let findSql = `
+    WITH grr as (
+      SELECT var.name, gr."originalPrice" FROM "ITEM_VARIATION" var INNER JOIN "ITEM_GROUP" gr ON var."FK_itemGroupId"=gr.id
+    ),
+    aaa as (
+      SELECT count(*) AS count_ , name, grr."originalPrice" FROM grr 
+      GROUP BY "originalPrice", name HAVING count(*) > 1
+      ORDER BY count_ DESC
+    )
+    SELECT * FROM "ITEM_VARIATION" var, aaa WHERE var.name = aaa.name
+    ORDER BY var.name ASC, var.id DESC
+    `
+    let findResult = await RunSingleSQL(findSql)
+
+    let prevName = ""
+    let headRecord
+    let tailRecord = []
+    for (let i = 0; i < findResult.length; i++) {
+      if (prevName != findResult[i].name) {
+        if (i != 0) await CombineItem(headRecord, tailRecord)
+        headRecord = Number(findResult[i].id)
+        prevName = findResult[i].name
+        tailRecord.length = 0
+      } else {
+        tailRecord.push(Number(findResult[i].id))
+      }
+    }
+  } catch (e) {}
 }
 
 export async function ReplaceImageWithResolutions() {

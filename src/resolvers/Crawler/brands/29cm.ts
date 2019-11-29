@@ -1,23 +1,43 @@
 import { getHtmlRequest, parseHtml } from "../util"
 import { CrawledItemInfo } from "../type/ReturnType"
 import { strip, formatUrl } from "../../Utils/stringUtil"
-const puppeteer = require("puppeteer")
+
+var chrome = require("chromedriver")
 
 export async function crawl29cm(sourceUrl): Promise<CrawledItemInfo> {
   let htmlCode
   try {
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--user-agent=Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)"]
-    })
-    const page = await browser.newPage()
-    await page.goto(sourceUrl)
-    await page.waitForSelector(".prd_info")
-    //await page.waitForFunction('window.status==="ready"')
-    //await page.waitFor(5000)
-    htmlCode = await page.content()
+    var webdriver = require("selenium-webdriver")
+
+    //#Option 1
+    // var chromeCapabilities = webdriver.Capabilities.chrome()
+    // //setting chrome options to start the browser fully maximized
+    // var chromeOptions = {
+    //   args: ["--headless", "--disable-gpu", "--no-sandbox", "--disable-extensions", "--disable-dev-shm-usage"]
+    // }
+    // chromeCapabilities.set("chromeOptions", chromeOptions)
+    // var driver = new webdriver.Builder().withCapabilities(chromeCapabilities).build()
+
+    //#Option 2
+    // var options = new chrome.Options()
+    // options.addArguments(["--headless", "lang=ko_KR", "--no-sandbox", "--disable-dev-shm-usage"])
+    // var driver = new webdriver.Builder().withCapabilities(options.toCapabilities()).build()
+
+    //var chrome = require("selenium-webdriver/chrome")
+    // process.env["PATH"] += "/mnt/c/users/junsoo/desktop/chromedriver"
+    // var options = new chrome.Options()
+    // var driver = new webdriver.Builder().withCapabilities(options.toCapabilities()).build()
+
+    // var chrome = require("selenium-webdriver/chrome")
+    // var driver = new chrome.Driver()
+    var driver = new webdriver.Builder().forBrowser("chrome").build()
+
+    //var driver = new webdriver.Builder().forBrowser("chrome").build()
+    await driver.get(sourceUrl)
+    htmlCode = driver.getPageSource()
   } catch (e) {
     console.log(e)
-    console.log("PUPPETEER FAILED")
+    return null
   }
 
   //let htmlCode = await getHtmlRequest(sourceUrl)

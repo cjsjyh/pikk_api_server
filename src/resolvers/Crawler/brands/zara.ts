@@ -1,17 +1,8 @@
 import { getHtmlRequest, parseHtml } from "../util"
 import { CrawledItemInfo } from "../type/ReturnType"
 import { strip, formatUrl } from "../../Utils/stringUtil"
-// const puppeteer = require("puppeteer")
 
 export async function crawlZara(sourceUrl): Promise<CrawledItemInfo> {
-  // const browser = await puppeteer.launch({
-  //   headless: true,
-  //   args: ["--no-sandbox", "--disable-setuid-sandbox"]
-  // })
-  // const page = await browser.newPage()
-  // await page.goto(sourceUrl)
-  // let htmlCode = page.content()
-  // await browser.close()
   let htmlCode = await getHtmlRequest(sourceUrl)
 
   let itemname = parseHtml(htmlCode, "string", "value", ".info-section", ".product-name")

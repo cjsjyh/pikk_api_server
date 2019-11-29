@@ -1,16 +1,9 @@
 import { getHtmlRequest, parseHtml, getHtmlAxios } from "../util"
 import { CrawledItemInfo } from "../type/ReturnType"
 import { strip, formatUrl } from "../../Utils/stringUtil"
-const puppeteer = require("puppeteer")
 
 export async function crawlAdidas(sourceUrl): Promise<CrawledItemInfo> {
-  const browser = await puppeteer.launch({ args: ["--no-sandbox"] })
-  const page = await browser.newPage()
-  await page.goto(sourceUrl)
-  //await page.waitForFunction('window.status==="ready"')
-  await page.waitFor(2000)
-  let htmlCode = page.content()
-  //let htmlCode = await getHtmlRequest(sourceUrl)
+  let htmlCode = await getHtmlRequest(sourceUrl)
 
   let itemname = parseHtml(htmlCode, "string", "value", "#p_prod_bas")
   let image = parseHtml(htmlCode, "string", "attribute", "#BASIC_IMG", "", "src")

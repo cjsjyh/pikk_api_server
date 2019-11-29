@@ -304,7 +304,7 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
 
   var param = {
     Bucket: "fashiondogam-images",
-    Key: folderName + date + hour + filename,
+    Key: folderName + date + hour + replaceLastOccurence(filename, ".", "_large."),
     ACL: "public-read",
     Body: createReadStream(),
     ContentType: mimetype

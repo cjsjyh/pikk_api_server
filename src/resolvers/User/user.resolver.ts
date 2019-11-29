@@ -241,14 +241,16 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
   let deleteSql = ""
 
   if (Object.prototype.hasOwnProperty.call(arg, "profileImageUrl")) {
-    try {
-      if (IsNewImage(arg.profileImageUrl)) {
-        deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "profileImgUrl", "FK_accountId", [arg.accountId])
+    if (arg.profileImageUrl != null) {
+      try {
+        if (IsNewImage(arg.profileImageUrl)) {
+          deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "profileImgUrl", "FK_accountId", [arg.accountId])
+        }
+        resultSql += `"profileImgUrl"='${arg.profileImageUrl}'`
+        isMultiple = true
+      } catch (e) {
+        throw new Error("[Error] ProfileImage Upload Failed!")
       }
-      resultSql += `"profileImgUrl"='${arg.profileImageUrl}'`
-      isMultiple = true
-    } catch (e) {
-      throw new Error("[Error] ProfileImage Upload Failed!")
     }
   }
 

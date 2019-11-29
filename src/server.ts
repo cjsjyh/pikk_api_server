@@ -95,8 +95,7 @@ async function testfunc() {
   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
   //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=FL9023"))
   //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=DV1577"))
-  //console.log(await crawl29cm("https://www.29cm.co.kr/product/178591"))
-  console.log(await FindAndCombineDuplicateItem())
+  console.log(await crawl29cm("https://www.29cm.co.kr/product/178591"))
 }
 testfunc()
 

@@ -35,6 +35,5 @@ export async function crawlAdidas(sourceUrl): Promise<CrawledItemInfo> {
     purchaseUrl: sourceUrl,
     isEstimated: false
   }
-  await browser.close()
   return result
 }

@@ -25,7 +25,7 @@ const port = 80
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
 import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
-import { CombineItem, FindAndCombineDuplicateItem } from "./tools/tool"
+import { CombineItem, FindAndCombineDuplicateItem, CopyImageWithDifferentName } from "./tools/tool"
 import { crawlZara } from "./resolvers/Crawler/brands/zara"
 import { crawlUniqlo } from "./resolvers/Crawler/brands/uniqlo"
 import { crawlHandM } from "./resolvers/Crawler/brands/HandM"
@@ -88,16 +88,17 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
-async function testfunc() {
-  // let elastic = require("./database/elastic/elasticConnect")
-  // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
-  // await elastic.elasticClient.indices.refresh({ index: "...customer" })
-  // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-  //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=FL9023"))
-  //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=DV1577"))
-  console.log(await crawl29cm("https://www.29cm.co.kr/product/178591"))
-}
-testfunc()
+// async function testfunc() {
+//   // let elastic = require("./database/elastic/elasticConnect")
+//   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
+//   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
+//   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
+//   //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=FL9023"))
+//   //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=DV1577"))
+//   //console.log(await crawl29cm("https://www.29cm.co.kr/product/178591"))
+//   await CopyImageWithDifferentName()
+// }
+// testfunc()
 
 cron.schedule("*/1 * * * *", function() {
   ProcessNotificationQueue()

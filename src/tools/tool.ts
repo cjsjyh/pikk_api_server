@@ -1,5 +1,5 @@
 import { RunSingleSQL, ExtractFieldFromList, Make4VersionsOfImage } from "../resolvers/Utils/promiseUtil"
-import { ConvertListToString } from "../resolvers/Utils/stringUtil"
+import { ConvertListToString, replaceLastOccurence } from "../resolvers/Utils/stringUtil"
 const { S3 } = require("../database/aws_s3")
 
 const fs = require("fs")
@@ -56,6 +56,44 @@ export async function FindAndCombineDuplicateItem() {
       }
     }
   } catch (e) {}
+}
+
+export async function CopyImageWithDifferentName() {
+  //Get table rows
+  //let imageUrls = await RunSingleSQL('SELECT tab."titleImageUrl" as "imageUrl" from "RECOMMEND_POST" tab')
+  let imageUrls = []
+  let temp = await RunSingleSQL('SELECT tab."imageUrl" as "imageUrl" from "ITEM_VARIATION" tab')
+  imageUrls = imageUrls.concat(temp)
+  temp = await RunSingleSQL('SELECT tab."channel_titleImgUrl" as "imageUrl" from "USER_INFO" tab')
+  imageUrls = imageUrls.concat(temp)
+  temp = await RunSingleSQL('SELECT tab."profileImgUrl" as "imageUrl" from "USER_INFO" tab')
+  imageUrls = imageUrls.concat(temp)
+  temp = await RunSingleSQL('SELECT tab."imageUrl" as "imageUrl" from "ITEM_REVIEW_IMAGE" tab')
+  imageUrls = imageUrls.concat(temp)
+  imageUrls = ExtractFieldFromList(imageUrls, "imageUrl")
+  var filtered = imageUrls.filter(function(el) {
+    return el != "null" && el != null
+  })
+
+  //Extract S3 Key
+  for (let i = 0; i < filtered.length; i++) {
+    filtered[i] = filtered[i].replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
+  }
+
+  //console.log("fashiondogam-images/" + replaceLastOccurence(filtered[0], ".", "_large."))
+
+  filtered.forEach(async destUrl => {
+    var params = {
+      ACL: "public-read",
+      Bucket: "fashiondogam-images",
+      CopySource: "fashiondogam-images/" + replaceLastOccurence(destUrl, ".", "_large."),
+      Key: decodeURIComponent(destUrl)
+    }
+    S3.copyObject(params, function(err, data) {
+      if (err) console.log(err)
+      else console.log(destUrl)
+    })
+  })
 }
 
 export async function ReplaceImageWithResolutions() {

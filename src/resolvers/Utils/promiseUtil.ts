@@ -131,22 +131,6 @@ export async function UploadImageWrapper(imageObj: any): Promise<string> {
   })
 }
 
-export async function UploadImageUrlWrapper(imageUrl: any): Promise<string> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let newImageName = imageUrl.split(".").pop()
-      let date = getFormatDate(new Date())
-      let hour = getFormatHour(new Date())
-      newImageName = date + hour + "." + newImageName
-      await downloadImage(imageUrl, newImageName)
-      let url = await UploadImageTemp(null, fs.createReadStream("./" + newImageName))
-      resolve(url)
-    } catch (e) {
-      reject(0)
-    }
-  })
-}
-
 export async function downloadImage(url, image_path) {
   return new Promise((resolve, reject) => {
     axios({
@@ -211,7 +195,7 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
     let xsmallName = replaceLastOccurence(imageUrl, ".", "_xsmall.")
     let smallName = replaceLastOccurence(imageUrl, ".", "_small.")
     let mediumName = replaceLastOccurence(imageUrl, ".", "_medium.")
-    let largeName = replaceLastOccurence(imageUrl, ".", "_large.")
+    let largeName = imageUrl
 
     await Make4VersionsOfImage(imageUrl, dimensions, xsmallName, smallName, mediumName, largeName)
 
@@ -309,7 +293,7 @@ export async function DeployImage(imageUrl: string): Promise<string> {
   }
 }
 
-export async function UploadImageTemp(itemImg: any, customStream: any = null): Promise<string> {
+export async function UploadImageTemp(itemImg: any): Promise<string> {
   const { createReadStream, filename, mimetype, encoding } = await itemImg
 
   let date = getFormatDate(new Date())
@@ -319,24 +303,13 @@ export async function UploadImageTemp(itemImg: any, customStream: any = null): P
   if (process.env.MODE != "DEPLOY") folderName = "testimage_temp/"
 
   var param
-  if (customStream == null) {
-    param = {
-      Bucket: "fashiondogam-images",
-      Key: folderName + date + hour + replaceLastOccurence(filename, ".", "_large."),
-      ACL: "public-read",
-      Body: createReadStream(),
-      ContentType: mimetype
-    }
-  } else {
-    param = {
-      Bucket: "fashiondogam-images",
-      Key: folderName + date + hour + replaceLastOccurence(filename, ".", "_large."),
-      ACL: "public-read",
-      Body: customStream(),
-      ContentType: mimetype
-    }
+  param = {
+    Bucket: "fashiondogam-images",
+    Key: folderName + date + hour + replaceLastOccurence(filename, ".", "_large."),
+    ACL: "public-read",
+    Body: createReadStream(),
+    ContentType: mimetype
   }
-
   try {
     let imageUrl: string = await new Promise((resolve, reject) => {
       S3.upload(param, function(e: Error, data: AWS.S3.ManagedUpload.SendData) {
@@ -349,7 +322,6 @@ export async function UploadImageTemp(itemImg: any, customStream: any = null): P
       })
     })
     logger.info("image Upload Temporary")
-    imageUrl = imageUrl.replace("_large.", ".")
     return imageUrl
   } catch (e) {
     logger.warn("Failed to Upload Image")

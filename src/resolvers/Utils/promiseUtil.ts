@@ -322,6 +322,7 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
       })
     })
     logger.info("image Upload Temporary")
+    imageUrl = imageUrl.replace("_large.", ".")
     return imageUrl
   } catch (e) {
     logger.warn("Failed to Upload Image")

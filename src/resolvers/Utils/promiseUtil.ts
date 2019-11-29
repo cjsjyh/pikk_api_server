@@ -120,10 +120,26 @@ export function ExtractSelectionSet(info: any): any {
   return result
 }
 
-export async function UploadImageWrapper(imgObj: any): Promise<string> {
+export async function UploadImageWrapper(imageObj: any): Promise<string> {
   return new Promise(async (resolve, reject) => {
     try {
-      let url = await UploadImageTemp(imgObj)
+      let url = await UploadImageTemp(imageObj)
+      resolve(url)
+    } catch (e) {
+      reject(0)
+    }
+  })
+}
+
+export async function UploadImageUrlWrapper(imageUrl: any): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let newImageName = imageUrl.split(".").pop()
+      let date = getFormatDate(new Date())
+      let hour = getFormatHour(new Date())
+      newImageName = date + hour + "." + newImageName
+      await downloadImage(imageUrl, newImageName)
+      let url = await UploadImageTemp(null, fs.createReadStream("./" + newImageName))
       resolve(url)
     } catch (e) {
       reject(0)
@@ -293,7 +309,7 @@ export async function DeployImage(imageUrl: string): Promise<string> {
   }
 }
 
-export async function UploadImageTemp(itemImg: any): Promise<string> {
+export async function UploadImageTemp(itemImg: any, customStream: any = null): Promise<string> {
   const { createReadStream, filename, mimetype, encoding } = await itemImg
 
   let date = getFormatDate(new Date())
@@ -302,12 +318,23 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
   let folderName = "image_temp/"
   if (process.env.MODE != "DEPLOY") folderName = "testimage_temp/"
 
-  var param = {
-    Bucket: "fashiondogam-images",
-    Key: folderName + date + hour + replaceLastOccurence(filename, ".", "_large."),
-    ACL: "public-read",
-    Body: createReadStream(),
-    ContentType: mimetype
+  var param
+  if (customStream == null) {
+    param = {
+      Bucket: "fashiondogam-images",
+      Key: folderName + date + hour + replaceLastOccurence(filename, ".", "_large."),
+      ACL: "public-read",
+      Body: createReadStream(),
+      ContentType: mimetype
+    }
+  } else {
+    param = {
+      Bucket: "fashiondogam-images",
+      Key: folderName + date + hour + replaceLastOccurence(filename, ".", "_large."),
+      ACL: "public-read",
+      Body: customStream(),
+      ContentType: mimetype
+    }
   }
 
   try {

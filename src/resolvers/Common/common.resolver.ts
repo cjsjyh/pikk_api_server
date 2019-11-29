@@ -1,4 +1,4 @@
-import { RunSingleSQL, SequentialPromiseValue, UploadImageWrapper } from "../Utils/promiseUtil"
+import { RunSingleSQL, SequentialPromiseValue, UploadImageWrapper, UploadImageUrlWrapper } from "../Utils/promiseUtil"
 import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { ValidateUser } from "../Utils/securityUtil"
@@ -42,6 +42,17 @@ module.exports = {
     UploadImages: async (parent: void, args: any, ctx: any): Promise<string[]> => {
       try {
         let imageUrls: string[] = await SequentialPromiseValue(args.images, UploadImageWrapper)
+        return imageUrls
+      } catch (e) {
+        logger.warn("Failed to Upload Image")
+        logger.error(e.stack)
+        throw new Error("[Error] Failed to Upload Image")
+      }
+    },
+
+    UploadImagesByUrl: async (parent: void, args: any, ctx: any): Promise<string[]> => {
+      try {
+        let imageUrls: string[] = await SequentialPromiseValue(args.imageUrls, UploadImageUrlWrapper)
         return imageUrls
       } catch (e) {
         logger.warn("Failed to Upload Image")

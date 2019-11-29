@@ -2,7 +2,7 @@ import { getHtmlRequest, parseHtml } from "../util"
 import { CrawledItemInfo } from "../type/ReturnType"
 import { strip, formatUrl } from "../../Utils/stringUtil"
 
-var chrome = require("chromedriver")
+//var chrome = require("chromedriver")
 
 export async function crawl29cm(sourceUrl): Promise<CrawledItemInfo> {
   let htmlCode

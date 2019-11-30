@@ -1,6 +1,6 @@
-import { getHtmlAxios, parseHtml } from "./util"
-import { CrawledItemInfo } from "./type/ReturnType"
-import { strip, formatUrl } from "../Utils/stringUtil"
+import { getHtmlAxios, parseHtml } from "../util"
+import { CrawledItemInfo } from "../type/ReturnType"
+import { strip, formatUrl } from "../../Utils/stringUtil"
 
 export async function crawlMusinsa(sourceUrl): Promise<CrawledItemInfo> {
   let htmlCode = await getHtmlAxios(sourceUrl)

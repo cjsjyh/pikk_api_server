@@ -120,10 +120,10 @@ export function ExtractSelectionSet(info: any): any {
   return result
 }
 
-export async function UploadImageWrapper(imgObj: any): Promise<string> {
+export async function UploadImageWrapper(imageObj: any): Promise<string> {
   return new Promise(async (resolve, reject) => {
     try {
-      let url = await UploadImageTemp(imgObj)
+      let url = await UploadImageTemp(imageObj)
       resolve(url)
     } catch (e) {
       reject(0)
@@ -195,7 +195,7 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
     let xsmallName = replaceLastOccurence(imageUrl, ".", "_xsmall.")
     let smallName = replaceLastOccurence(imageUrl, ".", "_small.")
     let mediumName = replaceLastOccurence(imageUrl, ".", "_medium.")
-    let largeName = replaceLastOccurence(imageUrl, ".", "_large.")
+    let largeName = imageUrl
 
     await Make4VersionsOfImage(imageUrl, dimensions, xsmallName, smallName, mediumName, largeName)
 
@@ -302,14 +302,14 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
   let folderName = "image_temp/"
   if (process.env.MODE != "DEPLOY") folderName = "testimage_temp/"
 
-  var param = {
+  var param
+  param = {
     Bucket: "fashiondogam-images",
-    Key: folderName + date + hour + filename,
+    Key: folderName + date + hour + replaceLastOccurence(filename, ".", "_large."),
     ACL: "public-read",
     Body: createReadStream(),
     ContentType: mimetype
   }
-
   try {
     let imageUrl: string = await new Promise((resolve, reject) => {
       S3.upload(param, function(e: Error, data: AWS.S3.ManagedUpload.SendData) {

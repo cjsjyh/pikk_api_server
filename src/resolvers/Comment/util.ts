@@ -1,7 +1,7 @@
 export function ConvertToCommentTableName(targetName: string): string {
   let tableName = ""
-  if (targetName == "RECOMMEND") tableName = '"RECOMMEND_POST_COMMENT"'
-  else if (targetName == "COMMUNITY") tableName = '"COMMUNITY_POST_COMMENT"'
+  if (targetName == "RECOMMEND") tableName = "RECOMMEND_POST_COMMENT"
+  else if (targetName == "COMMUNITY") tableName = "COMMUNITY_POST_COMMENT"
 
   return tableName
 }

@@ -1,6 +1,6 @@
-import { getHtmlRequest, parseHtml, getHtmlAxios } from "./util"
-import { CrawledItemInfo } from "./type/ReturnType"
-import { strip, hasNumber, hasCurrency, extractNumber, formatUrl } from "../Utils/stringUtil"
+import { getHtmlRequest, parseHtml, getHtmlAxios } from "../util"
+import { CrawledItemInfo } from "../type/ReturnType"
+import { strip, hasNumber, hasCurrency, extractNumber, formatUrl } from "../../Utils/stringUtil"
 
 const cheerio = require("cheerio")
 
@@ -9,8 +9,12 @@ export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
   try {
     htmlCode = await getHtmlRequest(sourceUrl)
   } catch (e) {
-    htmlCode = await getHtmlAxios(sourceUrl)
-    throw new Error("Failed to crawl")
+    try {
+      htmlCode = await getHtmlAxios(sourceUrl)
+      htmlCode = htmlCode.data
+    } catch (e) {
+      throw new Error("Failed to crawl")
+    }
   }
   const $ = cheerio.load(htmlCode, { decodeEntities: false })
   let images = []

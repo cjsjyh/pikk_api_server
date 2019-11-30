@@ -1,5 +1,5 @@
 import { RunSingleSQL, ExtractFieldFromList, Make4VersionsOfImage } from "../resolvers/Utils/promiseUtil"
-import { ConvertListToString } from "../resolvers/Utils/stringUtil"
+import { ConvertListToString, replaceLastOccurence } from "../resolvers/Utils/stringUtil"
 const { S3 } = require("../database/aws_s3")
 
 const fs = require("fs")
@@ -21,10 +21,79 @@ export async function CombineItem(updateId: number, deleteIds: number[]) {
     DELETE FROM "ITEM_GROUP" USING delete_item WHERE "ITEM_GROUP".id = delete_item."FK_itemGroupId"
     `
     await RunSingleSQL(querySql)
-    logger.info("Combine Done")
   } catch (e) {
     logger.error(e.stack)
   }
+}
+
+export async function FindAndCombineDuplicateItem() {
+  try {
+    let findSql = `
+    WITH grr as (
+      SELECT var.name, gr."originalPrice" FROM "ITEM_VARIATION" var INNER JOIN "ITEM_GROUP" gr ON var."FK_itemGroupId"=gr.id
+    ),
+    aaa as (
+      SELECT count(*) AS count_ , name, grr."originalPrice" FROM grr 
+      GROUP BY "originalPrice", name HAVING count(*) > 1
+      ORDER BY count_ DESC
+    )
+    SELECT * FROM "ITEM_VARIATION" var, aaa WHERE var.name = aaa.name
+    ORDER BY var.name ASC, var.id DESC
+    `
+    let findResult = await RunSingleSQL(findSql)
+
+    let prevName = ""
+    let headRecord
+    let tailRecord = []
+    for (let i = 0; i < findResult.length; i++) {
+      if (prevName != findResult[i].name) {
+        if (i != 0) await CombineItem(headRecord, tailRecord)
+        headRecord = Number(findResult[i].id)
+        prevName = findResult[i].name
+        tailRecord.length = 0
+      } else {
+        tailRecord.push(Number(findResult[i].id))
+      }
+    }
+  } catch (e) {}
+}
+
+export async function CopyImageWithDifferentName() {
+  //Get table rows
+  //let imageUrls = await RunSingleSQL('SELECT tab."titleImageUrl" as "imageUrl" from "RECOMMEND_POST" tab')
+  let imageUrls = []
+  let temp = await RunSingleSQL('SELECT tab."imageUrl" as "imageUrl" from "ITEM_VARIATION" tab')
+  imageUrls = imageUrls.concat(temp)
+  temp = await RunSingleSQL('SELECT tab."channel_titleImgUrl" as "imageUrl" from "USER_INFO" tab')
+  imageUrls = imageUrls.concat(temp)
+  temp = await RunSingleSQL('SELECT tab."profileImgUrl" as "imageUrl" from "USER_INFO" tab')
+  imageUrls = imageUrls.concat(temp)
+  temp = await RunSingleSQL('SELECT tab."imageUrl" as "imageUrl" from "ITEM_REVIEW_IMAGE" tab')
+  imageUrls = imageUrls.concat(temp)
+  imageUrls = ExtractFieldFromList(imageUrls, "imageUrl")
+  var filtered = imageUrls.filter(function(el) {
+    return el != "null" && el != null
+  })
+
+  //Extract S3 Key
+  for (let i = 0; i < filtered.length; i++) {
+    filtered[i] = filtered[i].replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
+  }
+
+  //console.log("fashiondogam-images/" + replaceLastOccurence(filtered[0], ".", "_large."))
+
+  filtered.forEach(async destUrl => {
+    var params = {
+      ACL: "public-read",
+      Bucket: "fashiondogam-images",
+      CopySource: "fashiondogam-images/" + replaceLastOccurence(destUrl, ".", "_large."),
+      Key: decodeURIComponent(destUrl)
+    }
+    S3.copyObject(params, function(err, data) {
+      if (err) console.log(err)
+      else console.log(destUrl)
+    })
+  })
 }
 
 export async function ReplaceImageWithResolutions() {

@@ -32,6 +32,7 @@ import { crawlHandM } from "./resolvers/Crawler/brands/HandM"
 import { crawlNike } from "./resolvers/Crawler/brands/nike"
 import { crawlAdidas } from "./resolvers/Crawler/brands/adidas"
 import { crawl29cm } from "./resolvers/Crawler/brands/29cm"
+import { crawlOthers } from "./resolvers/Crawler/brands/crawlOthers"
 
 //Create Express Server
 const app = express()
@@ -96,7 +97,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 //   //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=FL9023"))
 //   //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=DV1577"))
 //   //console.log(await crawl29cm("https://www.29cm.co.kr/product/178591"))
-//   await CopyImageWithDifferentName()
+//   await crawlOthers("https://www.google.com")
 // }
 // testfunc()
 

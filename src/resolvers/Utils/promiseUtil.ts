@@ -305,7 +305,7 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
   var param
   param = {
     Bucket: "fashiondogam-images",
-    Key: folderName + date + hour + replaceLastOccurence(filename, ".", "_large."),
+    Key: folderName + date + hour + filename,
     ACL: "public-read",
     Body: createReadStream(),
     ContentType: mimetype
@@ -393,22 +393,17 @@ export async function Make4VersionsOfImage(
       .toFile(`./${mediumName}`)
   }
 
-  if (dimensions.width < 1024) {
-    await new Promise((resolve, reject) => {
-      let outStream = fs.createWriteStream(`./${largeName}`)
-      fs.createReadStream(`./${imageUrl}`).pipe(outStream)
-      outStream.on("end", () => {
-        resolve("end")
-      })
-      outStream.on("finish", () => {
-        resolve("finish")
-      })
+  //Full size
+  await new Promise((resolve, reject) => {
+    let outStream = fs.createWriteStream(`./${largeName}`)
+    fs.createReadStream(`./${imageUrl}`).pipe(outStream)
+    outStream.on("end", () => {
+      resolve("end")
     })
-  } else {
-    await sharp(`./${imageUrl}`)
-      .resize({ width: 1024 })
-      .toFile(`./${largeName}`)
-  }
+    outStream.on("finish", () => {
+      resolve("finish")
+    })
+  })
 }
 
 /*

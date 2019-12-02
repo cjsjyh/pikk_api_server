@@ -227,7 +227,7 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
 
     //Delete file from local
     await Promise.all(
-      [imageUrl, xsmallName, smallName, mediumName, largeName].map(filename => {
+      [xsmallName, smallName, mediumName, largeName].map(filename => {
         return new Promise((resolve, reject) => {
           fs.unlink(filename, function(e) {
             if (e) reject(e)
@@ -394,16 +394,16 @@ export async function Make4VersionsOfImage(
   }
 
   //Full size
-  await new Promise((resolve, reject) => {
-    let outStream = fs.createWriteStream(`./${largeName}`)
-    fs.createReadStream(`./${imageUrl}`).pipe(outStream)
-    outStream.on("end", () => {
-      resolve("end")
-    })
-    outStream.on("finish", () => {
-      resolve("finish")
-    })
-  })
+  // await new Promise((resolve, reject) => {
+  //   let outStream = fs.createWriteStream(`./${largeName}`)
+  //   fs.createReadStream(`./${imageUrl}`).pipe(outStream)
+  //   outStream.on("end", () => {
+  //     resolve("end")
+  //   })
+  //   outStream.on("finish", () => {
+  //     resolve("finish")
+  //   })
+  // })
 }
 
 /*

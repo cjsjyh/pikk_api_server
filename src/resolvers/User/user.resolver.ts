@@ -59,10 +59,11 @@ module.exports = {
       //Make UserCredential
       try {
         let qResult
-        if (arg.profileImageUrl == undefined) arg.profileImageUrl = null
+        let userSql = GetCreateUserInfoSql(arg)
+
         qResult = await RunSingleSQL(
-          'INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight","profileImgUrl","phoneNum","address") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-          [arg.accountId, arg.name, arg.email, arg.age, arg.height, arg.weight, arg.profileImageUrl, arg.phoneNum, arg.address]
+          `INSERT INTO "USER_INFO"("FK_accountId","name","email","age","height","weight"${userSql[0]}) 
+          VALUES (${arg.accountId},'${arg.name}','${arg.email}',${arg.age},${arg.height},${arg.weight}${userSql[1]})`
         )
 
         logger.info(`User Info for User ${arg.accountId} created`)
@@ -233,6 +234,36 @@ function UserInfoSelectionField(info: GraphQLResolveInfo) {
   } catch (e) {
     logger.error(e.stack)
   }
+}
+
+function GetCreateUserInfoSql(arg: ArgType.UserEditInfoInput): string[] {
+  let isMultiple = false
+  let resultSql = ["", ""]
+
+  if (Object.prototype.hasOwnProperty.call(arg, "profileImageUrl")) {
+    if (arg.profileImageUrl != null) {
+      resultSql[0] += `,"profileImgUrl"`
+      resultSql[1] += `,'${arg.profileImageUrl}'`
+      isMultiple = true
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(arg, "phoneNum")) {
+    if (arg.phoneNum != null) {
+      resultSql[0] += `,"phoneNum"`
+      resultSql[1] += `,'${arg.phoneNum}'`
+      isMultiple = true
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "address")) {
+    if (arg.address != null) {
+      resultSql[0] += `,"address"`
+      resultSql[1] += `,'${arg.address}'`
+      isMultiple = true
+    }
+  }
+
+  return resultSql
 }
 
 async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<string> {

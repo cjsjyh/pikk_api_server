@@ -258,6 +258,7 @@ export async function GetItemIdInRanking(filterSql: string, formatSql: string): 
      ) as "rankScore"
   FROM review_score ${formatSql}
   `
+
   let ItemRank = await RunSingleSQL(querySql)
 
   return ItemRank

@@ -41,10 +41,10 @@ module.exports = {
       let arg: ArgType.ItemMetadataFilter = args.itemMetadataOption
       let itemCount = await RunSingleSQL(`
         SELECT COUNT(*) FROM "ITEM_VARIATION" var 
-        INNER JOIN "ITEM_GROUP" gr ON var."FK_itemGroupId" = gr.id
+        INNER JOIN "ITEM_GROUP" item_gr ON var."FK_itemGroupId" = item_gr.id
         ${GetItemFilterSql(arg)}
       `)
-      return itemCount
+      return itemCount[0].count
     },
 
     getUserPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
@@ -100,6 +100,30 @@ module.exports = {
         logger.error(e.stack)
         throw new Error(`[Error] get Item Ranking failed`)
       }
+    },
+
+    _ItemRankingMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
+      let arg: ArgType.ItemMetadataFilter = args.itemMetadataOption
+
+      let itemCount = await RunSingleSQL(`
+        WITH items as (
+          SELECT 
+            var.id,
+            item_gr."itemMajorType",
+                item_gr."itemMinorType",
+                item_gr."itemFinalType"
+          FROM "ITEM_VARIATION" var
+          INNER JOIN "ITEM_GROUP" item_gr ON var."FK_itemGroupId" = item_gr.id
+          ${GetItemFilterSql(arg)}
+        ),
+        review as (
+          SELECT items.id FROM items
+          INNER JOIN "ITEM_REVIEW" rev ON items.id = rev."FK_itemId"
+          GROUP BY items.id, items."itemMinorType",items."itemMajorType",items."itemFinalType"
+        )
+        SELECT COUNT(*) FROM review
+      `)
+      return itemCount[0].count
     }
   },
   Mutation: {

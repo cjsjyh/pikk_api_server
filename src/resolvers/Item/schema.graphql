@@ -1,8 +1,9 @@
 type Query {
   allItems(itemOption: ItemQuery!): [ItemInfo!]
-  _allItemsMetadata(itemMetadataOption: ItemMetadataFilter): Int!
+  _allItemsMetadata(itemMetadataOption: ItemMetadataFilter!): Int!
   getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
   getItemRanking(itemRankingOption: ItemRankingFilter!): [ItemInfo!]
+  _ItemRankingMetadata(itemMetadataOption: ItemMetadataFilter!): Int!
 }
 
 type Mutation {

@@ -30,7 +30,6 @@ export async function crawlOco(sourceUrl): Promise<CrawledItemInfo> {
   //   purchaseUrl: sourceUrl,
   //   isEstimated: false
   // }
-  // console.log(result22)
 
   let result: CrawledItemInfo = {
     brandKor: brand,

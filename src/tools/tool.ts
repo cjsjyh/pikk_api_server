@@ -80,8 +80,6 @@ export async function CopyImageWithDifferentName() {
     filtered[i] = filtered[i].replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
   }
 
-  //console.log("fashiondogam-images/" + replaceLastOccurence(filtered[0], ".", "_large."))
-
   filtered.forEach(async destUrl => {
     var params = {
       ACL: "public-read",

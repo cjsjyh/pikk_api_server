@@ -86,11 +86,6 @@ export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
 function findDistance(htmlCode: any, obj: any): number {
   const $ = cheerio.load(htmlCode, { decodeEntities: false })
   let level = 1
-  // console.log("---11---")
-  // console.log($(obj)["0"])
-  // console.log("---22---")
-  // console.log($(obj)["0"].parent)
-  // console.log("---33---")
   while (true) {
     if ($(obj)["0"].parent.name == "body") break
     obj = $(obj)["0"].parent

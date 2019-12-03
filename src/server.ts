@@ -26,13 +26,6 @@ const port = 80
 //-------------------------------
 import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
 import { CombineItem, FindAndCombineDuplicateItem, CopyImageWithDifferentName } from "./tools/tool"
-import { crawlZara } from "./resolvers/Crawler/brands/zara"
-import { crawlUniqlo } from "./resolvers/Crawler/brands/uniqlo"
-import { crawlHandM } from "./resolvers/Crawler/brands/HandM"
-import { crawlNike } from "./resolvers/Crawler/brands/nike"
-import { crawlAdidas } from "./resolvers/Crawler/brands/adidas"
-import { crawl29cm } from "./resolvers/Crawler/brands/29cm"
-import { crawlOthers } from "./resolvers/Crawler/brands/crawlOthers"
 
 //Create Express Server
 const app = express()

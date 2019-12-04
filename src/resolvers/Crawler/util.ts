@@ -125,3 +125,8 @@ export function extractDomain(url: string): string[] {
   let urls = url.split("/")
   return urls
 }
+
+export function extractPorotocol(url: string): string {
+  let protocol = url.split("//")[0]
+  return protocol + "//"
+}

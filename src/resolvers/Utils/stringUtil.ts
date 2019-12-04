@@ -14,12 +14,13 @@ export function formatUrls(imageUrl: string[]): string[] {
   return imageUrl
 }
 
-export function formatUrl(imageUrl: string): string {
+export function formatUrl(imageUrl: string, domain: string = "http://"): string {
   if (imageUrl[0] != "h") {
     let i = 0
     while (imageUrl[i] == "/") i += 1
     imageUrl = imageUrl.substr(i, imageUrl.length)
-    imageUrl = "http://" + imageUrl
+    if (i == 1) imageUrl = domain + "/" + imageUrl
+    else imageUrl = "http://" + imageUrl
   }
   return imageUrl
 }

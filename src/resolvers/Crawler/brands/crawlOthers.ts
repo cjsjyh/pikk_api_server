@@ -1,4 +1,4 @@
-import { getHtmlRequest, parseHtml, getHtmlAxios } from "../util"
+import { getHtmlRequest, parseHtml, getHtmlAxios, extractDomain, extractPorotocol } from "../util"
 import { CrawledItemInfo } from "../type/ReturnType"
 import { strip, hasNumber, hasCurrency, extractNumber, formatUrl } from "../../Utils/stringUtil"
 
@@ -35,8 +35,16 @@ export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
     let images = []
     $("img").map((index, element) => {
       let tempUrl = $(element).attr("src")
-      if (tempUrl != "null" && tempUrl != null && tempUrl != "") images.push(formatUrl(tempUrl))
+      if (tempUrl != "null" && tempUrl != null && tempUrl != "")
+        images.push(formatUrl(tempUrl, extractPorotocol(sourceUrl) + extractDomain(sourceUrl)[0]))
     })
+    if (images.length > 25) {
+      let cutIndex = Number(images.length / 3)
+      let images_temp: string[] = images.slice(cutIndex, cutIndex * 2)
+      images_temp = images_temp.concat(images.slice(0, cutIndex))
+      images_temp = images_temp.concat(images.slice(cutIndex * 2, images.length))
+      images = images_temp
+    }
 
     let itemname = $("title").text()
 

@@ -393,7 +393,7 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     resultSql += `"titleType"='${filter.titleType}'`
     isMultiple = true
   }
-  if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl")) {
+  if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl") && filter.titleImageUrl != null) {
     if (IsNewImage(filter.titleImageUrl)) {
       resultSql = InsertImageIntoDeleteQueue("RECOMMEND_POST", "titleImageUrl", "id", [filter.postId]) + resultSql
       filter.titleImageUrl = await DeployImageBy3Version(filter.titleImageUrl)

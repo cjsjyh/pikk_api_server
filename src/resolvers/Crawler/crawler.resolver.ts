@@ -29,8 +29,8 @@ module.exports = {
       let domain = splitDomain[0]
       let subdomain = splitDomain[1]
 
+      let result: CrawledItemInfo
       try {
-        let result: CrawledItemInfo
         if (domain == "coor.kr") result = await crawlCoor(args.url)
         else if (domain == "m.giordano.co.kr") result = await crawlGiordanoMobile(args.url)
         else if (domain == "giordano.co.kr") result = await crawlGiordano(args.url)
@@ -54,7 +54,7 @@ module.exports = {
         else if (domain == "cosstores.com") result = await fetchConvertDjangoResult("cos", args.url, "코스")
         else if (domain == "smartstore.naver.com") result = await fetchConvertDjangoResult("naverstore", args.url, "")
         else if (domain == "shopping.naver.com") result = await fetchConvertDjangoResult("navershopping", args.url, "")
-        else if (domain == "ssfshop.com" && subdomain == "8Seconds") result = await fetchConvertDjangoResult("8seconds", args.url, "에잇세컨즈")
+        else if (domain == "ssfshop.com" && subdomain == "8seconds") result = await fetchConvertDjangoResult("8seconds", args.url, "에잇세컨즈")
         else {
           result = await crawlOthers(args.url)
           logger.debug(result.purchaseUrl)
@@ -62,10 +62,18 @@ module.exports = {
 
         logger.info("Item Crawled! " + domain)
         return result
-      } catch (e) {
-        logger.warn("Item crawling failed. Retry with valid URL: " + args.url)
-        logger.error(e.stack)
-        throw new Error("[Error] Item crawling failed. Retry with valid URL")
+      } catch (err) {
+        try {
+          logger.error(err.stack)
+          logger.warn("Item crawling failed. Retrying with crawlOthers....")
+          result = await crawlOthers(args.url)
+          logger.info("Item Crawled after retry!" + domain)
+          return result
+        } catch (e) {
+          logger.warn("Item crawling failed. Retry with valid URL: " + args.url)
+          logger.error(e.stack)
+          throw new Error("[Error] Item crawling failed. Retry with valid URL")
+        }
       }
     }
   }

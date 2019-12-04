@@ -42,7 +42,7 @@ module.exports = {
       try {
         if (arg.targetType == "RECOMMEND") {
           await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
-          await DelCacheByPattern("allRecom*DESCtime" + String(arg.targetId) + "RECOMMEND0")
+          await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
         }
 
         let querySql = `INSERT INTO "${ConvertToCommentTableName(arg.targetType)}" ("FK_postId","FK_accountId","FK_parentId","content") 
@@ -78,7 +78,7 @@ module.exports = {
       try {
         if (arg.targetType == "RECOMMEND") {
           await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
-          await DelCacheByPattern("allRecom*DESCtime" + String(arg.targetId) + "RECOMMEND0")
+          await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
         }
 
         let querySql = `DELETE FROM "${ConvertToCommentTableName(arg.targetType)}" WHERE id = ${arg.targetId}`

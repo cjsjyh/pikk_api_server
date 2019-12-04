@@ -57,7 +57,7 @@ module.exports = {
       try {
         if (arg.targetType == "RECOMMENDPOST") {
           await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
-          await DelCacheByPattern("allRecom*DESCtime" + String(arg.targetId) + "RECOMMEND0")
+          await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
         }
 
         let query = `SELECT toggle${arg.targetType}Follow(${arg.accountId},${arg.targetId})`

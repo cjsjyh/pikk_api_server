@@ -196,7 +196,7 @@ module.exports = {
       }
       try {
         await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
-        await DelCacheByPattern("allRecom*DESCtime" + String(arg.postId) + "RECOMMEND0")
+        await DelCacheByPattern("allRecom01DESCtime" + String(arg.postId) + "RECOMMEND0")
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
         logger.warn(`Faield to delete recommend post cache`)

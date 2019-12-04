@@ -10,6 +10,7 @@ import { GraphQLResolveInfo } from "graphql"
 import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
 import { ValidateUser } from "../Utils/securityUtil"
 import { InsertImageIntoTable } from "../Common/util"
+import { DelCacheByPattern } from "../../database/redisConnect"
 var logger = require("../../tools/logger")
 
 module.exports = {
@@ -277,6 +278,8 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
     if (arg.profileImageUrl != null) {
       try {
         if (IsNewImage(arg.profileImageUrl)) {
+          await DelCacheByPattern("allRecom*")
+
           deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "profileImgUrl", "FK_accountId", [arg.accountId])
           arg.profileImageUrl = await DeployImageBy3Version(arg.profileImageUrl)
         }

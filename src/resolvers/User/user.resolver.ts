@@ -84,9 +84,10 @@ module.exports = {
         let isFirst = true
         let deleteSql = ""
         if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl") && arg.channel_titleImageUrl != null) {
-          await DeployImageBy3Version(arg.channel_titleImageUrl)
-          if (IsNewImage(arg.channel_titleImageUrl))
+          if (IsNewImage(arg.channel_titleImageUrl)) {
             deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
+            arg.channel_titleImageUrl = await DeployImageBy3Version(arg.channel_titleImageUrl)
+          }
           setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
           isFirst = false
         }
@@ -275,9 +276,9 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
   if (Object.prototype.hasOwnProperty.call(arg, "profileImageUrl") && arg.profileImageUrl != null) {
     if (arg.profileImageUrl != null) {
       try {
-        await DeployImageBy3Version(arg.profileImageUrl)
         if (IsNewImage(arg.profileImageUrl)) {
           deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "profileImgUrl", "FK_accountId", [arg.accountId])
+          arg.profileImageUrl = await DeployImageBy3Version(arg.profileImageUrl)
         }
         resultSql += `"profileImgUrl"='${arg.profileImageUrl}'`
         isMultiple = true

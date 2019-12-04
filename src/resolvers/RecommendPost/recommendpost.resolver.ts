@@ -145,6 +145,7 @@ module.exports = {
         await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
+        throw new Error("Faield to delete recommend post cache")
         logger.warn(`Faield to delete recommend post cache`)
         logger.error(e.stack)
       }
@@ -152,7 +153,7 @@ module.exports = {
       let recommendPostId: number
       try {
         let deployImageUrl = ""
-        if (Object.prototype.hasOwnProperty.call(arg, "titleImageUrl")) deployImageUrl = await DeployImageBy3Version(arg.titleImageUrl)
+        if (arg.titleImageUrl != null) deployImageUrl = await DeployImageBy3Version(arg.titleImageUrl)
 
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(

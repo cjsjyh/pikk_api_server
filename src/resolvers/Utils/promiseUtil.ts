@@ -242,7 +242,7 @@ export async function DeployImageBy3Version(imageUrl: string): Promise<string> {
   } catch (e) {
     logger.warn("Failed to deploy Image")
     logger.error(e.stack)
-    return null
+    throw new Error("Failed to deploy Image")
   }
 }
 

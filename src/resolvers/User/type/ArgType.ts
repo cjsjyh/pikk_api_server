@@ -34,7 +34,7 @@ export type UserEditInfoInput = {
   age: number
   height: number
   weight: number
-  profileImageUrl: any
+  profileImageUrl: string
   profileImgUrl: string
   phoneNum: number
   address: string
@@ -44,7 +44,7 @@ export type UserEditInfoInput = {
 export type UserChannelInfoInput = {
   accountId: number
   channel_snsUrl: string
-  channel_titleImageUrl: any
+  channel_titleImageUrl: string
   channel_description: string
 }
 

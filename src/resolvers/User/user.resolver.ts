@@ -4,7 +4,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList } from "../Utils/promiseUtil"
+import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImageBy3Version } from "../Utils/promiseUtil"
 import { GetFormatSql, ConvertListToOrderedPair, InsertImageIntoDeleteQueue, IsNewImage } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
@@ -83,7 +83,8 @@ module.exports = {
         let setSql = ""
         let isFirst = true
         let deleteSql = ""
-        if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl")) {
+        if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl") && arg.channel_titleImageUrl != null) {
+          await DeployImageBy3Version(arg.channel_titleImageUrl)
           if (IsNewImage(arg.channel_titleImageUrl))
             deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
           setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
@@ -271,9 +272,10 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
   let isMultiple = false
   let deleteSql = ""
 
-  if (Object.prototype.hasOwnProperty.call(arg, "profileImageUrl")) {
+  if (Object.prototype.hasOwnProperty.call(arg, "profileImageUrl") && arg.profileImageUrl != null) {
     if (arg.profileImageUrl != null) {
       try {
+        await DeployImageBy3Version(arg.profileImageUrl)
         if (IsNewImage(arg.profileImageUrl)) {
           deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "profileImgUrl", "FK_accountId", [arg.accountId])
         }

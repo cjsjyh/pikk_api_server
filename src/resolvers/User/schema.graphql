@@ -72,7 +72,7 @@ input UserEditInfoInput {
   age: Int
   height: Int
   weight: Int
-  profileImageUrl: Upload
+  profileImageUrl: String
   phoneNum: String
   address: String
   rank: Int
@@ -81,7 +81,7 @@ input UserEditInfoInput {
 input UserChannelInfoInput {
   accountId: Int!
   channel_snsUrl: String
-  channel_titleImageUrl: Upload
+  channel_titleImageUrl: String
   channel_description: String
 }
 

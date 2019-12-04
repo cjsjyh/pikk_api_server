@@ -145,9 +145,9 @@ module.exports = {
         await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
-        throw new Error("Faield to delete recommend post cache")
         logger.warn(`Faield to delete recommend post cache`)
         logger.error(e.stack)
+        throw new Error("Faield to delete recommend post cache")
       }
 
       let recommendPostId: number

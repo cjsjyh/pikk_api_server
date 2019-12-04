@@ -1,5 +1,5 @@
 import { CrawledItemInfo } from "./type/ReturnType"
-import { extractDomain } from "./util"
+import { extractDomain, fetchConvertDjangoResult } from "./util"
 import { strip } from "../Utils/stringUtil"
 
 import { crawlCoor } from "./brands/coor"
@@ -16,6 +16,7 @@ import { crawlMustIt } from "./brands/mustit"
 import { crawlMatchesFashion } from "./brands/machesfashion"
 import { crawlWConcept } from "./brands/wconcept"
 import { crawlOco } from "./brands/oco"
+import { crawlSSG } from "./brands/ssg"
 
 var logger = require("../../tools/logger")
 
@@ -23,7 +24,11 @@ module.exports = {
   Mutation: {
     crawlItem: async (parent: void, args: any): Promise<CrawledItemInfo> => {
       args.url = strip(args.url)
-      let domain = extractDomain(args.url)
+
+      let splitDomain = extractDomain(args.url)
+      let domain = splitDomain[0]
+      let subdomain = splitDomain[1]
+
       try {
         let result: CrawledItemInfo
         if (domain == "coor.kr") result = await crawlCoor(args.url)
@@ -35,17 +40,27 @@ module.exports = {
         else if (domain == "store.musinsa.com") result = await crawlMusinsa(args.url)
         else if (domain == "llud.co.kr") result = await crawlLlude(args.url)
         else if (domain == "lfmall.co.kr") result = await crawlLfmall(args.url)
+        else if (domain == "wconcept.co.kr") result = await crawlWConcept(args.url)
         else if (domain == "mustit.co.kr") result = await crawlMustIt(args.url)
         else if (domain == "ebay.com") result = await crawlEbay(args.url)
         else if (domain == "matchesfashion.com") result = await crawlMatchesFashion(args.url)
-        else if (domain == "wconcept.co.kr") result = await crawlWConcept(args.url)
+        else if (domain == "ssg.com") result = await crawlSSG(args.url)
         else if (domain == "ocokorea.com") result = await crawlOco(args.url)
+        else if (domain == "29cm.co.kr") result = await fetchConvertDjangoResult("29cm", args.url)
+        else if (domain == "zara.com") result = await fetchConvertDjangoResult("zara", args.url, "자라")
+        else if (domain == "hm.com") result = await fetchConvertDjangoResult("handm", args.url, "H&M")
+        else if (domain == "nike.com") result = await fetchConvertDjangoResult("nike", args.url, "나이키")
+        else if (domain == "front.wemakeprice.com") result = await fetchConvertDjangoResult("wemakeprice", args.url, "")
+        else if (domain == "cosstores.com") result = await fetchConvertDjangoResult("cos", args.url, "코스")
+        else if (domain == "smartstore.naver.com") result = await fetchConvertDjangoResult("naverstore", args.url, "")
+        else if (domain == "shopping.naver.com") result = await fetchConvertDjangoResult("navershopping", args.url, "")
+        else if (domain == "ssfshop.com" && subdomain == "8Seconds") result = await fetchConvertDjangoResult("8seconds", args.url, "에잇세컨즈")
         else {
           result = await crawlOthers(args.url)
           logger.debug(result.purchaseUrl)
         }
 
-        logger.info("Item Crawled!")
+        logger.info("Item Crawled! " + domain)
         return result
       } catch (e) {
         logger.warn("Item crawling failed. Retry with valid URL: " + args.url)

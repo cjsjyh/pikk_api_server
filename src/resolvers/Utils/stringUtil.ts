@@ -2,6 +2,18 @@ export function logWithDate(content: any) {
   console.log(`[${getDateTime()}] ` + content)
 }
 
+export function formatUrls(imageUrl: string[]): string[] {
+  for (let i = 0; i < imageUrl.length; i++) {
+    if (imageUrl[i][0] != "h") {
+      let j = 0
+      while (imageUrl[i][j] == "/") j += 1
+      imageUrl[i] = imageUrl[i].substr(j, imageUrl[i].length)
+      imageUrl[i] = "http://" + imageUrl[i]
+    }
+  }
+  return imageUrl
+}
+
 export function formatUrl(imageUrl: string): string {
   if (imageUrl[0] != "h") {
     let i = 0

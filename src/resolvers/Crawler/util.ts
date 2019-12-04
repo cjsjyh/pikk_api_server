@@ -1,4 +1,5 @@
 import { CrawledItemInfo } from "./type/ReturnType"
+import { strip, formatUrl, formatUrls } from "../Utils/stringUtil"
 
 const cheerio = require("cheerio")
 const request = require("request")
@@ -7,6 +8,21 @@ const iconv = require("iconv-lite") //인코딩을 변환 해주는 모듈, 필�
 const charset = require("charset") //해당 사이트의 charset값을 알 수 있게 해준다.
 
 var logger = require("../../tools/logger")
+
+export async function fetchConvertDjangoResult(websiteName: string, sourceUrl: string, brandName?: string): Promise<any> {
+  let resultAxios = await axios.get(`http://${process.env.DJANGO_HOST}:8000/crawler/${websiteName}/${sourceUrl}`)
+  resultAxios = resultAxios.data
+  let result: CrawledItemInfo = {
+    brandKor: resultAxios.brand || brandName,
+    originalPrice: resultAxios.price,
+    salePrice: resultAxios.salePrice,
+    name: strip(resultAxios.itemname),
+    imageUrl: formatUrls(resultAxios.images),
+    purchaseUrl: sourceUrl,
+    isEstimated: false
+  }
+  return result
+}
 
 export async function getHtmlRequest(sourceUrl: string) {
   try {
@@ -101,10 +117,11 @@ function convertStringToNumber(str: string): number {
   return Number(removed)
 }
 
-export function extractDomain(url: string): string {
+export function extractDomain(url: string): string[] {
   url = url.replace("https://", "")
   url = url.replace("http://", "")
   url = url.replace("www.", "")
-  url = url.split("/")[0]
-  return url
+  url = url.replace("www2.", "")
+  let urls = url.split("/")
+  return urls
 }

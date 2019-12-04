@@ -151,7 +151,8 @@ module.exports = {
 
       let recommendPostId: number
       try {
-        let deployImageUrl = await DeployImageBy3Version(arg.titleImageUrl)
+        let deployImageUrl = ""
+        if (Object.prototype.hasOwnProperty.call(arg, "titleImageUrl")) deployImageUrl = await DeployImageBy3Version(arg.titleImageUrl)
 
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(

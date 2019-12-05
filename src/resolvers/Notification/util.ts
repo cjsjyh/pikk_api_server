@@ -79,9 +79,9 @@ async function NotifyPostWriter(postId: number, postType: string, content: strin
     SELECT post."FK_accountId", post.title FROM "${GetBoardName(postType)}" post WHERE "id" =${postId}
     `)
 
-    NotiInfo.targetId = postId
-    NotiInfo.targetType = postType
-    NotiInfo.targetTitle = postResult[0].title
+    NotiInfo.postId = postId
+    NotiInfo.postType = postType
+    NotiInfo.postTitle = postResult[0].title
 
     NotiInfo.content = content
 
@@ -90,16 +90,16 @@ async function NotifyPostWriter(postId: number, postType: string, content: strin
     ("notificationType","targetId","targetType","targetTitle","content","FK_sentUserId","FK_accountId") 
     VALUES (
       '${notiType}',
-      ${NotiInfo.targetId},
-      '${NotiInfo.targetType}',
-      '${NotiInfo.targetTitle}',
+      ${NotiInfo.postId},
+      '${NotiInfo.postType}',
+      '${NotiInfo.postTitle}',
       '${NotiInfo.content}',
       ${sentUserId},
       ${postResult[0].FK_accountId}
     )`)
-    logger.info(`Notified RecPost Writer of postId: ${NotiInfo.targetId}`)
+    logger.info(`Notified RecPost Writer of postId: ${NotiInfo.postId}`)
   } catch (e) {
-    logger.warn(`Failed to Notify RecPost Writer of postId: ${NotiInfo.targetId}`)
+    logger.warn(`Failed to Notify RecPost Writer of postId: ${NotiInfo.postId}`)
     logger.error(e.stack)
   }
 }
@@ -107,9 +107,9 @@ async function NotifyPostWriter(postId: number, postType: string, content: strin
 async function NotifyFollowers(postId: number, postType: string, postTitle: string, sentUserId: number, notiType: string) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
-    NotiInfo.targetId = postId
-    NotiInfo.targetType = postType
-    NotiInfo.targetTitle = postTitle
+    NotiInfo.postId = postId
+    NotiInfo.postType = postType
+    NotiInfo.postTitle = postTitle
     NotiInfo.content = null
 
     await RunSingleSQL(`
@@ -117,17 +117,17 @@ async function NotifyFollowers(postId: number, postType: string, postTitle: stri
       ("notificationType","targetId","targetType","targetTitle","content","FK_sentUserId","FK_accountId") 
       SELECT 
         '${notiType}',
-        ${NotiInfo.targetId},
-        '${NotiInfo.targetType}',
-        '${NotiInfo.targetTitle}',
+        ${NotiInfo.postId},
+        '${NotiInfo.postType}',
+        '${NotiInfo.postTitle}',
         '${NotiInfo.content}',
         ${sentUserId},
         "FK_accountId"
       FROM "CHANNEL_FOLLOWER" WHERE "FK_channelId"=${sentUserId}
     `)
-    logger.info(`Notified Channel Followers of ${sentUserId} postId: ${NotiInfo.targetId}`)
+    logger.info(`Notified Channel Followers of ${sentUserId} postId: ${NotiInfo.postId}`)
   } catch (e) {
-    logger.warn(`Failed to Notify Channel Followers of ${sentUserId} postId: ${NotiInfo.targetId}`)
+    logger.warn(`Failed to Notify Channel Followers of ${sentUserId} postId: ${NotiInfo.postId}`)
     logger.error(e.stack)
   }
 }
@@ -135,13 +135,13 @@ async function NotifyFollowers(postId: number, postType: string, postTitle: stri
 async function NotifyCommentWriter(postId: number, postType: string, content: string, parentId: number, sentUserId: number, notiType: string) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
-    NotiInfo.targetId = postId
-    NotiInfo.targetType = postType
+    NotiInfo.postId = postId
+    NotiInfo.postType = postType
     //Get PostInfo of parent comment Id
     let postResult = await RunSingleSQL(`
     SELECT post.title FROM "${GetBoardName(postType)}" post WHERE post.id=${postId}
     `)
-    NotiInfo.targetTitle = postResult[0].title
+    NotiInfo.postTitle = postResult[0].title
 
     //Get accountId of the parent comment
     let commentResult = await RunSingleSQL(`
@@ -155,9 +155,9 @@ async function NotifyCommentWriter(postId: number, postType: string, content: st
     VALUES 
     (
       '${notiType}',
-      ${NotiInfo.targetId},
-      '${NotiInfo.targetType}',
-      '${NotiInfo.targetTitle}',
+      ${NotiInfo.postId},
+      '${NotiInfo.postType}',
+      '${NotiInfo.postTitle}',
       '${NotiInfo.content}',
       ${sentUserId},
       ${commentResult[0].FK_accountId}

@@ -132,6 +132,15 @@ module.exports = {
         logger.error(e.stack)
         throw new Error("[Error] Failed to load Picked RecommendPost data from DB")
       }
+    },
+
+    _getUserPickkRecommendPostMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
+      let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
+      let postSql = `
+        SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" follower WHERE follower."FK_accountId"=${arg.userId}
+      `
+      let postCount = await RunSingleSQL(postSql)
+      return postCount[0].count
     }
 
     //getTempSavedRecommendPost: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<> => {}

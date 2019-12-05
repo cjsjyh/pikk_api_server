@@ -2,6 +2,7 @@ type Query {
   allItems(itemOption: ItemQuery!): [ItemInfo!]
   _allItemsMetadata(itemMetadataOption: ItemMetadataFilter!): Int!
   getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
+  _getUserPickkItemMetadata(pickkItemOption: PickkItemQuery!): Int!
   getItemRanking(itemRankingOption: ItemRankingFilter!): [ItemInfo!]
   _ItemRankingMetadata(itemMetadataOption: ItemMetadataFilter!): Int!
 }

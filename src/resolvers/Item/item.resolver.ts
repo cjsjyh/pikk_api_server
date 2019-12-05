@@ -66,6 +66,12 @@ module.exports = {
       }
     },
 
+    _getUserPickkItemMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
+      let arg: ArgType.PickkItemQuery = args.pickkItemOption
+      let queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
+      return queryResult[0].count
+    },
+
     getItemRanking: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.ItemRankingFilter = args.itemRankingOption
 

@@ -2,6 +2,7 @@ type Query {
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata: Int!
   getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
+  _getUserPickkRecommendPostMetadata(pickkRecommendPostOption: PickkRecommendPostQuery!): Int!
   #getTempSavedRecommendPost(tempSavedRecommendPostOption: TempSavedRecommendPostQuery!): #------
 }
 

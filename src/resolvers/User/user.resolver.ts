@@ -187,6 +187,13 @@ module.exports = {
       }
     },
 
+    _getUserPickkChannelMetadata: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<number> => {
+      let arg: ArgType.PickkChannelQuery = args.pickkChannelOption
+      let postSql = `SELECT COUNT(*) FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
+      let channelCount = await RunSingleSQL(postSql)
+      return channelCount[0].count
+    },
+
     getChannelRanking: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.UserInfo[]> => {
       try {
         let idList = await GetChannelRankingId()

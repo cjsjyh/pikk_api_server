@@ -1,5 +1,6 @@
 type Query {
   getUserPickkChannel(pickkChannelOption: PickkChannelQuery!): [UserInfo!]
+  _getUserPickkChannelMetadata(pickkChannelOption: PickkChannelQuery!): Int!
   getUserInfo(userOption: UserQuery!): UserInfo!
   getChannelRanking: [UserInfo!]
 }

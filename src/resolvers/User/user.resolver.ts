@@ -4,7 +4,7 @@ import * as ArgType from "./type/ArgType"
 import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImageBy3Version } from "../Utils/promiseUtil"
+import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImageBy4Version } from "../Utils/promiseUtil"
 import { GetFormatSql, ConvertListToOrderedPair, InsertImageIntoDeleteQueue, IsNewImage } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
 import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
@@ -87,7 +87,7 @@ module.exports = {
         if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl") && arg.channel_titleImageUrl != null) {
           if (IsNewImage(arg.channel_titleImageUrl)) {
             deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
-            arg.channel_titleImageUrl = await DeployImageBy3Version(arg.channel_titleImageUrl)
+            arg.channel_titleImageUrl = await DeployImageBy4Version(arg.channel_titleImageUrl)
           }
           setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
           isFirst = false
@@ -289,7 +289,7 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
           await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
 
           deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "profileImgUrl", "FK_accountId", [arg.accountId])
-          arg.profileImageUrl = await DeployImageBy3Version(arg.profileImageUrl)
+          arg.profileImageUrl = await DeployImageBy4Version(arg.profileImageUrl)
         }
         resultSql += `"profileImgUrl"='${arg.profileImageUrl}'`
         isMultiple = true

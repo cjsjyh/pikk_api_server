@@ -1,4 +1,4 @@
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImageBy3Version } from "../Utils/promiseUtil"
+import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImageBy4Version } from "../Utils/promiseUtil"
 import { ConvertListToString, IsNewImage } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput, ItemEditInfoInput, GroupEditInfo, VariationEditInfo } from "./type/ArgType"
@@ -20,7 +20,7 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
     }
 
     if (Object.prototype.hasOwnProperty.call(item, "variationInfo")) {
-      if (IsNewImage(item.variationInfo.imageUrl)) item.variationInfo.imageUrl = await DeployImageBy3Version(item.variationInfo.imageUrl)
+      if (IsNewImage(item.variationInfo.imageUrl)) item.variationInfo.imageUrl = await DeployImageBy4Version(item.variationInfo.imageUrl)
       let variationSql = await GetItemVariationEditSql(item.variationInfo)
       await RunSingleSQL(`UPDATE "ITEM_VARIATION" SET ${variationSql} WHERE id=${item.variationInfo.itemId}`)
     }
@@ -74,7 +74,7 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
       //Insert Variation
       if (arg.variationInfo.salePrice === undefined) arg.variationInfo.salePrice = null
 
-      let deployImageUrl = await DeployImageBy3Version(arg.variationInfo.imageUrl)
+      let deployImageUrl = await DeployImageBy4Version(arg.variationInfo.imageUrl)
 
       queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
         VALUES ('${arg.variationInfo.name}','${deployImageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
@@ -330,7 +330,7 @@ async function GetItemVariationEditSql(itemVar: VariationEditInfo): Promise<stri
   }
 
   if (Object.prototype.hasOwnProperty.call(itemVar, "imageUrl")) {
-    if (IsNewImage(itemVar.imageUrl)) itemVar.imageUrl = await DeployImageBy3Version(itemVar.imageUrl)
+    if (IsNewImage(itemVar.imageUrl)) itemVar.imageUrl = await DeployImageBy4Version(itemVar.imageUrl)
     if (isMultiple) resultSql += ", "
     resultSql += ` "imageUrl" = '${itemVar.imageUrl}'`
     isMultiple = true

@@ -5,7 +5,7 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy3Version } from "../Utils/promiseUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy4Version } from "../Utils/promiseUtil"
 import {
   GetFormatSql,
   MakeMultipleQuery,
@@ -162,7 +162,7 @@ module.exports = {
       let recommendPostId: number
       try {
         let deployImageUrl = ""
-        if (arg.titleImageUrl != null) deployImageUrl = await DeployImageBy3Version(arg.titleImageUrl)
+        if (arg.titleImageUrl != null) deployImageUrl = await DeployImageBy4Version(arg.titleImageUrl)
 
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(
@@ -179,7 +179,9 @@ module.exports = {
       }
 
       try {
+        //Insert Item Info
         let ItemResult = await SequentialPromiseValue(arg.reviews, InsertItemForRecommendPost)
+        //Insert Item Review
         for (let index = 0; index < arg.reviews.length; index++) {
           await InsertItemReview(arg.reviews[index], [recommendPostId, arg.accountId, index])
         }
@@ -405,7 +407,7 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
   if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl") && filter.titleImageUrl != null) {
     if (IsNewImage(filter.titleImageUrl)) {
       resultSql = InsertImageIntoDeleteQueue("RECOMMEND_POST", "titleImageUrl", "id", [filter.postId]) + resultSql
-      filter.titleImageUrl = await DeployImageBy3Version(filter.titleImageUrl)
+      filter.titleImageUrl = await DeployImageBy4Version(filter.titleImageUrl)
     }
     if (isMultiple) resultSql += ", "
     resultSql += `"titleImageUrl" = '${filter.titleImageUrl}'`

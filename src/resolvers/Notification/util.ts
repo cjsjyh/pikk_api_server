@@ -53,7 +53,6 @@ export async function InsertIntoNotificationQueue(
 }
 
 export async function ProcessNotificationQueue() {
-  console.log("Processed Noti!!!")
   while ((await RedisQueueLength("Notification_Queue")) != 0) {
     let task = await PopRedisQueue("Notification_Queue")
     task = JSON.parse(task)
@@ -87,7 +86,7 @@ async function NotifyPostWriter(postId: number, postType: string, content: strin
 
     await RunSingleSQL(`
     INSERT INTO "NOTIFICATION"
-    ("notificationType","targetId","targetType","targetTitle","content","FK_sentUserId","FK_accountId") 
+    ("notificationType","postId","postType","postTitle","content","FK_sentUserId","FK_accountId") 
     VALUES (
       '${notiType}',
       ${NotiInfo.postId},
@@ -114,7 +113,7 @@ async function NotifyFollowers(postId: number, postType: string, postTitle: stri
 
     await RunSingleSQL(`
       INSERT INTO "NOTIFICATION"
-      ("notificationType","targetId","targetType","targetTitle","content","FK_sentUserId","FK_accountId") 
+      ("notificationType","postId","postType","postTitle","content","FK_sentUserId","FK_accountId") 
       SELECT 
         '${notiType}',
         ${NotiInfo.postId},
@@ -151,7 +150,7 @@ async function NotifyCommentWriter(postId: number, postType: string, content: st
 
     await RunSingleSQL(`
     INSERT INTO "NOTIFICATION"
-    ("notificationType","targetId","targetType","targetTitle","content","FK_sentUserId","FK_accountId") 
+    ("notificationType","postId","postType","postTitle","content","FK_sentUserId","FK_accountId") 
     VALUES 
     (
       '${notiType}',

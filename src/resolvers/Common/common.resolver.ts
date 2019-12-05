@@ -65,7 +65,7 @@ module.exports = {
         let result = await RunSingleSQL(query)
         result = Object.values(result[0])
 
-        if (arg.targetType == "RECOMMENDPOST")
+        if (arg.targetType == "RECOMMENDPOST" && result[0] == 1)
           InsertIntoNotificationQueue("NEW_PICKK_TO_MY_RECOMMEND_POST", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
 
         logger.info(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)

@@ -145,7 +145,7 @@ export async function downloadImage(url, image_path) {
   })
 }
 
-export async function DeployImageBy4Version(imageUrl: string): Promise<string> {
+export async function DeployImageBy4Versions(imageUrl: string): Promise<string> {
   let isSelfHosted = false
   let folderName = "image"
   if (process.env.MODE != "DEPLOY") folderName = "testimage"

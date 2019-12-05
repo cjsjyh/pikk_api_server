@@ -6,7 +6,7 @@ import {
   SequentialPromiseValue,
   MakeGroups,
   AssignGroupsToParent,
-  DeployImageBy4Version
+  DeployImageBy4Versions
 } from "../Utils/promiseUtil"
 import { ConvertListToString, ConvertListToOrderedPair } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
@@ -159,11 +159,11 @@ export function InsertItemReview(
             imgUrlList.map((imgUrl, index) => {
               return new Promise(async (resolve, reject) => {
                 try {
-                  imgUrlList[index] = await DeployImageBy4Version(imgUrl)
+                  imgUrlList[index] = await DeployImageBy4Versions(imgUrl)
                   resolve()
                 } catch (e) {
                   try {
-                    imgUrlList[index] = await DeployImageBy4Version(imgUrl)
+                    imgUrlList[index] = await DeployImageBy4Versions(imgUrl)
                     resolve()
                   } catch (e) {
                     reject(e)

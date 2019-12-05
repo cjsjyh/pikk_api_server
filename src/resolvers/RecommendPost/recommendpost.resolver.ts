@@ -5,7 +5,7 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy4Version } from "../Utils/promiseUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy4Versions } from "../Utils/promiseUtil"
 import {
   GetFormatSql,
   MakeMultipleQuery,
@@ -32,6 +32,7 @@ module.exports = {
     allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
       let cacheName = "allRecom"
+      //Get Cached Content
       try {
         cacheName += MakeCacheNameByObject(arg.filterGeneral)
         cacheName += MakeCacheNameByObject(arg.postFilter)
@@ -77,7 +78,7 @@ module.exports = {
           post.*, user_info.name, user_info."profileImgUrl" as "profileImageUrl"
         FROM "USER_INFO" AS user_info 
         INNER JOIN post ON post."FK_accountId" = user_info."FK_accountId" 
-        WHERE post."pickCount" >= ${arg.postFilter.minimumPickCount}
+        WHERE post."pickCount" >= ${arg.postFilter.minimumPickCount} AND post."postStatus" = 'VISIBLE'
         ${formatSql}
         `
         let postResult = await GetRecommendPostList(postSql, info)
@@ -123,6 +124,7 @@ module.exports = {
           FROM "RECOMMEND_POST" as post
           INNER JOIN post_id on post.id = post_id."FK_postId"
           INNER JOIN "USER_INFO" user_info ON user_info."FK_accountId" = post."FK_accountId"
+          WHERE post."postStatus" = 'VISIBLE'
           ${formatSql}`
         let postResult = await GetRecommendPostList(postSql, info)
         logger.info(`userPickkRecommendPost Called`)
@@ -150,6 +152,7 @@ module.exports = {
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
+      //Delete Cache
       try {
         await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
         logger.info(`Deleted recommend post cache`)
@@ -161,9 +164,11 @@ module.exports = {
 
       let recommendPostId: number
       try {
+        //Deploy title image if it exists
         let deployImageUrl = ""
-        if (arg.titleImageUrl != null) deployImageUrl = await DeployImageBy4Version(arg.titleImageUrl)
+        if (arg.titleType == "IMAGE" && arg.titleImageUrl != null) deployImageUrl = await DeployImageBy4Versions(arg.titleImageUrl)
 
+        //Deploy RecommendPost Body
         if (arg.styleType === undefined) arg.styleType = "NONE"
         let insertResult = await RunSingleSQL(
           `INSERT INTO "RECOMMEND_POST"
@@ -187,6 +192,7 @@ module.exports = {
         }
         logger.info(`Recommend Post created by User${arg.accountId}`)
 
+        //Notify Followers
         InsertIntoNotificationQueue("CHANNEL_FOLLOWERS", recommendPostId, "RECOMMEND", arg.title, "", -1, arg.accountId)
 
         return true
@@ -289,12 +295,15 @@ module.exports = {
         ccc AS (
           INSERT INTO "IMAGE_DELETE"("imageUrl")
 	        SELECT rec."titleImageUrl" as "imageUrl" FROM "RECOMMEND_POST" rec WHERE rec.id=${arg.postId}
+        ),
+        delFollow AS (
+          DELETE FROM "RECOMMEND_POST_FOLLOWER" WHERE "FK_postId" = ${arg.postId}
         )
-		    DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}
+		    UPDATE "RECOMMEND_POST" SET "postStatus"='DELETED'  WHERE id=${arg.postId}
         `
         let result = await RunSingleSQL(query)
 
-        logger.info(`DELETE FROM "RECOMMEND_POST" WHERE id=${arg.postId}`)
+        logger.info(`DELETE RECOMMEND_POST id=${arg.postId}`)
         return true
       } catch (e) {
         logger.warn(`Delete RecommendPost id: ${arg.postId} Failed!`)
@@ -407,7 +416,7 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
   if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl") && filter.titleImageUrl != null) {
     if (IsNewImage(filter.titleImageUrl)) {
       resultSql = InsertImageIntoDeleteQueue("RECOMMEND_POST", "titleImageUrl", "id", [filter.postId]) + resultSql
-      filter.titleImageUrl = await DeployImageBy4Version(filter.titleImageUrl)
+      filter.titleImageUrl = await DeployImageBy4Versions(filter.titleImageUrl)
     }
     if (isMultiple) resultSql += ", "
     resultSql += `"titleImageUrl" = '${filter.titleImageUrl}'`

@@ -12,15 +12,17 @@ module.exports = {
       try {
         let result = await RunSingleSQL(`
           SELECT 
-            noti."id",
+            noti."id" as "notificationId",
+            noti."notificationType",
+
             noti."postId",
             noti."postType",
             noti."postTitle",
+
             noti."content",
-            noti."FK_accountId" as "accountId",
             noti."time",
             noti."isViewed",
-            noti."notificationType",
+            
             user_info."name" as "sentUserName",
             user_info."profileImgUrl" as "sentUserImageUrl"
           FROM "NOTIFICATION" noti 

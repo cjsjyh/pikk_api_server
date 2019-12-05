@@ -6,42 +6,22 @@ var logger = require("../../tools/logger")
 
 export async function InsertIntoNotificationQueue(
   notiType: string,
-  targetId: number,
-  targetType: string,
-  targetTitle?: string,
+  postId: number,
+  postType: string,
+  postTitle?: string,
   content?: string,
   parentId?: number,
   sentUserId?: number
 ) {
   try {
-    let queueData
-    if (notiType == "COMMENT_TO_MY_RECOMMEND_POST") {
-      queueData = {
-        notiType: notiType,
-        targetId: targetId,
-        targetType: targetType,
-        content: content,
-        sentUserId: sentUserId
-      }
-    } else if (notiType == "NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL") {
-      queueData = {
-        notiType: notiType,
-        targetId: targetId,
-        targetType: targetType,
-        targetTitle: targetTitle,
-        sentUserId: sentUserId
-      }
-    } else if (notiType == "COMMENT_TO_MY_COMEMNT") {
-      queueData = {
-        notiType: notiType,
-        targetId: targetId,
-        targetType: targetType,
-        content: content,
-        parentId: parentId,
-        sentUserId: sentUserId
-      }
-    } else {
-      logger.warn("Invalid Notification Queue notiType")
+    let queueData = {
+      notiType: notiType,
+      postId: postId,
+      postType: postType,
+      postTitle: postTitle,
+      content: content,
+      parentId: parentId,
+      sentUserId: sentUserId
     }
 
     await PushRedisQueue("Notification_Queue", JSON.stringify(queueData))
@@ -53,18 +33,17 @@ export async function InsertIntoNotificationQueue(
 }
 
 export async function ProcessNotificationQueue() {
-  console.log("Processed Noti!!!")
   while ((await RedisQueueLength("Notification_Queue")) != 0) {
     let task = await PopRedisQueue("Notification_Queue")
     task = JSON.parse(task)
     if (task.notiType == "COMMENT_TO_MY_RECOMMEND_POST") {
-      await NotifyPostWriter(task.targetId, task.targetType, task.content, task.sentUserId, task.notiType)
+      await NotifyPostWriter(task.postId, task.postType, task.content, task.sentUserId, task.notiType)
     } else if (task.notiType == "NEW_PICKK_TO_MY_RECOMMEND_POST") {
-      await NotifyPostWriter(task.targetId, task.targetType, task.content, task.sentUserId, task.notiType)
+      await NotifyPostWriter(task.postId, task.postType, task.content, task.sentUserId, task.notiType)
     } else if (task.notiType == "NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL") {
-      await NotifyFollowers(task.targetId, task.targetType, task.targetTitle, task.sentUserId, task.notiType)
-    } else if (task.notiType == "COMMENT_TO_MY_COMEMNT") {
-      await NotifyCommentWriter(task.targetId, task.targetType, task.content, task.parentId, task.sentUserId, task.notiType)
+      await NotifyFollowers(task.postId, task.postType, task.postTitle, task.sentUserId, task.notiType)
+    } else if (task.notiType == "COMMENT_TO_MY_COMMENT") {
+      await NotifyCommentWriter(task.postId, task.postType, task.content, task.parentId, task.sentUserId, task.notiType)
     } else {
       logger.warn("Invalid Notification Queue notiType")
     }
@@ -87,7 +66,7 @@ async function NotifyPostWriter(postId: number, postType: string, content: strin
 
     await RunSingleSQL(`
     INSERT INTO "NOTIFICATION"
-    ("notificationType","targetId","targetType","targetTitle","content","FK_sentUserId","FK_accountId") 
+    ("notificationType","postId","postType","postTitle","content","FK_sentUserId","FK_accountId") 
     VALUES (
       '${notiType}',
       ${NotiInfo.postId},
@@ -114,7 +93,7 @@ async function NotifyFollowers(postId: number, postType: string, postTitle: stri
 
     await RunSingleSQL(`
       INSERT INTO "NOTIFICATION"
-      ("notificationType","targetId","targetType","targetTitle","content","FK_sentUserId","FK_accountId") 
+      ("notificationType","postId","postType","postTitle","content","FK_sentUserId","FK_accountId") 
       SELECT 
         '${notiType}',
         ${NotiInfo.postId},
@@ -151,7 +130,7 @@ async function NotifyCommentWriter(postId: number, postType: string, content: st
 
     await RunSingleSQL(`
     INSERT INTO "NOTIFICATION"
-    ("notificationType","targetId","targetType","targetTitle","content","FK_sentUserId","FK_accountId") 
+    ("notificationType","postId","postType","postTitle","content","FK_sentUserId","FK_accountId") 
     VALUES 
     (
       '${notiType}',

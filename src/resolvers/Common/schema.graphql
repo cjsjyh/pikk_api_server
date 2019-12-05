@@ -1,6 +1,12 @@
 scalar Upload
 scalar Date
 
+enum FollowType {
+  ITEM
+  CHANNEL
+  RECOMMEND
+}
+
 type Query {
   isFollowingTarget(followInfo: FollowInfoInput!): Boolean!
 }

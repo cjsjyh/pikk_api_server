@@ -57,7 +57,7 @@ module.exports = {
         }
         //Comented to a comment
         else {
-          InsertIntoNotificationQueue("COMMENT_TO_MY_COMEMNT", arg.targetId, arg.targetType, "", arg.content, arg.parentId, arg.accountId)
+          InsertIntoNotificationQueue("COMMENT_TO_MY_COMMENT", arg.targetId, arg.targetType, "", arg.content, arg.parentId, arg.accountId)
         }
 
         return true

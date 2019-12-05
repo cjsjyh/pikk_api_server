@@ -18,7 +18,7 @@ module.exports = {
         if (arg.targetType == "ITEM") {
           tableName = "ITEM"
           variableName = "itemId"
-        } else if (arg.targetType == "RECOMMENDPOST") {
+        } else if (arg.targetType == "RECOMMEND") {
           tableName = "RECOMMEND_POST"
           variableName = "postId"
         } else if (arg.targetType == "CHANNEL") {
@@ -56,7 +56,7 @@ module.exports = {
       let arg: ReturnType.FollowInfo = args.followInfo
 
       try {
-        if (arg.targetType == "RECOMMENDPOST") {
+        if (arg.targetType == "RECOMMEND") {
           await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
         }
@@ -65,7 +65,7 @@ module.exports = {
         let result = await RunSingleSQL(query)
         result = Object.values(result[0])
 
-        if (arg.targetType == "RECOMMENDPOST")
+        if (arg.targetType == "RECOMMEND" && result[0] == 1)
           InsertIntoNotificationQueue("NEW_PICKK_TO_MY_RECOMMEND_POST", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
 
         logger.info(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)

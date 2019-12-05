@@ -67,7 +67,7 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
         review.images = []
       })
       if (IsSubFieldRequired(selectionSet, "reviews", "images")) {
-        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 2, "")
+        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 2, "",`ORDER BY "order" ASC`)
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {

@@ -53,11 +53,11 @@ module.exports = {
 
         //Commented to a post
         if (arg.parentId == null) {
-          InsertIntoNotificationQueue("RECPOST_WRITER", arg.targetId, arg.targetType, "", arg.content)
+          InsertIntoNotificationQueue("COMMENT_TO_MY_RECOMMEND_POST", arg.targetId, arg.targetType, "", arg.content, -1, arg.accountId)
         }
         //Comented to a comment
         else {
-          InsertIntoNotificationQueue("COMMENT_WRITER", arg.targetId, arg.targetType, "", arg.content, arg.parentId)
+          InsertIntoNotificationQueue("COMMENT_TO_MY_COMEMNT", arg.targetId, arg.targetType, "", arg.content, arg.parentId, arg.accountId)
         }
 
         return true

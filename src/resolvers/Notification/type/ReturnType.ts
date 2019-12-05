@@ -1,8 +1,15 @@
 export type NotificationInfo = {
-  id: number
-  targetId: number
-  targetType: string
-  targetTitle: string
+  notificationId: number
+  notificationType: string
+
+  postId: number
+  postType: string
+  postTitle: string
+
+  sentUserName: string
+  sentUserImageUrl: string
+
   content: string
-  accountId: number
+  isViewed: boolean
+  time: string
 }

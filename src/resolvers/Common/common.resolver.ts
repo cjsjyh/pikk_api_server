@@ -3,6 +3,7 @@ import * as ReturnType from "./type/ReturnType"
 import { MutationArgInfo } from "./type/ArgType"
 import { ValidateUser } from "../Utils/securityUtil"
 import { DelCacheByPattern } from "../../database/redisConnect"
+import { InsertIntoNotificationQueue } from "../Notification/util"
 var logger = require("../../tools/logger")
 
 module.exports = {
@@ -63,6 +64,10 @@ module.exports = {
         let query = `SELECT toggle${arg.targetType}Follow(${arg.accountId},${arg.targetId})`
         let result = await RunSingleSQL(query)
         result = Object.values(result[0])
+
+        if (arg.targetType == "RECOMMENDPOST")
+          InsertIntoNotificationQueue("NEW_PICKK_TO_MY_RECOMMEND_POST", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
+
         logger.info(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)
         return result[0]
       } catch (e) {

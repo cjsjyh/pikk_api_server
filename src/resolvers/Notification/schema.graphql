@@ -4,17 +4,25 @@ type Query {
 
 type Mutation {
   setUserNotification(notificationSetInfoInput: NotificationSetInfoInput): Boolean!
+  deleteUserNotification(notificationSetInfoInput: NotificationSetInfoInput): Boolean!
 }
 
+enum NotificationTargetType {
+  RECOMMEND
+  COMMUNITY
+}
+
+enum NotificationType {
+  COMMENT_TO_MY_RECOMMEND_POST
+  COMMENT_TO_MY_COMEMNT
+  NEW_PICKK_TO_MY_RECOMMEND_POST
+  NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL
+}
 #--------------
 #   INPUT
 #--------------
 
 # Query
-enum NotificationTargetType {
-  RECOMMEND
-  COMMUNITY
-}
 
 # Mutation
 input NotificationSetInfoInput {
@@ -27,10 +35,17 @@ input NotificationSetInfoInput {
 #---------------
 
 type NotificationInfo {
-  id: Int!
-  targetId: Int!
-  targetType: NotificationTargetType!
-  targetTitle: String!
+  notificationId: Int!
+  notificationType: NotificationType!
+
+  postId: Int!
+  postType: NotificationTargetType!
+  postTitle: String!
+
+  sentUserName: String!
+  sentUserImageUrl: String!
+
   content: String
-  accountId: Int!
+  isViewed: Boolean!
+  time: String!
 }

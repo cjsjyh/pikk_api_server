@@ -193,7 +193,7 @@ module.exports = {
         logger.info(`Recommend Post created by User${arg.accountId}`)
 
         //Notify Followers
-        InsertIntoNotificationQueue("CHANNEL_FOLLOWERS", recommendPostId, "RECOMMEND", arg.title, "", -1, arg.accountId)
+        InsertIntoNotificationQueue("NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL", recommendPostId, "RECOMMEND", arg.title, "", -1, arg.accountId)
 
         return true
       } catch (e) {

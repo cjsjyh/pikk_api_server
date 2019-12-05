@@ -6,42 +6,22 @@ var logger = require("../../tools/logger")
 
 export async function InsertIntoNotificationQueue(
   notiType: string,
-  targetId: number,
-  targetType: string,
-  targetTitle?: string,
+  postId: number,
+  postType: string,
+  postTitle?: string,
   content?: string,
   parentId?: number,
   sentUserId?: number
 ) {
   try {
-    let queueData
-    if (notiType == "COMMENT_TO_MY_RECOMMEND_POST") {
-      queueData = {
-        notiType: notiType,
-        targetId: targetId,
-        targetType: targetType,
-        content: content,
-        sentUserId: sentUserId
-      }
-    } else if (notiType == "NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL") {
-      queueData = {
-        notiType: notiType,
-        targetId: targetId,
-        targetType: targetType,
-        targetTitle: targetTitle,
-        sentUserId: sentUserId
-      }
-    } else if (notiType == "COMMENT_TO_MY_COMEMNT") {
-      queueData = {
-        notiType: notiType,
-        targetId: targetId,
-        targetType: targetType,
-        content: content,
-        parentId: parentId,
-        sentUserId: sentUserId
-      }
-    } else {
-      logger.warn("Invalid Notification Queue notiType")
+    let queueData = {
+      notiType: notiType,
+      postId: postId,
+      postType: postType,
+      postTitle: postTitle,
+      content: content,
+      parentId: parentId,
+      sentUserId: sentUserId
     }
 
     await PushRedisQueue("Notification_Queue", JSON.stringify(queueData))

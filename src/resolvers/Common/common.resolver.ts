@@ -18,7 +18,7 @@ module.exports = {
         if (arg.targetType == "ITEM") {
           tableName = "ITEM"
           variableName = "itemId"
-        } else if (arg.targetType == "RECOMMENDPOST") {
+        } else if (arg.targetType == "RECOMMEND") {
           tableName = "RECOMMEND_POST"
           variableName = "postId"
         } else if (arg.targetType == "CHANNEL") {

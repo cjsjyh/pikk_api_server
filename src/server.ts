@@ -87,9 +87,6 @@ app.get("/", (req: express.Request, res: express.Response) => {
 //   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
 //   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
 //   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-//   //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=FL9023"))
-//   //console.log(await crawlAdidas("https://shop.adidas.co.kr/PF020401.action?PROD_CD=DV1577"))
-//   //console.log(await crawl29cm("https://www.29cm.co.kr/product/178591"))
 //   await crawlOthers("https://www.google.com")
 // }
 // testfunc()

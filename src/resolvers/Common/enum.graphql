@@ -55,7 +55,7 @@ enum PostType {
 enum FollowType {
   ITEM
   CHANNEL
-  RECOMMENDPOST
+  RECOMMEND
 }
 
 enum ProviderType {

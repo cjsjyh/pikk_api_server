@@ -10,7 +10,6 @@ export function GetBoardName(name: string): string {
   let boardName = ""
   if (name == "COMMUNITY") boardName = "COMMUNITY_POST"
   else if (name == "RECOMMEND") boardName = "RECOMMEND_POST"
-  else if (name == "RECOMMENDPOST") boardName = "RECOMMEND_POST"
 
   return boardName
 }

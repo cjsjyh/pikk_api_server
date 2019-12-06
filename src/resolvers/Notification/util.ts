@@ -42,7 +42,7 @@ export async function ProcessNotificationQueue() {
       await NotifyPostWriter(task.postId, task.postType, task.content, task.sentUserId, task.notiType)
     } else if (task.notiType == "NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL") {
       await NotifyFollowers(task.postId, task.postType, task.postTitle, task.sentUserId, task.notiType)
-    } else if (task.notiType == "COMMENT_TO_MY_COMEMNT") {
+    } else if (task.notiType == "COMMENT_TO_MY_COMMENT") {
       await NotifyCommentWriter(task.postId, task.postType, task.content, task.parentId, task.sentUserId, task.notiType)
     } else {
       logger.warn("Invalid Notification Queue notiType")

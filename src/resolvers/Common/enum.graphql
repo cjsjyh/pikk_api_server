@@ -8,22 +8,6 @@ enum BoardType {
   COMMUNITY
 }
 
-enum RecommendPostType {
-  RECOMMEND
-  LOOK
-  SALE
-}
-
-enum CommunityPostType {
-  QNA
-  CHANNEL_POST
-}
-
-enum RecommendTitleType {
-  YOUTUBE
-  IMAGE
-}
-
 enum RecommendReason {
   DESIGN
   PRICE

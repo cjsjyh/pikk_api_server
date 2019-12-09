@@ -155,21 +155,27 @@ export async function DeployImageBy4Versions(imageUrl: string): Promise<string> 
       isSelfHosted = true
       //Download Image From S3
       imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")
+      console.log(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
       await new Promise((resolve, reject) => {
-        var param = {
-          Bucket: "fashiondogam-images",
-          Key: decodeURIComponent(`${folderName}_temp/${imageUrl}`)
-        }
-        S3.getObject(param, (e, data) => {
-          if (e) {
-            logger.error(e.stack)
-            reject(e)
+        try {
+          var param = {
+            Bucket: "fashiondogam-images",
+            Key: decodeURIComponent(`${folderName}_temp/${imageUrl}`)
           }
-          fs.writeFile(`./${imageUrl}`, data.Body, function(e) {
-            if (e) logger.error(e.stack)
-            resolve()
+          S3.getObject(param, (e, data) => {
+            if (e) {
+              logger.error(e.stack)
+              reject(e)
+            } else {
+              fs.writeFile(`./${imageUrl}`, data.Body, function(e) {
+                if (e) logger.error(e.stack)
+                resolve()
+              })
+            }
           })
-        })
+        } catch (e) {
+          reject(e)
+        }
       })
     } else {
       let newImageName

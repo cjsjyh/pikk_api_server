@@ -9,7 +9,7 @@ type Mutation {
   """
   createCommunityPost(communityPostInfo: CommunityPostInfoInput!): Boolean!
   editCommunityPost(communityPostEditInfo: CommunityPostEditInfoInput!): Boolean!
-  deleteCommunityPost(postId: Int!): Boolean
+  deleteCommunityPost(communityPostDeleteInfo: CommunityPostDeleteInfoInput!): Boolean!
 }
 
 #--------------
@@ -20,6 +20,11 @@ enum ComPostSortableField {
   title
   time
   viewCount
+}
+
+enum CommunityPostType {
+  SALE
+  ETC
 }
 
 #------------------
@@ -37,7 +42,7 @@ input CommunityPostQueryFilter {
   accountId: Int
   postId: Int
   postType: CommunityPostType!
-  qnaType: QNAType
+  #qnaType: QNAType
   channelId: Int
 }
 
@@ -52,29 +57,28 @@ input CommunityPostQuery {
 
 input CommunityPostInfoInput {
   accountId: Int!
-  """
-  If belongs to a channel, insert UserId
-  """
-  channelId: Int!
+  # """
+  # If belongs to a channel, insert UserId
+  # """
+  # channelId: Int!
   title: String!
   content: String!
   postType: CommunityPostType!
-  qnaType: QNAType
+  #qnaType: QNAType
   imageUrls: [String]
 }
 
 input CommunityPostEditInfoInput {
   accountId: Int!
-  """
-  If belongs to a channel, insert UserId
-  """
   postId: Int!
   title: String
   content: String
   postType: CommunityPostType
-  qnaType: QNAType
+  #qnaType: QNAType
   imageUrls: [CommunityPostEditImageInfo!]
-
+  """
+  Insert Image Id
+  """
   deletedImages: [Int!]
 }
 
@@ -107,5 +111,5 @@ type CommunityPostInfo {
   viewCount: Int!
   imageUrls: [String]
   postType: String!
-  qnaType: String
+  #qnaType: String
 }

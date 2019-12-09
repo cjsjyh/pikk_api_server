@@ -22,6 +22,16 @@ enum RecPostSortableField {
   viewCount
 }
 
+enum RecommendPostType {
+  RECOMMEND
+  LOOK
+}
+
+enum RecommendTitleType {
+  YOUTUBE
+  IMAGE
+}
+
 #--------------
 #   INPUT
 #--------------
@@ -88,6 +98,9 @@ input RecommendPostEditInfoInput {
   titleYoutubeUrl: String
 
   deletedReviews: [Int!]
+  """
+  Insert Image Id
+  """
   deletedImages: [Int!]
   reviews: [ItemReviewEditInfoInput!]
 }

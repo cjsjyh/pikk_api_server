@@ -10,11 +10,11 @@ export type MutationArgInfo = {
 
 export type CommunityPostInfoInput = {
   accountId: number
-  channelId: number
+  //channelId: number
   title: string
   content: string
   postType: string
-  qnaType: string
+  //qnaType: string
   imageUrls: string[]
 }
 
@@ -24,7 +24,7 @@ export type CommunityPostEditInfoInput = {
   title: string
   content: string
   postType: string
-  qnaType: string
+  //qnaType: string
   imageUrls: CommunityPostEditImageInfo[]
 
   deletedImages: number[]
@@ -58,7 +58,7 @@ export type CommunityPostQueryFilter = {
   accountId: number
   postId: number
   postType: string
-  qnaType: string
+  //qnaType: string
   channelId: number
 }
 

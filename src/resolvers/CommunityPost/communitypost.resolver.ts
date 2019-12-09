@@ -7,7 +7,7 @@ import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
-import { SequentialPromiseValue, GetMetaData, RunSingleSQL, ExtractSelectionSet } from "../Utils/promiseUtil"
+import { SequentialPromiseValue, GetMetaData, RunSingleSQL, ExtractSelectionSet, DeployImageBy4Versions } from "../Utils/promiseUtil"
 import { GetFormatSql, ConvertListToOrderedPair, ConvertListToString, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
@@ -37,13 +37,13 @@ module.exports = {
           ${requestSql}
         FROM post
         INNER JOIN "USER_INFO" user_info ON post."FK_accountId" = user_info."FK_accountId"
+        WHERE post."postStatus" = 'VISIBLE'
         `
         let postResult: PostReturnType.CommunityPostInfo[] = await RunSingleSQL(querySql)
         let imgResult = await SequentialPromiseValue(postResult, GetCommunityPostImage)
 
         postResult.forEach((post: PostReturnType.CommunityPostInfo, index: number) => {
           post.accountId = post.FK_accountId
-          post.channelId = post.FK_channelId
           post.imageUrls = []
           imgResult[index].forEach(image => {
             post.imageUrls.push(image.imageUrl)
@@ -68,13 +68,15 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        if (arg.qnaType === undefined) arg.qnaType = "NONE"
+        //Insert Community Post
         let postId = await RunSingleSQL(
-          `INSERT INTO "COMMUNITY_POST"("FK_accountId","FK_channelId","title","content","postType","qnaType") 
-          VALUES (${arg.accountId}, ${arg.channelId}, '${arg.title}', '${arg.content}', '${arg.postType}', '${arg.qnaType}') RETURNING id`
+          `INSERT INTO "COMMUNITY_POST"("FK_accountId","title","content","postType") 
+          VALUES (${arg.accountId}, '${arg.title}', '${arg.content}', '${arg.postType}') RETURNING id`
         )
+        //Deploy Image
         if (Object.prototype.hasOwnProperty.call(arg, "imageUrls")) {
-          let imgPairs = ConvertListToOrderedPair(arg.imageUrls, `,${String(postId[0].id)}`, false)
+          let deployedUrls = await SequentialPromiseValue(arg.imageUrls, DeployImageBy4Versions)
+          let imgPairs = ConvertListToOrderedPair(deployedUrls, `,${String(postId[0].id)}`, false)
           await InsertImageIntoTable(imgPairs, "COMMUNITY_POST_IMAGE", "FK_postId")
         }
         logger.info(`Community Post has been created by User ${arg.accountId}`)
@@ -141,7 +143,7 @@ module.exports = {
         let deleteSql = ""
         deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "FK_postId", [arg.postId])
 
-        let querySql = `${deleteSql} DELETE FROM "COMMUNITY_POST" WHERE id=${arg.postId}`
+        let querySql = `${deleteSql} UPDATE "COMMUNITY_POST" SET "postStatus"='DELETED' WHERE id=${arg.postId}`
         let result = await RunSingleSQL(querySql)
         logger.info(`Deleted CommunityPost id ${arg.accountId}`)
         return true
@@ -162,9 +164,9 @@ function CommunityPostSelectionField(info: GraphQLResolveInfo) {
       result += `
       ,
       COALESCE((
-        SELECT COUNT(*) as "commentCount" 
+        SELECT COUNT(*) 
         FROM "COMMUNITY_POST_COMMENT" comment WHERE comment."FK_postId"=post.id
-      ),0)
+      ),0)  as "commentCount"
       `
     }
 
@@ -194,12 +196,6 @@ function GetCommunityPostEditSql(arg: ArgType.CommunityPostEditInfoInput): strin
   if (Object.prototype.hasOwnProperty.call(arg, "postType")) {
     if (isMultiple) resultSql += ", "
     resultSql += `"postType"='${arg.postType}'`
-    isMultiple = true
-  }
-
-  if (Object.prototype.hasOwnProperty.call(arg, "qnaType")) {
-    if (isMultiple) resultSql += ", "
-    resultSql += `"qnaType"='${arg.qnaType}'`
     isMultiple = true
   }
 

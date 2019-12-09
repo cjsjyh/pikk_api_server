@@ -8,7 +8,7 @@ const readChunk = require("read-chunk")
 var axios = require("axios")
 
 import * as AWS from "aws-sdk"
-import { getFormatDate, getFormatHour, replaceLastOccurence } from "./stringUtil"
+import { getFormatDate, getFormatHour, replaceLastOccurence, removeAllButLast } from "./stringUtil"
 var logger = require("../../tools/logger")
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<any> {
@@ -173,7 +173,8 @@ export async function DeployImageBy4Versions(imageUrl: string): Promise<string> 
       })
     } else {
       let newImageName
-      newImageName = imageUrl.split(".").pop()
+      newImageName = removeAllButLast(imageUrl, ".")
+      newImageName = newImageName.split(".").pop()
       let date = getFormatDate(new Date())
       let hour = getFormatHour(new Date())
       newImageName = date + hour + "." + newImageName
@@ -302,10 +303,12 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
   let folderName = "image_temp/"
   if (process.env.MODE != "DEPLOY") folderName = "testimage_temp/"
 
+  let filenameRefined = removeAllButLast(filename, ".")
+
   var param
   param = {
     Bucket: "fashiondogam-images",
-    Key: folderName + date + hour + filename,
+    Key: folderName + date + hour + filenameRefined,
     ACL: "public-read",
     Body: createReadStream(),
     ContentType: mimetype

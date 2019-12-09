@@ -9,11 +9,20 @@ export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
   try {
     let resultAxios = await axios.get("http://" + process.env.DJANGO_HOST + ":8000/crawler/" + sourceUrl)
     resultAxios = resultAxios.data
+    // let result: CrawledItemInfo = {
+    //   brandKor: resultAxios.brand,
+    //   originalPrice: resultAxios.price,
+    //   salePrice: null,
+    //   name: strip(resultAxios.itemname),
+    //   imageUrl: resultAxios.images,
+    //   purchaseUrl: sourceUrl,
+    //   isEstimated: false
+    // }
     let result: CrawledItemInfo = {
-      brandKor: resultAxios.brand,
-      originalPrice: resultAxios.price,
+      brandKor: null,
+      originalPrice: null,
       salePrice: null,
-      name: strip(resultAxios.itemname),
+      name: null,
       imageUrl: resultAxios.images,
       purchaseUrl: sourceUrl,
       isEstimated: false
@@ -78,11 +87,20 @@ export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
     if (priceHighPossibility.length == 0) priceGuess = price[price.length / 2]
     else priceGuess = priceHighPossibility[0]
 
+    // let result: CrawledItemInfo = {
+    //   brandKor: brand,
+    //   originalPrice: priceGuess,
+    //   salePrice: null,
+    //   name: strip(itemname),
+    //   imageUrl: images,
+    //   purchaseUrl: sourceUrl,
+    //   isEstimated: false
+    // }
     let result: CrawledItemInfo = {
-      brandKor: brand,
-      originalPrice: priceGuess,
+      brandKor: null,
+      originalPrice: null,
       salePrice: null,
-      name: strip(itemname),
+      name: null,
       imageUrl: images,
       purchaseUrl: sourceUrl,
       isEstimated: false

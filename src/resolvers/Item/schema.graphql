@@ -92,7 +92,7 @@ input GroupEditInfo {
   isNewBrand: Boolean
 
   groupId: Int
-  originalPrice: Int
+  originalPrice: Int!
   itemMinorType: ItemMinorType!
   itemMajorType: ItemMajorType!
   itemFinalType: ItemFinalType!

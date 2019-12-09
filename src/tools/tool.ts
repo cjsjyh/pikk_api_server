@@ -88,8 +88,8 @@ export async function CopyImageWithDifferentName() {
       Key: decodeURIComponent(destUrl)
     }
     S3.copyObject(params, function(err, data) {
-      if (err) console.log(err)
-      else console.log(destUrl)
+      if (err) logger.error(err)
+      else logger.info(destUrl)
     })
   })
 }

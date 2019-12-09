@@ -162,7 +162,7 @@ async function GetSimpleItemInfoByPostId(postList: any) {
   await GetSubField(postList, "", "postId", "simpleItemList", 1, querySql)
 }
 
-export async function GetItemsById(idList: number[], formatSql, customFilter?) {
+export async function GetItemsById(idList: number[], formatSql, customFilter?, customSelector = "") {
   let filterSql = ""
   if (customFilter != null && customFilter != "") filterSql = customFilter
   else {
@@ -179,6 +179,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   FROM
   (
     SELECT 
+      ${customSelector}
       item_var.*,
       item_gr."id" as "groupId",
       item_gr."itemMinorType",
@@ -204,6 +205,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?) {
   ) as item_full
   INNER JOIN "BRAND" on "BRAND".id = item_full."FK_brandId" ${formatSql}
   `
+
   let itemInfo = await RunSingleSQL(querySql)
 
   return itemInfo
@@ -258,10 +260,9 @@ export async function GetItemIdInRanking(filterSql: string, formatSql: string): 
      ) as "rankScore"
   FROM review_score ${formatSql}
   `
+  let itemRank = await RunSingleSQL(querySql)
 
-  let ItemRank = await RunSingleSQL(querySql)
-
-  return ItemRank
+  return itemRank
 }
 
 function GetBrandEditSql(itemGroup: GroupEditInfo): string {

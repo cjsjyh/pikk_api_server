@@ -93,10 +93,10 @@ module.exports = {
         JOIN (
           VALUES
         ${ConvertListToOrderedPair(itemIdList)}
-        ) AS x (id,ordering) ON item_var.id = x.id ORDER BY ordering ASC
+        ) AS x (id,ordering) ON item_var.id = x.id
       `
         if (itemIdList.length == 0) return []
-        let itemList = await GetItemsById(itemIdList, "", customFilterSql)
+        let itemList = await GetItemsById(itemIdList, "ORDER BY item_full.ordering ASC", customFilterSql, "x.ordering,")
         await SetRedis(cacheName, JSON.stringify(itemList), 1800)
 
         logger.info("ItemRanking Called")

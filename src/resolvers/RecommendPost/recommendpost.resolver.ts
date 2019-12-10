@@ -199,7 +199,7 @@ module.exports = {
       } catch (e) {
         logger.warn("Failed to insert Item or Review for RecommendPost")
         logger.error(e.stack)
-        //await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
+        await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
         throw new Error("Failed to insert Item or Review for RecommendPost")
       }
     },

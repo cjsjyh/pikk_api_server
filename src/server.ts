@@ -83,11 +83,11 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 // async function testfunc() {
+//   await FindAndCombineDuplicateItem()
 //   // let elastic = require("./database/elastic/elasticConnect")
 //   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
 //   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
 //   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
-//   await crawlOthers("https://www.google.com")
 // }
 // testfunc()
 

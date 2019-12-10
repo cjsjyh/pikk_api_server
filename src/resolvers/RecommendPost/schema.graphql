@@ -81,7 +81,7 @@ input RecommendPostInfoInput {
   titleImageUrl: String
   titleYoutubeUrl: String
 
-  reviews: [ItemReviewInfoInput!]
+  reviews: [ItemReviewInfoInput!]!
 }
 
 input RecommendPostEditInfoInput {
@@ -102,7 +102,7 @@ input RecommendPostEditInfoInput {
   Insert Image Id
   """
   deletedImages: [Int!]
-  reviews: [ItemReviewEditInfoInput!]
+  reviews: [ItemReviewEditInfoInput!]!
 }
 
 input RecommendPostDeleteInfoInput {

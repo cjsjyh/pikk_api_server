@@ -335,7 +335,7 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
   } catch (e) {
     logger.warn("Failed to Upload Image")
     logger.error(e.stack)
-    return null
+    throw new Error("Failed to Upload Image")
   }
 }
 

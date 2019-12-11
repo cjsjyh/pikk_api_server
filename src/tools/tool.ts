@@ -54,6 +54,7 @@ export async function FindAndCombineDuplicateItem() {
       } else {
         tailRecord.push(Number(findResult[i].id))
       }
+      logger.info("Combination Done!")
     }
   } catch (e) {}
 }

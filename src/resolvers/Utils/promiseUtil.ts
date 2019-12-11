@@ -8,7 +8,7 @@ const readChunk = require("read-chunk")
 var axios = require("axios")
 
 import * as AWS from "aws-sdk"
-import { getFormatDate, getFormatHour, replaceLastOccurence } from "./stringUtil"
+import { getFormatDate, getFormatHour, replaceLastOccurence, removeAllButLast } from "./stringUtil"
 var logger = require("../../tools/logger")
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<any> {
@@ -155,25 +155,32 @@ export async function DeployImageBy4Versions(imageUrl: string): Promise<string> 
       isSelfHosted = true
       //Download Image From S3
       imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")
+      console.log(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
       await new Promise((resolve, reject) => {
-        var param = {
-          Bucket: "fashiondogam-images",
-          Key: decodeURIComponent(`${folderName}_temp/${imageUrl}`)
-        }
-        S3.getObject(param, (e, data) => {
-          if (e) {
-            logger.error(e.stack)
-            reject(e)
+        try {
+          var param = {
+            Bucket: "fashiondogam-images",
+            Key: decodeURIComponent(`${folderName}_temp/${imageUrl}`)
           }
-          fs.writeFile(`./${imageUrl}`, data.Body, function(e) {
-            if (e) logger.error(e.stack)
-            resolve()
+          S3.getObject(param, (e, data) => {
+            if (e) {
+              logger.error(e.stack)
+              reject(e)
+            } else {
+              fs.writeFile(`./${imageUrl}`, data.Body, function(e) {
+                if (e) logger.error(e.stack)
+                resolve()
+              })
+            }
           })
-        })
+        } catch (e) {
+          reject(e)
+        }
       })
     } else {
       let newImageName
-      newImageName = imageUrl.split(".").pop()
+      newImageName = removeAllButLast(imageUrl, ".")
+      newImageName = newImageName.split(".").pop()
       let date = getFormatDate(new Date())
       let hour = getFormatHour(new Date())
       newImageName = date + hour + "." + newImageName
@@ -302,10 +309,12 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
   let folderName = "image_temp/"
   if (process.env.MODE != "DEPLOY") folderName = "testimage_temp/"
 
+  let filenameRefined = removeAllButLast(filename, ".")
+
   var param
   param = {
     Bucket: "fashiondogam-images",
-    Key: folderName + date + hour + filename,
+    Key: folderName + date + hour + filenameRefined,
     ACL: "public-read",
     Body: createReadStream(),
     ContentType: mimetype
@@ -326,7 +335,7 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
   } catch (e) {
     logger.warn("Failed to Upload Image")
     logger.error(e.stack)
-    return null
+    throw new Error("Failed to Upload Image")
   }
 }
 

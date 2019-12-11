@@ -53,7 +53,7 @@ module.exports = {
 
         //Commented to a post
         if (arg.parentId == null) {
-          InsertIntoNotificationQueue("COMMENT_TO_MY_RECOMMEND_POST", arg.targetId, arg.targetType, "", arg.content, -1, arg.accountId)
+          InsertIntoNotificationQueue("COMMENT_TO_MY_RECOMMEND_PO ST", arg.targetId, arg.targetType, "", arg.content, -1, arg.accountId)
         }
         //Comented to a comment
         else {

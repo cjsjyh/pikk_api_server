@@ -46,7 +46,7 @@ export async function EditImageUrlInTable(
       let deployUrl = image.imageUrl
       let deleteSql = ""
       if (IsNewImage(image.imageUrl)) {
-        deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "id", [image.id])
+        deleteSql = InsertImageIntoDeleteQueue(tableName, "imageUrl", "id", [image.id])
         deployUrl = await DeployImageBy4Versions(deployUrl)
       }
       await RunSingleSQL(`

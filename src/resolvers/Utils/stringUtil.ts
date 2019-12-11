@@ -2,6 +2,12 @@ export function logWithDate(content: any) {
   console.log(`[${getDateTime()}] ` + content)
 }
 
+export function removeAllButLast(string, token) {
+  /* Requires STRING not contain TOKEN */
+  var parts = string.split(token)
+  return parts.slice(0, -1).join("") + token + parts.slice(-1)
+}
+
 export function formatUrls(imageUrl: string[]): string[] {
   for (let i = 0; i < imageUrl.length; i++) {
     if (imageUrl[i][0] != "h") {

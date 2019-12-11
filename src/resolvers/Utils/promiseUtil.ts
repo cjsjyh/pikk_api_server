@@ -259,14 +259,17 @@ export async function DeployImageBy4Versions(imageUrl: string): Promise<string> 
       )
 
       //Delete S3 original image
-      if (isSelfHosted) await DeleteImage(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
+      try {
+        if (isSelfHosted) await DeleteImage(decodeURIComponent(`${folderName}_temp/${imageUrl}`))
+      } catch (e) {
+        logger.warn("Failed to delete self-Hosted Image")
+      }
 
       //Delete file from local
       await Promise.all(
         [xsmallName, smallName, mediumName, largeName].map(filename => {
           return new Promise((resolve, reject) => {
             fs.unlink(filename, function(e) {
-              if (e) reject(e)
               resolve()
             })
           })

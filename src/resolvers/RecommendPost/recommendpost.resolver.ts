@@ -379,8 +379,8 @@ async function GetPostFilterSql(filter: any): Promise<string> {
 }
 
 async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<string> {
-  let isMultiple = false
-  let resultSql = `UPDATE "RECOMMEND_POST" SET `
+  let isMultiple = true
+  let resultSql = `UPDATE "RECOMMEND_POST" SET "modificationTime"=now() `
 
   if (Object.prototype.hasOwnProperty.call(filter, "title")) {
     if (isMultiple) resultSql += ", "
@@ -428,7 +428,7 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     isMultiple = true
   }
 
-  resultSql += `WHERE "id"=${filter.postId}`
+  resultSql += ` WHERE "id"=${filter.postId}`
 
   return resultSql
 }

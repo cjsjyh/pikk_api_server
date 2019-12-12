@@ -1,5 +1,5 @@
 import { GetBoardName } from "../Comment/util"
-import { NotificationInfo } from "./type/ReturnType"
+import { NotificationInfo, NotificationDBInfo } from "./type/ReturnType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { PushRedisQueue, PopRedisQueue, RedisQueueLength } from "../../database/redisConnect"
 var logger = require("../../tools/logger")
@@ -37,25 +37,58 @@ export async function ProcessNotificationQueue() {
     let task = await PopRedisQueue("Notification_Queue")
     task = JSON.parse(task)
     if (task.notiType == "COMMENT_TO_MY_RECOMMEND_POST") {
-      await NotifyPostWriter(task.postId, task.postType, task.content, task.sentUserId, task.notiType)
+      await NotifyPostWriter(
+        task.postId,
+        task.postType,
+        task.content,
+        task.sentUserId,
+        task.notiType
+      )
     } else if (task.notiType == "NEW_PICKK_TO_MY_RECOMMEND_POST") {
-      await NotifyPostWriter(task.postId, task.postType, task.content, task.sentUserId, task.notiType)
+      await NotifyPostWriter(
+        task.postId,
+        task.postType,
+        task.content,
+        task.sentUserId,
+        task.notiType
+      )
     } else if (task.notiType == "NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL") {
-      await NotifyFollowers(task.postId, task.postType, task.postTitle, task.sentUserId, task.notiType)
+      await NotifyFollowers(
+        task.postId,
+        task.postType,
+        task.postTitle,
+        task.sentUserId,
+        task.notiType
+      )
     } else if (task.notiType == "COMMENT_TO_MY_COMMENT") {
-      await NotifyCommentWriter(task.postId, task.postType, task.content, task.parentId, task.sentUserId, task.notiType)
+      await NotifyCommentWriter(
+        task.postId,
+        task.postType,
+        task.content,
+        task.parentId,
+        task.sentUserId,
+        task.notiType
+      )
     } else {
       logger.warn("Invalid Notification Queue notiType")
     }
   }
 }
 
-async function NotifyPostWriter(postId: number, postType: string, content: string, sentUserId: number, notiType: string) {
+async function NotifyPostWriter(
+  postId: number,
+  postType: string,
+  content: string,
+  sentUserId: number,
+  notiType: string
+) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     //Get PostInfo of the post
     let postResult = await RunSingleSQL(`
-    SELECT post."FK_accountId", post.title FROM "${GetBoardName(postType)}" post WHERE "id" =${postId}
+    SELECT post."FK_accountId", post.title FROM "${GetBoardName(
+      postType
+    )}" post WHERE "id" =${postId}
     `)
 
     NotiInfo.postId = postId
@@ -83,7 +116,13 @@ async function NotifyPostWriter(postId: number, postType: string, content: strin
   }
 }
 
-async function NotifyFollowers(postId: number, postType: string, postTitle: string, sentUserId: number, notiType: string) {
+async function NotifyFollowers(
+  postId: number,
+  postType: string,
+  postTitle: string,
+  sentUserId: number,
+  notiType: string
+) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     NotiInfo.postId = postId
@@ -111,7 +150,14 @@ async function NotifyFollowers(postId: number, postType: string, postTitle: stri
   }
 }
 
-async function NotifyCommentWriter(postId: number, postType: string, content: string, parentId: number, sentUserId: number, notiType: string) {
+async function NotifyCommentWriter(
+  postId: number,
+  postType: string,
+  content: string,
+  parentId: number,
+  sentUserId: number,
+  notiType: string
+) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     NotiInfo.postId = postId
@@ -146,4 +192,43 @@ async function NotifyCommentWriter(postId: number, postType: string, content: st
     logger.warn(`Failed to Notify comment Writer of Comment ${parentId}`)
     logger.error(e.stack)
   }
+}
+
+export function GroupPickNotifications(dbResult: any): NotificationInfo[] {
+  let dict = {}
+  let notiGroup = []
+  //Find records to group
+  dbResult.forEach((record: any, index: number) => {
+    //Set Result to match GraphQL
+    record.sentUserImageUrl = [record.sentUserImageUrl]
+    record.sentUserName = [record.sentUserName]
+    record.fetchTime = Date.now()
+
+    if (record.notificationType == "NEW_PICKK_TO_MY_RECOMMEND_POST") {
+      let key = record.notificationType + String(record.postId)
+      //Key not set yet
+      if (!(key in dict)) {
+        dict[key] = notiGroup.length
+        notiGroup.push([])
+      }
+      notiGroup[dict[key]].push(index)
+    }
+  })
+
+  //Group and delete
+  notiGroup.forEach(indexGroup => {
+    indexGroup.forEach((notiIndex, index) => {
+      if (index == 0) return
+      let recordToPop = dbResult[notiIndex]
+      //Find head Record to push other records
+      let headRecordIndex = indexGroup[0]
+      dbResult[headRecordIndex].sentUserImageUrl.push(recordToPop.sentUserImageUrl[0])
+      dbResult[headRecordIndex].sentUserName.push(recordToPop.sentUserName[0])
+
+      //pop record
+      dbResult.splice(notiIndex, 1)
+    })
+  })
+
+  return dbResult
 }

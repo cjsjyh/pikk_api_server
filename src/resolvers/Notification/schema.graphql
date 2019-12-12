@@ -1,10 +1,10 @@
 type Query {
-  getUserNotification(accountId: Int!): [NotificationInfo]!
+  getUserNotification(notificationGetInfoInput: NotificationGetInfoInput!): [NotificationInfo]!
 }
 
 type Mutation {
-  setUserNotification(notificationSetInfoInput: NotificationSetInfoInput): Boolean!
-  deleteUserNotification(notificationSetInfoInput: NotificationSetInfoInput): Boolean!
+  setUserNotification(notificationSetInfoInput: NotificationSetInfoInput!): Boolean!
+  deleteUserNotification(notificationSetInfoInput: NotificationSetInfoInput!): Boolean!
 }
 
 enum NotificationTargetType {
@@ -22,12 +22,24 @@ enum NotificationType {
 #   INPUT
 #--------------
 
+input NotificationFilterGeneral {
+  start: Int = 0
+  first: Int = 10
+}
+
 # Query
+input NotificationGetInfoInput {
+  accountId: Int!
+  filterGeneral: NotificationFilterGeneral
+}
 
 # Mutation
 input NotificationSetInfoInput {
   notificationId: Int!
+  notificationType: NotificationType!
+
   accountId: Int!
+  fetchTime: String
 }
 
 #---------------
@@ -42,8 +54,9 @@ type NotificationInfo {
   postType: NotificationTargetType!
   postTitle: String!
 
-  sentUserName: String!
-  sentUserImageUrl: String!
+  sentUserName: [String]!
+  sentUserImageUrl: [String]!
+  fetchTime: String
 
   content: String
   isViewed: Boolean!

@@ -2,15 +2,23 @@ import { RunSingleSQL } from "../Utils/promiseUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ValidateUser } from "../Utils/securityUtil"
 import { NotificationSetInfoInput } from "./type/ArgType"
+import { GroupPickNotifications } from "./util"
+import { GetFormatSql } from "../Utils/stringUtil"
 var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
-    getUserNotification: async (parent: void, arg: any, ctx: any): Promise<ReturnType.NotificationInfo[]> => {
+    getUserNotification: async (
+      parent: void,
+      args: any,
+      ctx: any
+    ): Promise<ReturnType.NotificationInfo[]> => {
+      let arg = args.notificationGetInfoInput
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let result = await RunSingleSQL(`
+        let formatSql = GetFormatSql(arg)
+        let dbResult: ReturnType.NotificationDBInfo[] = await RunSingleSQL(`
           SELECT 
             noti."id" as "notificationId",
             noti."notificationType",
@@ -29,8 +37,9 @@ module.exports = {
           INNER JOIN "USER_INFO" user_info
           ON noti."FK_sentUserId" = user_info."FK_accountId"
           WHERE noti."FK_accountId"=${arg.accountId} 
-          ORDER BY time DESC
+          ORDER BY time DESC ${formatSql}
         `)
+        let result = GroupPickNotifications(dbResult)
         logger.info(`User notification fetched for userId: ${arg.accountId}`)
         return result
       } catch (e) {
@@ -47,7 +56,9 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        await RunSingleSQL(`UPDATE "NOTIFICATION" SET "isViewed" = true WHERE id=${arg.notificationId}`)
+        await RunSingleSQL(
+          `UPDATE "NOTIFICATION" SET "isViewed" = true WHERE id=${arg.notificationId}`
+        )
         logger.info(`Set User Notification id: ${arg.notificationId}`)
         return true
       } catch (e) {

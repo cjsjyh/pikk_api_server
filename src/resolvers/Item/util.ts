@@ -74,7 +74,13 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
       //Insert Variation
       if (arg.variationInfo.salePrice === undefined) arg.variationInfo.salePrice = null
 
-      let deployImageUrl = await DeployImageBy4Versions(arg.variationInfo.imageUrl)
+      let deployImageUrl = ""
+      try {
+        deployImageUrl = await DeployImageBy4Versions(arg.variationInfo.imageUrl)
+      } catch (e) {
+        logger.warn("Failed to deploy item image" + arg.variationInfo.imageUrl)
+        logger.error(e.stack)
+      }
 
       queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
         VALUES ('${arg.variationInfo.name}','${deployImageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)

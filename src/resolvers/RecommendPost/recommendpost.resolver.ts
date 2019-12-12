@@ -166,7 +166,12 @@ module.exports = {
       try {
         //Deploy title image if it exists
         let deployImageUrl = ""
-        if (arg.titleType == "IMAGE" && arg.titleImageUrl != null) deployImageUrl = await DeployImageBy4Versions(arg.titleImageUrl)
+        try {
+          if (arg.titleType == "IMAGE" && arg.titleImageUrl != null) deployImageUrl = await DeployImageBy4Versions(arg.titleImageUrl)
+        } catch (e) {
+          logger.warn("Failed to deploy titleImage")
+          logger.error(e.stack)
+        }
 
         //Deploy RecommendPost Body
         if (arg.styleType === undefined) arg.styleType = "NONE"

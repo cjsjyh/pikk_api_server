@@ -67,7 +67,7 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
         review.images = []
       })
       if (IsSubFieldRequired(selectionSet, "reviews", "images")) {
-        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 2, "",`ORDER BY "order" ASC`)
+        let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 2, "", `ORDER BY "order" ASC`)
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
@@ -166,15 +166,20 @@ export function InsertItemReview(
                     imgUrlList[index] = await DeployImageBy4Versions(imgUrl)
                     resolve()
                   } catch (e) {
-                    reject(e)
+                    logger.warn("Failed to deploy Review Image")
+                    logger.error(e.stack)
+                    resolve()
+                    //reject(e)
                   }
                 }
               })
             })
           )
 
-          let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
-          await InsertImageIntoTable(imgPairs, "ITEM_REVIEW_IMAGE", "FK_reviewId")
+          if (imgUrlList.length != 0) {
+            let imgPairs = ConvertListToOrderedPair(imgUrlList, `,${String(reviewId)}`, false)
+            await InsertImageIntoTable(imgPairs, "ITEM_REVIEW_IMAGE", "FK_reviewId")
+          }
         } catch (e) {
           logger.warn("Failed to Insert into ITEM_REVIEW_IMAGE")
           logger.error(e.stack)

@@ -209,6 +209,7 @@ export async function DeployImageBy4Versions(imageUrl: string): Promise<string> 
       let newImageName
       newImageName = removeAllButLast(imageUrl, ".")
       newImageName = newImageName.split(".").pop()
+      newImageName = newImageName.split("?")[0]
       let date = getFormatDate(new Date())
       let hour = getFormatHour(new Date())
       newImageName = date + hour + "." + newImageName

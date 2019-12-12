@@ -146,6 +146,7 @@ export async function downloadImage(url, image_path) {
       .catch(err => {
         logger.warn("Failed to download image with Axios")
         logger.error(err.stack)
+        reject(err.stack)
       })
   })
 }
@@ -157,8 +158,12 @@ export async function DeployImageBy4Versions(imageUrl: string): Promise<string> 
   if (process.env.MODE != "DEPLOY") folderName = "testimage"
 
   try {
+    if (!imageUrl) {
+      logger.warn("'null' inserted as imageUrl")
+      throw new Error("No Image to Deploy!")
+    }
     //Is Image Self Hosted?
-    if (imageUrl.includes("https://fashiondogam-images")) {
+    else if (imageUrl.includes("https://fashiondogam-images")) {
       isSelfHosted = true
       //Download Image From S3
       imageUrl = imageUrl.replace(`https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/${folderName}_temp/`, "")

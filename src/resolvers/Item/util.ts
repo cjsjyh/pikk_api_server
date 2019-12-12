@@ -78,8 +78,7 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
       try {
         deployImageUrl = await DeployImageBy4Versions(arg.variationInfo.imageUrl)
       } catch (e) {
-        logger.warn("Failed to deploy item image" + arg.variationInfo.imageUrl)
-        logger.error(e.stack)
+        logger.warn("Failed to deploy item image: " + arg.variationInfo.imageUrl)
       }
 
       queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")

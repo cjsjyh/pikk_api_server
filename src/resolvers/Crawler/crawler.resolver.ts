@@ -24,6 +24,7 @@ module.exports = {
   Mutation: {
     crawlItem: async (parent: void, args: any): Promise<CrawledItemInfo> => {
       args.url = strip(args.url)
+      args.url = encodeURI(args.url)
 
       let splitDomain = extractDomain(args.url)
       let domain = splitDomain[0]

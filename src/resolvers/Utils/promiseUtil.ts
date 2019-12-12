@@ -134,7 +134,7 @@ export async function UploadImageWrapper(imageObj: any): Promise<string> {
 export async function downloadImage(url, image_path) {
   return new Promise((resolve, reject) => {
     axios({
-      url,
+      url: encodeURI(url),
       responseType: "stream"
     }).then(response => {
       response.data

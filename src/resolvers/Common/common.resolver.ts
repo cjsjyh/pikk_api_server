@@ -24,6 +24,9 @@ module.exports = {
         } else if (arg.targetType == "CHANNEL") {
           tableName = "CHANNEL"
           variableName = "channelId"
+        } else if (arg.targetType == "COMMUNITY") {
+          tableName = "COMMUNITY_POST"
+          variableName = "postId"
         }
 
         let query = `SELECT "FK_accountId" FROM "${tableName}_FOLLOWER" WHERE "FK_accountId"=${arg.accountId} and "FK_${variableName}"=${arg.targetId}`
@@ -52,10 +55,10 @@ module.exports = {
     },
 
     FollowTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<number> => {
-      if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ReturnType.FollowInfo = args.followInfo
-
       try {
+        if (!ValidateUser(ctx, arg.accountId)) throw new Error("[Error] User not authorized!")
+
         if (arg.targetType == "RECOMMEND") {
           await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
@@ -65,8 +68,11 @@ module.exports = {
         let result = await RunSingleSQL(query)
         result = Object.values(result[0])
 
-        if (arg.targetType == "RECOMMEND" && result[0] == 1)
-          InsertIntoNotificationQueue("NEW_PICKK_TO_MY_RECOMMEND_POST", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
+        //If target was followed (not cancelled)
+        if ((arg.targetType == "RECOMMEND" || arg.targetType == "COMMUNITY") && result[0] == 1)
+          InsertIntoNotificationQueue("NEW_PICKK_TO_MY_POST", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
+        else if (arg.targetType == "CHANNEL" && result[0] == 1)
+          InsertIntoNotificationQueue("NEW_PICKK_TO_MY_CHANNEL", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
 
         logger.info(`Followed User${arg.accountId} Followed ${arg.targetType} id: ${arg.targetId}`)
         return result[0]

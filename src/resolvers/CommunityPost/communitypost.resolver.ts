@@ -170,6 +170,16 @@ function CommunityPostSelectionField(info: GraphQLResolveInfo) {
       `
     }
 
+    if (selectionSet.includes("pickCount")) {
+      result += `
+      ,
+      COALESCE((
+        SELECT COUNT(*) 
+        FROM "COMMUNITY_POST_FOLLOWER" pick WHERE pick."FK_postId"=post.id
+      ),0)  as "pickCount"
+      `
+    }
+
     return result
   } catch (e) {
     logger.warn(`Failed to make SQL for CommunityPost SelectionField`)

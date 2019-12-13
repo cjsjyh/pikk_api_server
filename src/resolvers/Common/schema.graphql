@@ -5,6 +5,7 @@ enum FollowType {
   ITEM
   CHANNEL
   RECOMMEND
+  COMMUNITY
 }
 
 type Query {

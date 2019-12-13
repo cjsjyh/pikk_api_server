@@ -2,13 +2,14 @@ import { GetBoardName } from "../Comment/util"
 import { NotificationInfo, NotificationDBInfo } from "./type/ReturnType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { PushRedisQueue, PopRedisQueue, RedisQueueLength } from "../../database/redisConnect"
+import { NotificationSetInfoInput } from "./type/ArgType"
 var logger = require("../../tools/logger")
 
 export async function InsertIntoNotificationQueue(
   notiType: string,
-  postId: number,
-  postType: string,
-  postTitle?: string,
+  targetId: number,
+  targetType: string,
+  targetTitle?: string,
   content?: string,
   parentId?: number,
   sentUserId?: number
@@ -16,9 +17,9 @@ export async function InsertIntoNotificationQueue(
   try {
     let queueData = {
       notiType: notiType,
-      postId: postId,
-      postType: postType,
-      postTitle: postTitle,
+      targetId: targetId,
+      targetType: targetType,
+      targetTitle: targetTitle,
       content: content,
       parentId: parentId,
       sentUserId: sentUserId
@@ -36,59 +37,28 @@ export async function ProcessNotificationQueue() {
   while ((await RedisQueueLength("Notification_Queue")) != 0) {
     let task = await PopRedisQueue("Notification_Queue")
     task = JSON.parse(task)
-    if (task.notiType == "COMMENT_TO_MY_RECOMMEND_POST") {
-      await NotifyPostWriter(
-        task.postId,
-        task.postType,
-        task.content,
-        task.sentUserId,
-        task.notiType
-      )
-    } else if (task.notiType == "NEW_PICKK_TO_MY_RECOMMEND_POST") {
-      await NotifyPostWriter(
-        task.postId,
-        task.postType,
-        task.content,
-        task.sentUserId,
-        task.notiType
-      )
+    if (task.notiType == "COMMENT_TO_MY_POST") {
+      await NotifyPostWriter(task.targetId, task.targetType, task.content, task.sentUserId, task.notiType)
+    } else if (task.notiType == "NEW_PICKK_TO_MY_POST") {
+      await NotifyPostWriter(task.targetId, task.targetType, task.content, task.sentUserId, task.notiType)
     } else if (task.notiType == "NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL") {
-      await NotifyFollowers(
-        task.postId,
-        task.postType,
-        task.postTitle,
-        task.sentUserId,
-        task.notiType
-      )
+      await NotifyFollowers(task.targetId, task.targetType, task.targetTitle, task.sentUserId, task.notiType)
     } else if (task.notiType == "COMMENT_TO_MY_COMMENT") {
-      await NotifyCommentWriter(
-        task.postId,
-        task.postType,
-        task.content,
-        task.parentId,
-        task.sentUserId,
-        task.notiType
-      )
+      await NotifyCommentWriter(task.targetId, task.targetType, task.content, task.parentId, task.sentUserId, task.notiType)
+    } else if (task.notiType == "NEW_PICKK_TO_MY_CHANNEL") {
+      await NotifyChannelOwner(task.targetId, task.sentUserId, task.notiType)
     } else {
       logger.warn("Invalid Notification Queue notiType")
     }
   }
 }
 
-async function NotifyPostWriter(
-  postId: number,
-  postType: string,
-  content: string,
-  sentUserId: number,
-  notiType: string
-) {
+async function NotifyPostWriter(postId: number, postType: string, content: string, sentUserId: number, notiType: string) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     //Get PostInfo of the post
     let postResult = await RunSingleSQL(`
-    SELECT post."FK_accountId", post.title FROM "${GetBoardName(
-      postType
-    )}" post WHERE "id" =${postId}
+    SELECT post."FK_accountId", post.title FROM "${GetBoardName(postType)}" post WHERE "id" =${postId}
     `)
 
     NotiInfo.postId = postId
@@ -109,20 +79,28 @@ async function NotifyPostWriter(
       ${sentUserId},
       ${postResult[0].FK_accountId}
     )`)
-    logger.info(`Notified RecPost Writer of postId: ${NotiInfo.postId}`)
+    logger.info(`Notified ${NotiInfo.postType}Post Writer of postId: ${NotiInfo.postId}`)
   } catch (e) {
     logger.warn(`Failed to Notify RecPost Writer of postId: ${NotiInfo.postId}`)
     logger.error(e.stack)
   }
 }
 
-async function NotifyFollowers(
-  postId: number,
-  postType: string,
-  postTitle: string,
-  sentUserId: number,
-  notiType: string
-) {
+async function NotifyChannelOwner(channelId: number, sentUserId: number, notiType: string) {
+  try {
+    await RunSingleSQL(`
+      INSERT INTO "NOTIFICATION"
+      ("notificationType","FK_accountId","FK_sentUserId") VALUES
+      ('${notiType}',${channelId},${sentUserId})
+    `)
+    logger.info(`Noified Channel Owner of ${channelId}`)
+  } catch (e) {
+    logger.warn(`Failed to Notify Channel Owner of ${channelId}`)
+    logger.error(e.stack)
+  }
+}
+
+async function NotifyFollowers(postId: number, postType: string, postTitle: string, sentUserId: number, notiType: string) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     NotiInfo.postId = postId
@@ -150,14 +128,7 @@ async function NotifyFollowers(
   }
 }
 
-async function NotifyCommentWriter(
-  postId: number,
-  postType: string,
-  content: string,
-  parentId: number,
-  sentUserId: number,
-  notiType: string
-) {
+async function NotifyCommentWriter(postId: number, postType: string, content: string, parentId: number, sentUserId: number, notiType: string) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     NotiInfo.postId = postId
@@ -204,8 +175,8 @@ export function GroupPickNotifications(dbResult: any): NotificationInfo[] {
     record.sentUserName = [record.sentUserName]
     record.fetchTime = Date.now()
 
-    if (record.notificationType == "NEW_PICKK_TO_MY_RECOMMEND_POST") {
-      let key = record.notificationType + String(record.postId)
+    if (record.notificationType == "NEW_PICKK_TO_MY_POST" || record.notificationType == "NEW_PICKK_TO_MY_CHANNEL") {
+      let key = record.notificationType + String(record.postId) + String(record.isViewed)
       //Key not set yet
       if (!(key in dict)) {
         dict[key] = notiGroup.length
@@ -231,4 +202,19 @@ export function GroupPickNotifications(dbResult: any): NotificationInfo[] {
   })
 
   return dbResult
+}
+
+export function BulkUpdateNotificationsSQL(arg: NotificationSetInfoInput): string {
+  let result = ""
+
+  if (arg.notificationType == "NEW_PICKK_TO_POST") {
+    result = ` "FK_accountId"=${arg.accountId} AND 
+    "notificationType"='${arg.notificationType}' AND
+    EXTRACT(epoch FROM "time") < ${arg.fetchTime}
+    `
+  } else {
+    result = ` id=${arg.notificationId}`
+  }
+
+  return result
 }

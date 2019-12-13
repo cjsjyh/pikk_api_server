@@ -16,6 +16,8 @@ export type CommunityPostInfo = {
   imageUrls: string[]
   postType: string
   qnaType: string
+
+  pickCount: number
   commentCount: number
 }
 

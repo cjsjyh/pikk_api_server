@@ -175,7 +175,7 @@ export function GroupPickNotifications(dbResult: any): NotificationInfo[] {
     record.sentUserName = [record.sentUserName]
     record.fetchTime = Date.now()
 
-    if (record.notificationType == "NEW_PICKK_TO_MY_POST") {
+    if (record.notificationType == "NEW_PICKK_TO_MY_POST" || record.notificationType == "NEW_PICKK_TO_MY_CHANNEL") {
       let key = record.notificationType + String(record.postId) + String(record.isViewed)
       //Key not set yet
       if (!(key in dict)) {

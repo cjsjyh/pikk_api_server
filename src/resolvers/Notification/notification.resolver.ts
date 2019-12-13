@@ -2,17 +2,13 @@ import { RunSingleSQL } from "../Utils/promiseUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ValidateUser } from "../Utils/securityUtil"
 import { NotificationSetInfoInput } from "./type/ArgType"
-import { GroupPickNotifications } from "./util"
+import { GroupPickNotifications, BulkUpdateNotificationsSQL } from "./util"
 import { GetFormatSql } from "../Utils/stringUtil"
 var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
-    getUserNotification: async (
-      parent: void,
-      args: any,
-      ctx: any
-    ): Promise<ReturnType.NotificationInfo[]> => {
+    getUserNotification: async (parent: void, args: any, ctx: any): Promise<ReturnType.NotificationInfo[]> => {
       let arg = args.notificationGetInfoInput
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -56,9 +52,7 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        await RunSingleSQL(
-          `UPDATE "NOTIFICATION" SET "isViewed" = true WHERE id=${arg.notificationId}`
-        )
+        await RunSingleSQL(`UPDATE "NOTIFICATION" SET "isViewed" = true WHERE ${BulkUpdateNotificationsSQL(arg)}`)
         logger.info(`Set User Notification id: ${arg.notificationId}`)
         return true
       } catch (e) {
@@ -73,7 +67,7 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        await RunSingleSQL(`DELETE FROM "NOTIFICATION" WHERE id=${arg.notificationId}`)
+        await RunSingleSQL(`DELETE FROM "NOTIFICATION" WHERE ${BulkUpdateNotificationsSQL(arg)}`)
         logger.info(`Deleted User Notification id: ${arg.notificationId}`)
         return true
       } catch (e) {

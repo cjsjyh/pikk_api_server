@@ -36,10 +36,10 @@ input NotificationGetInfoInput {
 # Mutation
 input NotificationSetInfoInput {
   notificationId: Int!
-  notificationType: NotificationType!
 
+  notificationType: NotificationType!
   accountId: Int!
-  fetchTime: String
+  fetchTime: String!
 }
 
 #---------------

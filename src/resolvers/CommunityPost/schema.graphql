@@ -24,7 +24,7 @@ enum ComPostSortableField {
 
 enum CommunityPostType {
   SALE
-  ETC
+  TALK
 }
 
 #------------------
@@ -110,6 +110,6 @@ type CommunityPostInfo {
   time: String!
   viewCount: Int!
   imageUrls: [String]
-  postType: String!
+  postType: CommunityPostType!
   #qnaType: String
 }

@@ -101,6 +101,7 @@ type CommunityPostInfo {
   name: String!
   profileImgUrl: String
 
+  pickCoutn: Int!
   commentCount: Int!
 
   id: Int

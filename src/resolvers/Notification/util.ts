@@ -90,7 +90,7 @@ async function NotifyChannelOwner(channelId: number, sentUserId: number, notiTyp
   try {
     await RunSingleSQL(`
       INSERT INTO "NOTIFICATION"
-      ("notificationType","FK_accountId","FK_sentUserId") VALUE 
+      ("notificationType","FK_accountId","FK_sentUserId") VALUES
       ('${notiType}',${channelId},${sentUserId})
     `)
     logger.info(`Noified Channel Owner of ${channelId}`)

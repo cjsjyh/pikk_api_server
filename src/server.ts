@@ -24,7 +24,10 @@ const port = 80
 //-------------------------------
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
-import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
+import {
+  InsertIntoNotificationQueue,
+  ProcessNotificationQueue
+} from "./resolvers/Notification/util"
 import { CombineItem, FindAndCombineDuplicateItem, CopyImageWithDifferentName } from "./tools/tool"
 import { DeployImageBy4Versions } from "./resolvers/Utils/promiseUtil"
 
@@ -51,9 +54,15 @@ const server = new ApolloServer({
 
   context: ({ req }) => {
     const header: any = req.headers
-    if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")) {
+    if (
+      !Object.prototype.hasOwnProperty.call(header, "authorizationtoken") ||
+      !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")
+    ) {
       return { IsVerified: false }
-    } else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined") {
+    } else if (
+      header.authorizationtoken == "undefined" ||
+      header.authorizationuserid == "undefined"
+    ) {
       return { IsVerified: false }
     }
 
@@ -85,10 +94,6 @@ app.get("/", (req: express.Request, res: express.Response) => {
 
 // async function testfunc() {
 //   //await FindAndCombineDuplicateItem()
-//   // let elastic = require("./database/elastic/elasticConnect")
-//   // let result = await elastic.InsertElasticSearch(elastic.elasticClient, "...customer", ["name", "characteristics"], ["Junsoo", "very good blue"])
-//   // await elastic.elasticClient.indices.refresh({ index: "...customer" })
-//   // result = await elastic.SearchElasticSearch(elastic.elasticClient, "...customer", "characteristics", "blue")
 
 //   console.log(await DeployImageBy4Versions("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/testimage_temp/2019120943773829933281.jpg"))
 //   console.log("--------")
@@ -101,7 +106,9 @@ cron.schedule("*/1 * * * *", function() {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: port }, (): void => logger.info(`GraphQL is now running on http://localhost:${port}/graphql`))
+httpServer.listen({ port: port }, (): void =>
+  logger.info(`GraphQL is now running on http://localhost:${port}/graphql`)
+)
 
 /*
 process.on("SIGINT", async function() {

@@ -14,7 +14,17 @@ export async function CheckWriter(tableName: string, contentId: number, accountI
     return true
   }
 
-  let checkWriter = await RunSingleSQL(`SELECT id FROM "${tableName}" WHERE id=${contentId} AND "FK_accountId"=${accountId}`)
-  if (checkWriter.length == 0) return false
+  //Check if the user is the writer
+  let checkWriter = await RunSingleSQL(
+    `SELECT id FROM "${tableName}" WHERE id=${contentId} AND "FK_accountId"=${accountId}`
+  )
+  if (checkWriter.length == 0) {
+    //Check if the user is the admin
+    let userRank = await RunSingleSQL(
+      `SELECT rank FROM "USER_INFO" WHERE "FK_accountId"=${accountId}`
+    )
+    if (userRank[0].rank == "9999") return true
+    return false
+  }
   return true
 }

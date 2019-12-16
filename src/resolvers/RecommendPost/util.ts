@@ -25,17 +25,6 @@ export async function GetRecommendPostList(sql: string, info: GraphQLResolveInfo
   return postResult
 }
 
-export async function GetRecommendPostListById(idList: number[]) {
-  let querySql = `
-    SELECT * FROM "RECOMMEND_POST" post
-    JOIN (
-      VALUES
-      ${ConvertListToOrderedPair(idList)}
-    ) AS x (id,ordering) ON post.id = x.id
-    order by x.ordering
-  `
-}
-
 export async function GetRecommendPostRankingId(postOption: string) {
   let queryResult = await RunSingleSQL(`
     WITH post_group as

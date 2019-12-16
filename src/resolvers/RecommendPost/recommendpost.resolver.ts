@@ -5,7 +5,7 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy4Versions } from "../Utils/promiseUtil"
+import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy4Versions, ExtractFieldFromList } from "../Utils/promiseUtil"
 import {
   GetFormatSql,
   MakeMultipleQuery,
@@ -14,7 +14,8 @@ import {
   getFormatDate,
   getFormatHour,
   IsNewImage,
-  InsertImageIntoDeleteQueue
+  InsertImageIntoDeleteQueue,
+  ConvertListToOrderedPair
 } from "../Utils/stringUtil"
 
 import { InsertItemForRecommendPost } from "../Item/util"
@@ -26,6 +27,7 @@ import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConne
 import { IncreaseViewCountFunc } from "../Common/util"
 import { InsertIntoNotificationQueue } from "../Notification/util"
 var logger = require("../../tools/logger")
+var elastic = require("../../database/elasticConnect")
 
 module.exports = {
   Query: {
@@ -38,6 +40,7 @@ module.exports = {
         cacheName += MakeCacheNameByObject(arg.postFilter)
         let recomPostCache: any = await GetRedis(cacheName)
         if (recomPostCache != null) {
+          //Increae View if this cache has complete recommend post
           let parsedPosts: ReturnType.RecommendPostInfo[] = JSON.parse(recomPostCache)
           await Promise.all(
             parsedPosts.map((post: any) => {
@@ -57,19 +60,44 @@ module.exports = {
 
       try {
         let filterSql: string = ""
+        let pickCountSql: string = ""
+        let selectionSql: string = ""
+        let formatSql: string = ""
         if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
-          filterSql = await GetPostFilterSql(arg.postFilter)
-          if (filterSql == null) {
-            return []
+          //If search is required
+          if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
+            let result = await elastic.SearchElasticSearch(elastic.elasticClient, "recpost_test", arg.postFilter.searchText, 0, 5)
+            let extractedPostIds = ExtractFieldFromList(result.hits, "_id")
+            if (extractedPostIds.length == 0) return []
+            filterSql = `
+              JOIN (
+                VALUES
+                ${ConvertListToOrderedPair(extractedPostIds)}
+              ) AS x (id,ordering) ON rec_post.id = x.id
+              order by x.ordering
+            `
+
+            selectionSql = `x.ordering, `
+            formatSql = `ORDER BY post.ordering ASC`
           }
+          //If Queried from DB
+          else {
+            filterSql = await GetPostFilterSql(arg.postFilter)
+            if (filterSql == null) {
+              return []
+            }
+            formatSql = GetFormatSql(arg)
+          }
+
+          if (Object.prototype.hasOwnProperty.call(arg.postFilter, "minimumPickCount"))
+            pickCountSql = `WHERE post."pickCount" >= ${arg.postFilter.minimumPickCount}`
         }
 
-        let formatSql = GetFormatSql(arg)
         let postSql = `
         WITH post AS 
         ( 
           SELECT 
-            rec_post.*,
+            rec_post.*, ${selectionSql}
             (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=rec_post.id),
             (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=rec_post.id)
           FROM "RECOMMEND_POST" rec_post ${filterSql}
@@ -78,9 +106,10 @@ module.exports = {
           post.*, user_info.name, user_info."profileImgUrl" as "profileImageUrl"
         FROM "USER_INFO" AS user_info 
         INNER JOIN post ON post."FK_accountId" = user_info."FK_accountId" 
-        WHERE post."pickCount" >= ${arg.postFilter.minimumPickCount} AND post."postStatus" = 'VISIBLE'
+        ${pickCountSql}
         ${formatSql}
         `
+
         let postResult = await GetRecommendPostList(postSql, info)
         logger.info(`allRecommendPosts Called`)
         try {
@@ -356,13 +385,18 @@ module.exports = {
 
 async function GetPostFilterSql(filter: any): Promise<string> {
   let multipleQuery: boolean = false
-  let filterSql: string = ""
+  let filterSql: string = ` WHERE "postStatus" = 'VISIBLE'`
 
   if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
-    filterSql = ` where "FK_accountId"=${filter.accountId}`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "FK_accountId"=${filter.accountId}`)
     multipleQuery = true
   } else if (Object.prototype.hasOwnProperty.call(filter, "postId")) {
-    filterSql = ` where id=${filter.postId}`
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` id=${filter.postId}`)
+    multipleQuery = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter, "minimumPickCount")) {
+    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "minimumPickCount"='${filter.postType}'`)
     multipleQuery = true
   }
 

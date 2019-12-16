@@ -48,10 +48,12 @@ input RecommendPostFilterGeneral {
 input RecommendPostQueryFilter {
   accountId: Int
   postId: Int
-  postType: RecommendPostType!
+  postType: RecommendPostType
   styleType: StyleType
   itemId: Int
-  minimumPickCount: Int!
+  minimumPickCount: Int = 0
+
+  searchText: String
 }
 
 input RecommendPostQuery {

@@ -5,7 +5,9 @@ type Query {
 
 type Mutation {
   setUserNotification(notificationSetInfoInput: NotificationSetInfoInput!): Boolean!
+  setAllUserNotification(accountId: Int!): Boolean!
   deleteUserNotification(notificationSetInfoInput: NotificationSetInfoInput!): Boolean!
+  deleteAllUserNotification(accountId: Int!): Boolean!
 }
 
 enum NotificationTargetType {

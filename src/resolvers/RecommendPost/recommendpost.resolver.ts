@@ -172,26 +172,60 @@ module.exports = {
       `
       let postCount = await RunSingleSQL(postSql)
       return postCount[0].count
-    }
+    },
 
-    // searchRecommendPost: async (
-    //   parent: void,
-    //   args: QueryArgInfo
-    // ): Promise<ReturnType.RecommendPostInfo[]> => {
-    //   let result = await elastic.InsertElasticSearch(
-    //     elastic.elasticClient,
-    //     "...customer",
-    //     ["name", "characteristics"],
-    //     ["Junsoo", "very good blue"]
-    //   )
-    //   await elastic.elasticClient.indices.refresh({ index: "...customer" })
-    //   result = await elastic.SearchElasticSearch(
-    //     elastic.elasticClient,
-    //     "...customer",
-    //     "characteristics",
-    //     "blue"
-    //   )
-    // }
+    getUserFollowRecommendPost: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.RecommendPostInfo[]> => {
+      let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
+      if (!ValidateUser(ctx, arg.userId)) throw new Error(`[Error] Unauthorized User`)
+      try {
+        let formatSql = GetFormatSql(arg)
+        let postSql = `
+          SELECT rec.* FROM "RECOMMEND_POST_FOLLOWER" follow
+          INNER JOIN "RECOMMEND_POST" rec ON rec.id = follow."FK_postId"
+          WHERE follow."FK_accountId" = ${arg.userId} AND rec."postStatus" = 'VISIBLE'
+          ${formatSql}`
+        let postResult = await GetRecommendPostList(postSql, info)
+        logger.info(`userFollowRecommendPost Called`)
+        return postResult
+      } catch (e) {
+        logger.warn("Failed to load Follow RecommendPost data from DB")
+        logger.error(e.stack)
+        throw new Error("[Error] Failed to load Follow RecommendPost data from DB")
+      }
+    },
+
+    _getUserFollowRecommendPostMetadata: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.RecommendPostInfo[]> => {
+      let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
+      if (!ValidateUser(ctx, arg.userId)) throw new Error(`[Error] Unauthorized User`)
+      try {
+        let formatSql = GetFormatSql(arg)
+        let postSql = `
+          SELECT
+            COUNT(*)
+          FROM (
+            SELECT rec.* FROM "RECOMMEND_POST_FOLLOWER" follow
+            INNER JOIN "RECOMMEND_POST" rec ON rec.id = follow."FK_postId"
+            WHERE follow."FK_accountId" = ${arg.userId}
+          ) AS rec
+          ${formatSql}`
+        let postCount = await RunSingleSQL(postSql)
+        return postCount[0].count
+      } catch (e) {
+        logger.warn("Failed to load Follow RecommendPost data from DB")
+        logger.error(e.stack)
+        throw new Error("[Error] Failed to load Follow RecommendPost data from DB")
+      }
+    }
 
     //getTempSavedRecommendPost: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<> => {}
   },

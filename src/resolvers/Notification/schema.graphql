@@ -1,5 +1,6 @@
 type Query {
   getUserNotification(notificationGetInfoInput: NotificationGetInfoInput!): [NotificationInfo]!
+  _getUserNotificationMetadata(notificationGetInfoInput: NotificationGetInfoInput!): Int!
 }
 
 type Mutation {
@@ -51,15 +52,15 @@ type NotificationInfo {
   notificationId: Int!
   notificationType: NotificationType!
 
-  postId: Int!
-  postType: NotificationTargetType!
-  postTitle: String!
+  postId: Int
+  postType: NotificationTargetType
+  postTitle: String
 
-  sentUserName: [String]!
-  sentUserImageUrl: [String]!
+  sentUserName: [String]
+  sentUserImageUrl: [String]
   fetchTime: String
 
   content: String
-  isViewed: Boolean!
-  time: String!
+  isViewed: Boolean
+  time: String
 }

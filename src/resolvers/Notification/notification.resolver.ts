@@ -1,7 +1,7 @@
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ValidateUser } from "../Utils/securityUtil"
-import { NotificationSetInfoInput } from "./type/ArgType"
+import { NotificationSetInfoInput, NotificationGetInfoInput } from "./type/ArgType"
 import { GroupPickNotifications, BulkUpdateNotificationsSQL } from "./util"
 import { GetFormatSql } from "../Utils/stringUtil"
 var logger = require("../../tools/logger")
@@ -43,6 +43,14 @@ module.exports = {
         logger.error(e.stack)
         throw new Error(`[Error] Failed to Get User Notification id: ${arg.accountId}`)
       }
+    },
+
+    _getUserNotificationMetadata: async (parent: void, args: any, ctx: any): Promise<number> => {
+      let arg: NotificationGetInfoInput = args.notificationGetInfoInput
+      let dbResult = await RunSingleSQL(`
+        SELECT COUNT(*) FROM "NOTIFICATION" WHERE "FK_accountId" = ${arg.accountId}
+      `)
+      return dbResult[0].count
     }
   },
 

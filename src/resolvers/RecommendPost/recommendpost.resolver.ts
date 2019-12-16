@@ -145,6 +145,25 @@ module.exports = {
       return postCount[0].count
     }
 
+    // searchRecommendPost: async (
+    //   parent: void,
+    //   args: QueryArgInfo
+    // ): Promise<ReturnType.RecommendPostInfo[]> => {
+    //   let result = await elastic.InsertElasticSearch(
+    //     elastic.elasticClient,
+    //     "...customer",
+    //     ["name", "characteristics"],
+    //     ["Junsoo", "very good blue"]
+    //   )
+    //   await elastic.elasticClient.indices.refresh({ index: "...customer" })
+    //   result = await elastic.SearchElasticSearch(
+    //     elastic.elasticClient,
+    //     "...customer",
+    //     "characteristics",
+    //     "blue"
+    //   )
+    // }
+
     //getTempSavedRecommendPost: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<> => {}
   },
   Mutation: {

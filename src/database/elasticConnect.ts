@@ -30,7 +30,8 @@ async function SearchElasticSearch(client: any, indexName: string, searchText: s
           type: "best_fields",
           fields: ["brandkor", "content", "itemname", "name", "review", "shortreview^2", "title^3"]
         }
-      }
+      },
+      sort: [{ _score: { order: "desc" } }, { "@timestamp": { order: "desc" } }]
     }
   }
 

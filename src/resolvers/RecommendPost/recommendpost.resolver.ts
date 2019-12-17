@@ -418,35 +418,25 @@ module.exports = {
 }
 
 async function GetPostFilterSql(filter: any): Promise<string> {
-  let multipleQuery: boolean = false
+  let multipleQuery: boolean = true
   let filterSql: string = ` WHERE "postStatus" = 'VISIBLE'`
 
   if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
     filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "FK_accountId"=${filter.accountId}`)
-    multipleQuery = true
   } else if (Object.prototype.hasOwnProperty.call(filter, "postId")) {
     filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` id=${filter.postId}`)
-    multipleQuery = true
-  }
-
-  if (Object.prototype.hasOwnProperty.call(filter, "minimumPickCount")) {
-    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "minimumPickCount"='${filter.postType}'`)
-    multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "postType")) {
     filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "postType"='${filter.postType}'`)
-    multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "channelId")) {
     filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "FK_channelId"='${filter.channelId}'`)
-    multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "styleType")) {
     filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "styleType"='${filter.styleType}'`)
-    multipleQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
@@ -461,7 +451,6 @@ async function GetPostFilterSql(filter: any): Promise<string> {
       })
 
       filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` id in (${postIdSql})`)
-      multipleQuery = true
     } catch (e) {
       throw new Error("[Error] Failed to fetch postId with itemId")
     }

@@ -93,11 +93,8 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 // async function testfunc() {
-//   //await FindAndCombineDuplicateItem()
-
-//   console.log(await DeployImageBy4Versions("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/testimage_temp/2019120943773829933281.jpg"))
-//   console.log("--------")
-//   console.log(await DeployImageBy4Versions("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/testimage_temp/2019120243757398539571.jpg"))
+//   await FindAndCombineDuplicateItem()
+//   console.log("Item merge done")
 // }
 // testfunc()
 

@@ -66,26 +66,15 @@ module.exports = {
         if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
           //If search is required
           if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
-            let result = await elastic.SearchElasticSearch(elastic.elasticClient, "recpost_test", arg.postFilter.searchText, 0, 5)
-            let extractedPostIds = ExtractFieldFromList(result.hits, "_id")
-            if (extractedPostIds.length == 0) return []
-            filterSql = `
-              JOIN (
-                VALUES
-                ${ConvertListToOrderedPair(extractedPostIds)}
-              ) AS x (id,ordering) ON rec_post.id = x.id
-              order by x.ordering
-            `
-
-            selectionSql = `x.ordering, `
-            formatSql = `ORDER BY post.ordering ASC`
+            let sqlResult = await GetSearchSql(arg)
+            filterSql = sqlResult.filterSql
+            selectionSql = sqlResult.selectionSql
+            formatSql = sqlResult.formatSql
           }
           //If Queried from DB
           else {
             filterSql = await GetPostFilterSql(arg.postFilter)
-            if (filterSql == null) {
-              return []
-            }
+            if (filterSql == null) return []
             formatSql = GetFormatSql(arg)
           }
 
@@ -512,4 +501,40 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
   resultSql += ` WHERE "id"=${filter.postId}`
 
   return resultSql
+}
+
+async function GetSearchSql(arg: ArgType.RecommendPostQuery): Promise<any> {
+  let indexName: string = ""
+  let filterSql: string = ""
+  let selectionSql: string = ""
+  let formatSql: string = ""
+  if (process.env.MODE == "DEPLOY") indexName = "recpost"
+  else indexName = "recpost_test"
+
+  let start: number = 0
+  let first: number = 10
+  if (arg.filterGeneral) {
+    start = arg.filterGeneral.start
+    first = arg.filterGeneral.first
+  }
+
+  let result = await elastic.SearchElasticSearch(elastic.elasticClient, indexName, arg.postFilter.searchText, start, first)
+  let extractedPostIds = ExtractFieldFromList(result.hits, "_id")
+  if (extractedPostIds.length == 0) return []
+  filterSql = `
+    JOIN (
+      VALUES
+      ${ConvertListToOrderedPair(extractedPostIds)}
+    ) AS x (id,ordering) ON rec_post.id = x.id
+    order by x.ordering
+  `
+
+  selectionSql = `x.ordering, `
+  formatSql = `ORDER BY post.ordering ASC`
+
+  return {
+    filterSql,
+    selectionSql,
+    formatSql
+  }
 }

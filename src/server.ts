@@ -28,7 +28,7 @@ import {
   InsertIntoNotificationQueue,
   ProcessNotificationQueue
 } from "./resolvers/Notification/util"
-import { CombineItem, FindAndCombineDuplicateItem, CopyImageWithDifferentName } from "./tools/tool"
+import { CopyImageWithDifferentName } from "./tools/tool"
 import { DeployImageBy4Versions } from "./resolvers/Utils/promiseUtil"
 
 //Create Express Server

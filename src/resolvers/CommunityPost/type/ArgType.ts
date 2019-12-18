@@ -15,7 +15,7 @@ export type CommunityPostInfoInput = {
   content: string
   postType: string
   //qnaType: string
-  imageUrls: string[]
+  imageUrls: CommunityPostImageInfo[]
 }
 
 export type CommunityPostEditInfoInput = {
@@ -29,6 +29,12 @@ export type CommunityPostEditInfoInput = {
 
   deletedImages: number[]
 }
+
+export type CommunityPostImageInfo = {
+  id: number
+  imageUrl: string
+}
+
 export type CommunityPostEditImageInfo = {
   id: number
   imageUrl: string

@@ -12,7 +12,8 @@ import {
   GetMetaData,
   RunSingleSQL,
   ExtractSelectionSet,
-  DeployImageBy4Versions
+  DeployImageBy4Versions,
+  ExtractFieldFromList
 } from "../Utils/promiseUtil"
 import {
   GetFormatSql,
@@ -95,7 +96,8 @@ module.exports = {
         )
         //Deploy Image
         if (Object.prototype.hasOwnProperty.call(arg, "imageUrls") && arg.imageUrls.length != 0) {
-          let deployedUrls = await SequentialPromiseValue(arg.imageUrls, DeployImageBy4Versions)
+          let imgUrlList = ExtractFieldFromList(arg.imageUrls, "imageUrl")
+          let deployedUrls = await SequentialPromiseValue(imgUrlList, DeployImageBy4Versions)
           let imgPairs = ConvertListToOrderedPair(deployedUrls, `,${String(postId[0].id)}`, false)
           await InsertImageIntoTable(imgPairs, "COMMUNITY_POST_IMAGE", "FK_postId")
         }

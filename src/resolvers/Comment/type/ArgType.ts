@@ -37,6 +37,6 @@ type CommentFilterGeneral = {
 
 export type CommentQuery = {
   filterGeneral: CommentFilterGeneral
-  boardType: string
+  postType: string
   postId: number
 }

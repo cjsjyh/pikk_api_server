@@ -32,7 +32,7 @@ input CommentFilterGeneral {
 
 input CommentQuery {
   filterGeneral: CommentFilterGeneral
-  boardType: BoardType!
+  postType: PostType!
   postId: Int!
 }
 

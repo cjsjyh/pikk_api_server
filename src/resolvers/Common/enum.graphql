@@ -3,11 +3,6 @@ enum SortDirection {
   DESC
 }
 
-enum BoardType {
-  RECOMMEND
-  COMMUNITY
-}
-
 enum RecommendReason {
   DESIGN
   PRICE

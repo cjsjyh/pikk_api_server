@@ -23,7 +23,7 @@ export async function CheckWriter(tableName: string, contentId: number, accountI
     let userRank = await RunSingleSQL(
       `SELECT rank FROM "USER_INFO" WHERE "FK_accountId"=${accountId}`
     )
-    if (userRank[0] == "9999") return true
+    if (userRank[0].rank == "9999") return true
     return false
   }
   return true

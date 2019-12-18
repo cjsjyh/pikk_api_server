@@ -1,4 +1,8 @@
-import { RunSingleSQL, ExtractFieldFromList, Make4VersionsOfImage } from "../resolvers/Utils/promiseUtil"
+import {
+  RunSingleSQL,
+  ExtractFieldFromList,
+  Make4VersionsOfImage
+} from "../resolvers/Utils/promiseUtil"
 import { ConvertListToString, replaceLastOccurence } from "../resolvers/Utils/stringUtil"
 const { S3 } = require("../database/aws_s3")
 
@@ -8,56 +12,6 @@ const sharp = require("sharp")
 const imageType = require("image-type")
 const readChunk = require("read-chunk")
 var logger = require("../tools/logger")
-
-export async function CombineItem(updateId: number, deleteIds: number[]) {
-  try {
-    let querySql = `
-    WITH update_item as (
-      UPDATE "ITEM_REVIEW" SET "FK_itemId" = ${updateId} WHERE "FK_itemId" IN (${ConvertListToString(deleteIds)})
-    ),
-    delete_item as (
-      SELECT "FK_itemGroupId", id FROM "ITEM_VARIATION" WHERE id IN (${ConvertListToString(deleteIds)})
-    )
-    DELETE FROM "ITEM_GROUP" USING delete_item WHERE "ITEM_GROUP".id = delete_item."FK_itemGroupId"
-    `
-    await RunSingleSQL(querySql)
-  } catch (e) {
-    logger.error(e.stack)
-  }
-}
-
-export async function FindAndCombineDuplicateItem() {
-  try {
-    let findSql = `
-    WITH grr as (
-      SELECT var.name, gr."originalPrice" FROM "ITEM_VARIATION" var INNER JOIN "ITEM_GROUP" gr ON var."FK_itemGroupId"=gr.id
-    ),
-    aaa as (
-      SELECT count(*) AS count_ , name, grr."originalPrice" FROM grr 
-      GROUP BY "originalPrice", name HAVING count(*) > 1
-      ORDER BY count_ DESC
-    )
-    SELECT * FROM "ITEM_VARIATION" var, aaa WHERE var.name = aaa.name
-    ORDER BY var.name ASC, var.id DESC
-    `
-    let findResult = await RunSingleSQL(findSql)
-
-    let prevName = ""
-    let headRecord
-    let tailRecord = []
-    for (let i = 0; i < findResult.length; i++) {
-      if (prevName != findResult[i].name) {
-        if (i != 0) await CombineItem(headRecord, tailRecord)
-        headRecord = Number(findResult[i].id)
-        prevName = findResult[i].name
-        tailRecord.length = 0
-      } else {
-        tailRecord.push(Number(findResult[i].id))
-      }
-      logger.info("Combination Done!")
-    }
-  } catch (e) {}
-}
 
 export async function CopyImageWithDifferentName() {
   //Get table rows
@@ -78,7 +32,10 @@ export async function CopyImageWithDifferentName() {
 
   //Extract S3 Key
   for (let i = 0; i < filtered.length; i++) {
-    filtered[i] = filtered[i].replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
+    filtered[i] = filtered[i].replace(
+      "https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/",
+      ""
+    )
   }
 
   filtered.forEach(async destUrl => {
@@ -97,7 +54,9 @@ export async function CopyImageWithDifferentName() {
 
 export async function ReplaceImageWithResolutions() {
   //Get table rows
-  let imageUrls = await RunSingleSQL('SELECT tab."titleImageUrl" as "imageUrl" from "RECOMMEND_POST" tab')
+  let imageUrls = await RunSingleSQL(
+    'SELECT tab."titleImageUrl" as "imageUrl" from "RECOMMEND_POST" tab'
+  )
   //let imageUrls = await RunSingleSQL(    'SELECT tab."imageUrl" as "imageUrl" from "ITEM_VARIATION" tab'  );
   //let imageUrls = await RunSingleSQL(    'SELECT tab."channel_titleImgUrl" as "imageUrl" from "USER_INFO" tab'  );
   //let imageUrls = await RunSingleSQL(    'SELECT tab."profileImgUrl" as "imageUrl" from "USER_INFO" tab'  );
@@ -109,7 +68,10 @@ export async function ReplaceImageWithResolutions() {
 
   //Extract S3 Key
   for (let i = 0; i < filtered.length; i++) {
-    filtered[i] = filtered[i].replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
+    filtered[i] = filtered[i].replace(
+      "https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/",
+      ""
+    )
   }
 
   filtered.forEach(async filteredUrl => {
@@ -165,7 +127,14 @@ export async function ReplaceImageWithResolutions() {
     let largeName = filteredUrl.replace(".", "_large.")
 
     //Resize Images
-    await Make4VersionsOfImage(filteredUrl, dimensions, xsmallName, smallName, mediumName, largeName)
+    await Make4VersionsOfImage(
+      filteredUrl,
+      dimensions,
+      xsmallName,
+      smallName,
+      mediumName,
+      largeName
+    )
 
     //Upload Images
     ;[xsmallName, smallName, mediumName, largeName].forEach(filename => {

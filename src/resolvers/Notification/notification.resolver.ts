@@ -1,7 +1,7 @@
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ValidateUser } from "../Utils/securityUtil"
-import { NotificationSetInfoInput } from "./type/ArgType"
+import { NotificationSetInfoInput, NotificationGetInfoInput } from "./type/ArgType"
 import { GroupPickNotifications, BulkUpdateNotificationsSQL } from "./util"
 import { GetFormatSql } from "../Utils/stringUtil"
 var logger = require("../../tools/logger")
@@ -43,6 +43,14 @@ module.exports = {
         logger.error(e.stack)
         throw new Error(`[Error] Failed to Get User Notification id: ${arg.accountId}`)
       }
+    },
+
+    _getUserNotificationMetadata: async (parent: void, args: any, ctx: any): Promise<number> => {
+      let arg: NotificationGetInfoInput = args.notificationGetInfoInput
+      let dbResult = await RunSingleSQL(`
+        SELECT COUNT(*) FROM "NOTIFICATION" WHERE "FK_accountId" = ${arg.accountId}
+      `)
+      return dbResult[0].count
     }
   },
 
@@ -62,6 +70,20 @@ module.exports = {
       }
     },
 
+    setAllUserNotification: async (parent: void, arg: any, ctx: any): Promise<boolean> => {
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+
+      try {
+        await RunSingleSQL(`UPDATE "NOTIFICATION" SET "isViewed" = true WHERE "FK_accountId"=${arg.accountId}`)
+        logger.info(`Set All User Notification ${arg.accountId}`)
+        return true
+      } catch (e) {
+        logger.warn(`Failed to Set All User ${arg.accountId} Notification`)
+        logger.error(e.stack)
+        throw new Error("Failed to Set All User Notification")
+      }
+    },
+
     deleteUserNotification: async (parent: void, args: any, ctx: any): Promise<boolean> => {
       let arg: NotificationSetInfoInput = args.notificationSetInfoInput
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
@@ -74,6 +96,20 @@ module.exports = {
         logger.warn(`Failed to Delete User ${arg.accountId} Notification ${arg.notificationId}`)
         logger.error(e.stack)
         throw new Error("Failed to Delete User Notification")
+      }
+    },
+
+    deleteAllUserNotification: async (parent: void, arg: any, ctx: any): Promise<boolean> => {
+      if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+
+      try {
+        await RunSingleSQL(`DELETE FROM "NOTIFICATION" WHERE "FK_accountId"=${arg.accountId}`)
+        logger.info(`Deleted All User ${arg.accountId} Notification`)
+        return true
+      } catch (e) {
+        logger.warn(`Failed to Delete All User ${arg.accountId} Notification`)
+        logger.error(e.stack)
+        throw new Error("Failed to Delete All User Notification")
       }
     }
   }

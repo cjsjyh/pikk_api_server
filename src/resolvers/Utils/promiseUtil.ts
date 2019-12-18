@@ -227,7 +227,7 @@ export async function DeployImageBy4Versions(imageUrl: string): Promise<string> 
       newImageName = newImageName.split("?")[0]
       let date = getFormatDate(new Date())
       let hour = getFormatHour(new Date())
-      newImageName = date + hour + "." + newImageName
+      newImageName = date + hour + String(Math.floor(Math.random() * 10000)+1) +  "." + newImageName
 
       //If image url doesn't start with http://
       if (imageUrl[0] != "h") {

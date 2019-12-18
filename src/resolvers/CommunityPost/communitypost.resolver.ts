@@ -7,8 +7,20 @@ import { GetCommunityPostImage } from "./util"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql } from "./util"
-import { SequentialPromiseValue, GetMetaData, RunSingleSQL, ExtractSelectionSet, DeployImageBy4Versions } from "../Utils/promiseUtil"
-import { GetFormatSql, ConvertListToOrderedPair, ConvertListToString, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
+import {
+  SequentialPromiseValue,
+  GetMetaData,
+  RunSingleSQL,
+  ExtractSelectionSet,
+  DeployImageBy4Versions,
+  ExtractFieldFromList
+} from "../Utils/promiseUtil"
+import {
+  GetFormatSql,
+  ConvertListToOrderedPair,
+  ConvertListToString,
+  InsertImageIntoDeleteQueue
+} from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
@@ -17,7 +29,12 @@ var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
-    allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<PostReturnType.CommunityPostInfo[]> => {
+    allCommunityPosts: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<PostReturnType.CommunityPostInfo[]> => {
       let arg: ArgType.CommunityPostQuery = args.communityPostOption
 
       try {
@@ -63,7 +80,11 @@ module.exports = {
     }
   },
   Mutation: {
-    createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createCommunityPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -74,8 +95,9 @@ module.exports = {
           VALUES (${arg.accountId}, '${arg.title}', '${arg.content}', '${arg.postType}') RETURNING id`
         )
         //Deploy Image
-        if (Object.prototype.hasOwnProperty.call(arg, "imageUrls")) {
-          let deployedUrls = await SequentialPromiseValue(arg.imageUrls, DeployImageBy4Versions)
+        if (Object.prototype.hasOwnProperty.call(arg, "imageUrls") && arg.imageUrls.length != 0) {
+          let imgUrlList = ExtractFieldFromList(arg.imageUrls, "imageUrl")
+          let deployedUrls = await SequentialPromiseValue(imgUrlList, DeployImageBy4Versions)
           let imgPairs = ConvertListToOrderedPair(deployedUrls, `,${String(postId[0].id)}`, false)
           await InsertImageIntoTable(imgPairs, "COMMUNITY_POST_IMAGE", "FK_postId")
         }
@@ -92,8 +114,12 @@ module.exports = {
       let arg: ArgType.CommunityPostEditInfoInput = args.communityPostEditInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))) {
-        logger.warn(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
-        throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
+        logger.warn(
+          `[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`
+        )
+        throw new Error(
+          `[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`
+        )
       }
       try {
         let querySql = GetCommunityPostEditSql(arg)
@@ -105,7 +131,12 @@ module.exports = {
         if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {
           if (arg.deletedImages.length != 0) {
             let deleteSql = ""
-            deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "id", arg.deletedImages)
+            deleteSql = InsertImageIntoDeleteQueue(
+              "COMMUNITY_POST_IMAGE",
+              "imageUrl",
+              "id",
+              arg.deletedImages
+            )
 
             let idList = ConvertListToString(arg.deletedImages)
             await RunSingleSQL(`
@@ -118,7 +149,13 @@ module.exports = {
         if (Object.prototype.hasOwnProperty.call(arg, "imageUrls")) {
           await Promise.all(
             arg.imageUrls.map((image, index) => {
-              return EditImageUrlInTable(image, "COMMUNITY_POST_IMAGE", "FK_postId", arg.postId, index)
+              return EditImageUrlInTable(
+                image,
+                "COMMUNITY_POST_IMAGE",
+                "FK_postId",
+                arg.postId,
+                index
+              )
             })
           )
         }
@@ -131,17 +168,27 @@ module.exports = {
       }
     },
 
-    deleteCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    deleteCommunityPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.CommunityPostDeleteInfoInput = args.communityPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))) {
-        logger.warn(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
-        throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
+        logger.warn(
+          `[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`
+        )
+        throw new Error(
+          `[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`
+        )
       }
 
       try {
         let deleteSql = ""
-        deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "FK_postId", [arg.postId])
+        deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "FK_postId", [
+          arg.postId
+        ])
 
         let querySql = `${deleteSql} UPDATE "COMMUNITY_POST" SET "postStatus"='DELETED' WHERE id=${arg.postId}`
         let result = await RunSingleSQL(querySql)

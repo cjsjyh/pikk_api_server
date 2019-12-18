@@ -34,7 +34,9 @@ export async function InsertIntoNotificationQueue(
 }
 
 export async function ProcessNotificationQueue() {
+  let isInserted:boolean = false
   while ((await RedisQueueLength("Notification_Queue")) != 0) {
+    isInserted = true
     let task = await PopRedisQueue("Notification_Queue")
     task = JSON.parse(task)
     if (task.notiType == "COMMENT_TO_MY_POST") {
@@ -50,6 +52,10 @@ export async function ProcessNotificationQueue() {
     } else {
       logger.warn("Invalid Notification Queue notiType")
     }
+  }
+
+  if(isInserted){
+    await RunSingleSQL(`DELETE FROM "NOTIFICATION" WHERE "FK_accountId" = "FK_sentUserId"`)
   }
 }
 

@@ -7,18 +7,29 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, ConvertListToOrderedPair, MakeCacheNameByObject } from "../Utils/stringUtil"
+import {
+  GetFormatSql,
+  MakeMultipleQuery,
+  ConvertListToOrderedPair,
+  MakeCacheNameByObject
+} from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertItem, GetItemsById, GetItemIdInRanking } from "./util"
 import { GetRedis, SetRedis } from "../../database/redisConnect"
 import { performance } from "perf_hooks"
+import { FindAndCombineDuplicateItem } from "./util"
 
 var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
-    allItems: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ReturnType.ItemInfo[]> => {
+    allItems: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.ItemQuery = args.itemOption
       try {
         let formatSql = GetFormatSql(arg)
@@ -52,7 +63,9 @@ module.exports = {
 
       try {
         let formatSql = GetFormatSql(arg)
-        let queryResult = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
+        let queryResult = await RunSingleSQL(
+          `SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
+        )
         if (queryResult.length == 0) return []
         let idList = ExtractFieldFromList(queryResult, "FK_itemId")
 
@@ -68,7 +81,9 @@ module.exports = {
 
     _getUserPickkItemMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
       let arg: ArgType.PickkItemQuery = args.pickkItemOption
-      let queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
+      let queryResult = await RunSingleSQL(
+        `SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
+      )
       return queryResult[0].count
     },
 
@@ -96,7 +111,12 @@ module.exports = {
         ) AS x (id,ordering) ON item_var.id = x.id
       `
         if (itemIdList.length == 0) return []
-        let itemList = await GetItemsById(itemIdList, "ORDER BY item_full.ordering ASC", customFilterSql, "x.ordering,")
+        let itemList = await GetItemsById(
+          itemIdList,
+          "ORDER BY item_full.ordering ASC",
+          customFilterSql,
+          "x.ordering,"
+        )
         await SetRedis(cacheName, JSON.stringify(itemList), 1800)
 
         logger.info("ItemRanking Called")
@@ -146,6 +166,17 @@ module.exports = {
         logger.error(e.stack)
         throw new Error("[Error] Failed to create Item!")
       }
+    },
+
+    autoMergeItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<String> => {
+      try {
+        let combinationLog = await FindAndCombineDuplicateItem()
+        logger.info(combinationLog)
+        return combinationLog
+      } catch (e) {
+        logger.error(e.stack)
+        throw new Error(e)
+      }
     }
   }
 }
@@ -163,14 +194,22 @@ function GetItemFilterSql(filter: any): string {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemMinorType")) {
     if (filter.itemMinorType != "ALL") {
-      filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` item_gr."itemMinorType"='${filter.itemMinorType}'`)
+      filterSql = MakeMultipleQuery(
+        multipleQuery,
+        filterSql,
+        ` item_gr."itemMinorType"='${filter.itemMinorType}'`
+      )
       multipleQuery = true
     }
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemFinalType")) {
     if (filter.itemFinalType != "ALL") {
-      filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` item_gr."itemFinalType"='${filter.itemFinalType}'`)
+      filterSql = MakeMultipleQuery(
+        multipleQuery,
+        filterSql,
+        ` item_gr."itemFinalType"='${filter.itemFinalType}'`
+      )
       multipleQuery = true
     }
   }

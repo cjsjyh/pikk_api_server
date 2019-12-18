@@ -65,7 +65,7 @@ input CommunityPostInfoInput {
   content: String!
   postType: CommunityPostType!
   #qnaType: QNAType
-  imageUrls: [String]
+  imageUrls: [CommunityPostImageInfo!]
 }
 
 input CommunityPostEditInfoInput {
@@ -80,6 +80,14 @@ input CommunityPostEditInfoInput {
   Insert Image Id
   """
   deletedImages: [Int!]
+}
+
+input CommunityPostImageInfo {
+  """
+  Dummy id for React Components
+  """
+  id: Int
+  imageUrl: String!
 }
 
 input CommunityPostEditImageInfo {

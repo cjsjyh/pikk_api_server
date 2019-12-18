@@ -12,6 +12,7 @@ type Mutation {
   Return >  [true] : DB save successful  [false] : DB save unsuccessful
   """
   createItem(itemInfoInput: ItemInfoInput!): Boolean!
+  autoMergeItem: String!
 }
 
 enum ItemSortableField {

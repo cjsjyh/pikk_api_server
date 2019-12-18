@@ -17,16 +17,23 @@ function GetNewElasticClient() {
   return client
 }
 
-async function SearchElasticSearch(client: any, indexName: string, searchProperty: string, searchString: string) {
+async function SearchElasticSearch(client: any, indexName: string, searchText: string, start: number, first: number) {
   let param = {
     index: indexName,
     body: {
+      _source: [""],
+      from: start,
+      size: first,
       query: {
-        match: {}
-      }
+        multi_match: {
+          query: searchText,
+          type: "best_fields",
+          fields: ["brandkor", "content", "itemname", "name", "review", "shortreview^2", "title^3"]
+        }
+      },
+      sort: [{ _score: { order: "desc" } }, { "@timestamp": { order: "desc" } }]
     }
   }
-  param.body.query.match[searchProperty] = searchString
 
   let result = await client.search(param)
   return result.body.hits

@@ -3,6 +3,8 @@ type Query {
   _allRecommendPostsMetadata: Int!
   getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
   _getUserPickkRecommendPostMetadata(pickkRecommendPostOption: PickkRecommendPostQuery!): Int!
+  getUserFollowRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
+  _getUserFollowRecommendPostMetadata(pickkRecommendPostOption: PickkRecommendPostQuery!): Int!
   #getTempSavedRecommendPost(tempSavedRecommendPostOption: TempSavedRecommendPostQuery!): #------
 }
 
@@ -48,10 +50,12 @@ input RecommendPostFilterGeneral {
 input RecommendPostQueryFilter {
   accountId: Int
   postId: Int
-  postType: RecommendPostType!
+  postType: RecommendPostType
   styleType: StyleType
   itemId: Int
-  minimumPickCount: Int!
+  minimumPickCount: Int = 0
+
+  searchText: String
 }
 
 input RecommendPostQuery {

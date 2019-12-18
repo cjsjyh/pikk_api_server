@@ -1,6 +1,10 @@
 type Query {
   allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
   _allCommunityPostsMetadata: Int!
+  getUserPickkCommunityPost(
+    pickkCommunityPostOption: PickkCommunityPostQuery!
+  ): [CommunityPostInfo!]
+  _getUserPickkCommunityPostMetadata(pickkCommunityPostOption: PickkCommunityPostQuery!): Int!
 }
 
 type Mutation {
@@ -25,6 +29,7 @@ enum ComPostSortableField {
 enum CommunityPostType {
   SALE
   TALK
+  ALL
 }
 
 #------------------
@@ -43,12 +48,17 @@ input CommunityPostQueryFilter {
   postId: Int
   postType: CommunityPostType!
   #qnaType: QNAType
-  channelId: Int
+  #channelId: Int
 }
 
 input CommunityPostQuery {
   filterGeneral: CommunityPostFilterGeneral
   postFilter: CommunityPostQueryFilter!
+}
+
+input PickkCommunityPostQuery {
+  filterGeneral: CommunityPostFilterGeneral
+  userId: Int!
 }
 
 #------------------
@@ -113,7 +123,7 @@ type CommunityPostInfo {
   commentCount: Int!
 
   id: Int
-  channelId: Int
+  #channelId: Int
   title: String!
   content: String!
   time: String!

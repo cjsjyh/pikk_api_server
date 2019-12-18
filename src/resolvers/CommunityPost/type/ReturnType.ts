@@ -8,7 +8,7 @@ export type CommunityPostInfo = {
   profileImgUrl: string
   //Post Info
   id: number
-  channelId: number
+  //channelId: number
   title: string
   content: string
   time: string

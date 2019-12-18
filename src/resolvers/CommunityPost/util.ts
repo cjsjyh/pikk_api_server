@@ -18,7 +18,7 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
     multipleQuery = true
   }
 
-  if (Object.prototype.hasOwnProperty.call(filter, "postType")) {
+  if (Object.prototype.hasOwnProperty.call(filter, "postType") && filter.postType != "ALL") {
     filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "postType"='${filter.postType}'`)
     multipleQuery = true
   }
@@ -35,7 +35,9 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
+      let rows = await RunSingleSQL(
+        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
+      )
       if (rows.length == 0) return null
 
       let postIdSql = ""
@@ -53,7 +55,11 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
   return filterSql
 }
 
-export async function GetCommunityPostImage(postInfo: PostReturnType.CommunityPostInfo): Promise<QueryResult> {
-  let rows = await RunSingleSQL(`SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=${postInfo.id}`)
+export async function GetCommunityPostImage(
+  postInfo: PostReturnType.CommunityPostInfo
+): Promise<QueryResult> {
+  let rows = await RunSingleSQL(
+    `SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=${postInfo.id}`
+  )
   return rows
 }

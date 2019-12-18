@@ -34,19 +34,44 @@ export async function InsertIntoNotificationQueue(
 }
 
 export async function ProcessNotificationQueue() {
-  let isInserted:boolean = false
+  let isInserted: boolean = false
   while ((await RedisQueueLength("Notification_Queue")) != 0) {
     isInserted = true
     let task = await PopRedisQueue("Notification_Queue")
     task = JSON.parse(task)
     if (task.notiType == "COMMENT_TO_MY_POST") {
-      await NotifyPostWriter(task.targetId, task.targetType, task.content, task.sentUserId, task.notiType)
+      await NotifyPostWriter(
+        task.targetId,
+        task.targetType,
+        task.content,
+        task.sentUserId,
+        task.notiType
+      )
     } else if (task.notiType == "NEW_PICKK_TO_MY_POST") {
-      await NotifyPostWriter(task.targetId, task.targetType, task.content, task.sentUserId, task.notiType)
+      await NotifyPostWriter(
+        task.targetId,
+        task.targetType,
+        task.content,
+        task.sentUserId,
+        task.notiType
+      )
     } else if (task.notiType == "NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL") {
-      await NotifyFollowers(task.targetId, task.targetType, task.targetTitle, task.sentUserId, task.notiType)
+      await NotifyFollowers(
+        task.targetId,
+        task.targetType,
+        task.targetTitle,
+        task.sentUserId,
+        task.notiType
+      )
     } else if (task.notiType == "COMMENT_TO_MY_COMMENT") {
-      await NotifyCommentWriter(task.targetId, task.targetType, task.content, task.parentId, task.sentUserId, task.notiType)
+      await NotifyCommentWriter(
+        task.targetId,
+        task.targetType,
+        task.content,
+        task.parentId,
+        task.sentUserId,
+        task.notiType
+      )
     } else if (task.notiType == "NEW_PICKK_TO_MY_CHANNEL") {
       await NotifyChannelOwner(task.targetId, task.sentUserId, task.notiType)
     } else {
@@ -54,17 +79,25 @@ export async function ProcessNotificationQueue() {
     }
   }
 
-  if(isInserted){
+  if (isInserted) {
     await RunSingleSQL(`DELETE FROM "NOTIFICATION" WHERE "FK_accountId" = "FK_sentUserId"`)
   }
 }
 
-async function NotifyPostWriter(postId: number, postType: string, content: string, sentUserId: number, notiType: string) {
+async function NotifyPostWriter(
+  postId: number,
+  postType: string,
+  content: string,
+  sentUserId: number,
+  notiType: string
+) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     //Get PostInfo of the post
     let postResult = await RunSingleSQL(`
-    SELECT post."FK_accountId", post.title FROM "${GetBoardName(postType)}" post WHERE "id" =${postId}
+    SELECT post."FK_accountId", post.title FROM "${GetBoardName(
+      postType
+    )}" post WHERE "id" =${postId}
     `)
 
     NotiInfo.postId = postId
@@ -106,7 +139,13 @@ async function NotifyChannelOwner(channelId: number, sentUserId: number, notiTyp
   }
 }
 
-async function NotifyFollowers(postId: number, postType: string, postTitle: string, sentUserId: number, notiType: string) {
+async function NotifyFollowers(
+  postId: number,
+  postType: string,
+  postTitle: string,
+  sentUserId: number,
+  notiType: string
+) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     NotiInfo.postId = postId
@@ -134,7 +173,14 @@ async function NotifyFollowers(postId: number, postType: string, postTitle: stri
   }
 }
 
-async function NotifyCommentWriter(postId: number, postType: string, content: string, parentId: number, sentUserId: number, notiType: string) {
+async function NotifyCommentWriter(
+  postId: number,
+  postType: string,
+  content: string,
+  parentId: number,
+  sentUserId: number,
+  notiType: string
+) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     NotiInfo.postId = postId
@@ -181,7 +227,10 @@ export function GroupPickNotifications(dbResult: any): NotificationInfo[] {
     record.sentUserName = [record.sentUserName]
     record.fetchTime = Date.now()
 
-    if (record.notificationType == "NEW_PICKK_TO_MY_POST" || record.notificationType == "NEW_PICKK_TO_MY_CHANNEL") {
+    if (
+      record.notificationType == "NEW_PICKK_TO_MY_POST" ||
+      record.notificationType == "NEW_PICKK_TO_MY_CHANNEL"
+    ) {
       let key = record.notificationType + String(record.postId) + String(record.isViewed)
       //Key not set yet
       if (!(key in dict)) {
@@ -192,6 +241,7 @@ export function GroupPickNotifications(dbResult: any): NotificationInfo[] {
     }
   })
 
+  let deleteIndex = []
   //Group and delete
   notiGroup.forEach(indexGroup => {
     indexGroup.forEach((notiIndex, index) => {
@@ -202,9 +252,15 @@ export function GroupPickNotifications(dbResult: any): NotificationInfo[] {
       dbResult[headRecordIndex].sentUserImageUrl.push(recordToPop.sentUserImageUrl[0])
       dbResult[headRecordIndex].sentUserName.push(recordToPop.sentUserName[0])
 
-      //pop record
-      dbResult.splice(notiIndex, 1)
+      //collect index to pop
+      deleteIndex.push(notiIndex)
     })
+  })
+  //pop record
+  deleteIndex.sort()
+  deleteIndex = deleteIndex.reverse()
+  deleteIndex.forEach(index => {
+    dbResult.splice(index, 1)
   })
 
   return dbResult

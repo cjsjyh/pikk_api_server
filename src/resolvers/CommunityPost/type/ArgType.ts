@@ -51,6 +51,7 @@ export type CommunityPostDeleteInfoInput = {
 
 export type QueryArgInfo = {
   communityPostOption: CommunityPostQuery
+  pickkCommunityPostOption: PickkCommunityPostQuery
 }
 
 type CommunityPostFilterGeneral = {
@@ -65,10 +66,15 @@ export type CommunityPostQueryFilter = {
   postId: number
   postType: string
   //qnaType: string
-  channelId: number
+  //channelId: number
 }
 
 export interface CommunityPostQuery {
   filterGeneral: CommunityPostFilterGeneral
   postFilter: CommunityPostQueryFilter
+}
+
+export interface PickkCommunityPostQuery {
+  filterGeneral: CommunityPostFilterGeneral
+  userId: number
 }

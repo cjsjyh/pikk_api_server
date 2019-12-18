@@ -23,7 +23,7 @@ import {
 } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
-import { InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
+import { InsertImageIntoTable, EditImageUrlInTable, IncreaseViewCountFunc } from "../Common/util"
 import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
 var logger = require("../../tools/logger")
 
@@ -44,6 +44,7 @@ module.exports = {
         }
 
         let formatSql = GetFormatSql(arg)
+        //Get CommentCount & PickkCount
         let requestSql = CommunityPostSelectionField(info)
         let querySql = `
         WITH post as (SELECT * FROM "COMMUNITY_POST" ${filterSql} ${formatSql})
@@ -54,7 +55,7 @@ module.exports = {
           ${requestSql}
         FROM post
         INNER JOIN "USER_INFO" user_info ON post."FK_accountId" = user_info."FK_accountId"
-        WHERE post."postStatus" = 'VISIBLE'
+        WHERE post."postStatus" = 'VISIBLE' ORDER BY post.id DESC
         `
         let postResult: PostReturnType.CommunityPostInfo[] = await RunSingleSQL(querySql)
         let imgResult = await SequentialPromiseValue(postResult, GetCommunityPostImage)
@@ -66,6 +67,17 @@ module.exports = {
             post.imageUrls.push(image.imageUrl)
           })
         })
+
+        //Increase View Count
+        let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
+        if (selectionSet.includes("content")) {
+          await Promise.all(
+            postResult.map(async post => {
+              return IncreaseViewCountFunc("COMMUNITY", post.id)
+            })
+          )
+        }
+
         logger.info(`AllCommunityPosts Called!`)
         return postResult
       } catch (e) {
@@ -77,6 +89,75 @@ module.exports = {
 
     _allCommunityPostsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
       return GetMetaData("COMMUNITY_POST")
+    },
+
+    getUserPickkCommunityPost: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<PostReturnType.CommunityPostInfo[]> => {
+      let arg: ArgType.PickkCommunityPostQuery = args.pickkCommunityPostOption
+
+      try {
+        let formatSql = GetFormatSql(arg)
+        //Get CommentCount & PickkCount
+        let requestSql = CommunityPostSelectionField(info)
+        let querySql = `
+        WITH post as (
+          SELECT post.* FROM "COMMUNITY_POST" post
+          INNER JOIN "COMMUNITY_POST_FOLLOWER" follow 
+          ON follow."FK_postId" = post.id
+          WHERE follow."FK_accountId" = ${arg.userId}
+          ${formatSql}
+        )
+        SELECT 
+          user_info."name",
+          user_info."profileImgUrl",
+          post.*
+          ${requestSql}
+        FROM post
+        INNER JOIN "USER_INFO" user_info ON post."FK_accountId" = user_info."FK_accountId"
+        WHERE post."postStatus" = 'VISIBLE' ORDER BY post.id DESC
+        `
+        let postResult: PostReturnType.CommunityPostInfo[] = await RunSingleSQL(querySql)
+        let imgResult = await SequentialPromiseValue(postResult, GetCommunityPostImage)
+
+        postResult.forEach((post: PostReturnType.CommunityPostInfo, index: number) => {
+          post.accountId = post.FK_accountId
+          post.imageUrls = []
+          imgResult[index].forEach(image => {
+            post.imageUrls.push(image.imageUrl)
+          })
+        })
+        logger.info(`userPickkCommunityPosts ${arg.userId} Called!`)
+        return postResult
+      } catch (e) {
+        logger.warn("Failed to fetch user pick community post from DB")
+        logger.error(e.stack)
+        throw new Error("[Error] Failed to fetch user pick community post from DB")
+      }
+    },
+
+    _getUserPickkCommunityPostMetadata: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<number> => {
+      let arg: ArgType.PickkCommunityPostQuery = args.pickkCommunityPostOption
+
+      let querySql = `
+      WITH post as (
+        SELECT post.* FROM "COMMUNITY_POST" post
+        INNER JOIN "COMMUNITY_POST_FOLLOWER" follow 
+        ON follow."FK_postId" = post.id
+        WHERE follow."FK_accountId" = ${arg.userId}
+      )
+      SELECT COUNT(*) FROM post
+      `
+      let result = await RunSingleSQL(querySql)
+      return result[0].count
     }
   },
   Mutation: {

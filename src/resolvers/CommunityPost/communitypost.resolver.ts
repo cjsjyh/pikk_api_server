@@ -204,7 +204,7 @@ module.exports = {
       }
       try {
         let querySql = GetCommunityPostEditSql(arg)
-        await RunSingleSQL(`UPDATE "COMMUNITY_POST" SET
+        await RunSingleSQL(`UPDATE "COMMUNITY_POST" SET "modificationTime"=now(),
         ${querySql}
         WHERE "id"=${arg.postId}
         `)

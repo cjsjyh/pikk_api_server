@@ -1,6 +1,6 @@
 type Query {
   allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
-  _allCommunityPostsMetadata: Int!
+  _allCommunityPostsMetadata(communityPostOption: CommunityPostQuery!): Int!
   getUserPickkCommunityPost(pickkCommunityPostOption: PickkCommunityPostQuery!): [CommunityPostInfo!]
   _getUserPickkCommunityPostMetadata(pickkCommunityPostOption: PickkCommunityPostQuery!): Int!
 }

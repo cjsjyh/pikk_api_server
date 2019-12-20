@@ -1,6 +1,6 @@
 type Query {
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
-  _allRecommendPostsMetadata: Int!
+  _allRecommendPostsMetadata(recommendPostOption: RecommendPostQuery!): Int!
   getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
   _getUserPickkRecommendPostMetadata(pickkRecommendPostOption: PickkRecommendPostQuery!): Int!
   getUserFollowRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]

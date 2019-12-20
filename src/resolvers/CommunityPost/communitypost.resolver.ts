@@ -97,7 +97,34 @@ module.exports = {
     },
 
     _allCommunityPostsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
-      return GetMetaData("COMMUNITY_POST")
+      let arg: ArgType.CommunityPostQuery = args.communityPostOption
+      try {
+        let filterSql: string = ""
+        if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
+          if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
+            let sqlResult = await GetSearchSql(arg)
+            if (!sqlResult) return 0
+            filterSql = sqlResult.filterSql
+          }
+          filterSql += await GetPostFilterSql(arg.postFilter)
+        }
+
+        let querySql = `
+          WITH post as (
+            SELECT 
+              post.*
+            FROM "COMMUNITY_POST" post
+            ${filterSql} 
+          )
+          SELECT COUNT(*) FROM post
+        `
+        let result = await RunSingleSQL(querySql)
+        return result[0].count
+      } catch (e) {
+        logger.warn("Failed to fetch community post count from DB")
+        logger.error(e.stack)
+        throw new Error("[Error] Failed to fetch community post count from DB")
+      }
     },
 
     getUserPickkCommunityPost: async (

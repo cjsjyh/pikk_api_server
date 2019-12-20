@@ -116,7 +116,46 @@ module.exports = {
     },
 
     _allRecommendPostsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
-      return GetMetaData("RECOMMEND_POST")
+      let arg: ArgType.RecommendPostQuery = args.recommendPostOption
+      try {
+        let filterSql: string = ""
+        let pickCountSql: string = ""
+        if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
+          //If search is required
+          if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
+            let sqlResult = await GetSearchSql(arg)
+            if (!sqlResult) return 0
+            filterSql = sqlResult.filterSql
+          }
+          //If Queried from DB
+          else {
+            filterSql = await GetPostFilterSql(arg.postFilter)
+            if (filterSql == null) return 0
+          }
+
+          if (Object.prototype.hasOwnProperty.call(arg.postFilter, "minimumPickCount"))
+            pickCountSql = `AND post."pickCount" >= ${arg.postFilter.minimumPickCount}`
+        }
+
+        let postSql = `
+        WITH post AS 
+        ( 
+          SELECT 
+            rec_post.*,
+            (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=rec_post.id)
+          FROM "RECOMMEND_POST" rec_post ${filterSql}
+        ) 
+        SELECT 
+          COUNT(*) 
+        FROM post WHERE "postStatus" = 'VISIBLE'
+        ${pickCountSql}
+        `
+        let result = await RunSingleSQL(postSql)
+        return result[0].count
+      } catch (e) {
+        logger.error(e.stack)
+        throw new Error("[Error] Failed to load RecommendPost count from DB")
+      }
     },
 
     getUserPickkRecommendPost: async (

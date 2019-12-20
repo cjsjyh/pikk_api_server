@@ -67,6 +67,8 @@ export type CommunityPostQueryFilter = {
   postType: string
   //qnaType: string
   //channelId: number
+
+  searchText: string
 }
 
 export interface CommunityPostQuery {

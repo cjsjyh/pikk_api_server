@@ -15,51 +15,60 @@ import {
   DeployImageBy4Versions,
   ExtractFieldFromList
 } from "../Utils/promiseUtil"
-import {
-  GetFormatSql,
-  ConvertListToOrderedPair,
-  ConvertListToString,
-  InsertImageIntoDeleteQueue
-} from "../Utils/stringUtil"
+import { GetFormatSql, ConvertListToOrderedPair, ConvertListToString, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertImageIntoTable, EditImageUrlInTable, IncreaseViewCountFunc } from "../Common/util"
 import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
 var logger = require("../../tools/logger")
+var elastic = require("../../database/elasticConnect")
 
 module.exports = {
   Query: {
-    allCommunityPosts: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<PostReturnType.CommunityPostInfo[]> => {
+    allCommunityPosts: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<PostReturnType.CommunityPostInfo[]> => {
       let arg: ArgType.CommunityPostQuery = args.communityPostOption
 
       try {
         let filterSql: string = ""
+        let formatSql: string = ""
+        let selectionSql: string = ""
         if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
-          filterSql = await GetPostFilterSql(arg.postFilter)
+          if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
+            let sqlResult = await GetSearchSql(arg)
+            if (!sqlResult) return []
+            filterSql = sqlResult.filterSql
+            selectionSql = sqlResult.selectionSql
+            formatSql = sqlResult.formatSql
+          } else {
+            formatSql = GetFormatSql(arg)
+            //Get CommentCount & PickkCount
+          }
+          filterSql += await GetPostFilterSql(arg.postFilter)
         }
 
-        let formatSql = GetFormatSql(arg)
-        //Get CommentCount & PickkCount
-        let requestSql = CommunityPostSelectionField(info)
         let querySql = `
-        WITH post as (SELECT * FROM "COMMUNITY_POST" ${filterSql} ${formatSql})
+        WITH post as (
+          SELECT 
+            post.*, ${selectionSql} 
+            COALESCE((SELECT COUNT(*) FROM "COMMUNITY_POST_FOLLOWER" pick WHERE pick."FK_postId"=post.id),0)  as "pickCount",
+          COALESCE((SELECT COUNT(*) FROM "COMMUNITY_POST_COMMENT" comment WHERE comment."FK_postId"=post.id),0)  as "commentCount"
+          FROM "COMMUNITY_POST" post
+          ${filterSql} 
+        )
         SELECT 
           user_info."name",
           user_info."profileImgUrl",
           post.*
-          ${requestSql}
         FROM post
         INNER JOIN "USER_INFO" user_info ON post."FK_accountId" = user_info."FK_accountId"
-        WHERE post."postStatus" = 'VISIBLE' ORDER BY post.id DESC
+        WHERE post."postStatus" = 'VISIBLE' 
+        ${formatSql}
         `
+
         let postResult: PostReturnType.CommunityPostInfo[] = await RunSingleSQL(querySql)
         let imgResult = await SequentialPromiseValue(postResult, GetCommunityPostImage)
 
+        //Match GraphQl
         postResult.forEach((post: PostReturnType.CommunityPostInfo, index: number) => {
           post.accountId = post.FK_accountId
           post.imageUrls = []
@@ -101,8 +110,7 @@ module.exports = {
 
       try {
         let formatSql = GetFormatSql(arg)
-        //Get CommentCount & PickkCount
-        let requestSql = CommunityPostSelectionField(info)
+
         let querySql = `
         WITH post as (
           SELECT post.* FROM "COMMUNITY_POST" post
@@ -114,8 +122,9 @@ module.exports = {
         SELECT 
           user_info."name",
           user_info."profileImgUrl",
-          post.*
-          ${requestSql}
+          post.*,
+          COALESCE((SELECT COUNT(*) FROM "COMMUNITY_POST_FOLLOWER" pick WHERE pick."FK_postId"=post.id),0)  as "pickCount",
+          COALESCE((SELECT COUNT(*) FROM "COMMUNITY_POST_COMMENT" comment WHERE comment."FK_postId"=post.id),0)  as "commentCount"
         FROM post
         INNER JOIN "USER_INFO" user_info ON post."FK_accountId" = user_info."FK_accountId"
         WHERE post."postStatus" = 'VISIBLE' ORDER BY post.id DESC
@@ -139,12 +148,7 @@ module.exports = {
       }
     },
 
-    _getUserPickkCommunityPostMetadata: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<number> => {
+    _getUserPickkCommunityPostMetadata: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<number> => {
       let arg: ArgType.PickkCommunityPostQuery = args.pickkCommunityPostOption
 
       let querySql = `
@@ -161,11 +165,7 @@ module.exports = {
     }
   },
   Mutation: {
-    createCommunityPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
+    createCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommunityPostInfoInput = args.communityPostInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -195,16 +195,12 @@ module.exports = {
       let arg: ArgType.CommunityPostEditInfoInput = args.communityPostEditInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))) {
-        logger.warn(
-          `[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`
-        )
-        throw new Error(
-          `[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`
-        )
+        logger.warn(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
+        throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
       }
       try {
         let querySql = GetCommunityPostEditSql(arg)
-        await RunSingleSQL(`UPDATE "COMMUNITY_POST" SET
+        await RunSingleSQL(`UPDATE "COMMUNITY_POST" SET "modificationTime"=now(),
         ${querySql}
         WHERE "id"=${arg.postId}
         `)
@@ -212,12 +208,7 @@ module.exports = {
         if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {
           if (arg.deletedImages.length != 0) {
             let deleteSql = ""
-            deleteSql = InsertImageIntoDeleteQueue(
-              "COMMUNITY_POST_IMAGE",
-              "imageUrl",
-              "id",
-              arg.deletedImages
-            )
+            deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "id", arg.deletedImages)
 
             let idList = ConvertListToString(arg.deletedImages)
             await RunSingleSQL(`
@@ -230,13 +221,7 @@ module.exports = {
         if (Object.prototype.hasOwnProperty.call(arg, "imageUrls")) {
           await Promise.all(
             arg.imageUrls.map((image, index) => {
-              return EditImageUrlInTable(
-                image,
-                "COMMUNITY_POST_IMAGE",
-                "FK_postId",
-                arg.postId,
-                index
-              )
+              return EditImageUrlInTable(image, "COMMUNITY_POST_IMAGE", "FK_postId", arg.postId, index)
             })
           )
         }
@@ -249,27 +234,17 @@ module.exports = {
       }
     },
 
-    deleteCommunityPost: async (
-      parent: void,
-      args: MutationArgInfo,
-      ctx: any
-    ): Promise<Boolean> => {
+    deleteCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommunityPostDeleteInfoInput = args.communityPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))) {
-        logger.warn(
-          `[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`
-        )
-        throw new Error(
-          `[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`
-        )
+        logger.warn(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
+        throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
       }
 
       try {
         let deleteSql = ""
-        deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "FK_postId", [
-          arg.postId
-        ])
+        deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_IMAGE", "imageUrl", "FK_postId", [arg.postId])
 
         let querySql = `${deleteSql} UPDATE "COMMUNITY_POST" SET "postStatus"='DELETED' WHERE id=${arg.postId}`
         let result = await RunSingleSQL(querySql)
@@ -284,34 +259,42 @@ module.exports = {
   }
 }
 
-function CommunityPostSelectionField(info: GraphQLResolveInfo) {
-  let result = ""
-  try {
-    let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
-    if (selectionSet.includes("commentCount")) {
-      result += `
-      ,
-      COALESCE((
-        SELECT COUNT(*) 
-        FROM "COMMUNITY_POST_COMMENT" comment WHERE comment."FK_postId"=post.id
-      ),0)  as "commentCount"
-      `
-    }
+async function GetSearchSql(arg: ArgType.CommunityPostQuery): Promise<any> {
+  let indexName: string = ""
+  let filterSql: string = ""
+  let selectionSql: string = ""
+  let formatSql: string = ""
+  if (process.env.MODE == "DEPLOY") indexName = "compost"
+  else indexName = "compost_test"
 
-    if (selectionSet.includes("pickCount")) {
-      result += `
-      ,
-      COALESCE((
-        SELECT COUNT(*) 
-        FROM "COMMUNITY_POST_FOLLOWER" pick WHERE pick."FK_postId"=post.id
-      ),0)  as "pickCount"
-      `
-    }
+  let start: number = 0
+  let first: number = 10
+  if (arg.filterGeneral) {
+    start = arg.filterGeneral.start
+    first = arg.filterGeneral.first
+  }
 
-    return result
-  } catch (e) {
-    logger.warn(`Failed to make SQL for CommunityPost SelectionField`)
-    logger.error(e.stack)
+  let result = await elastic.SearchElasticSearch(elastic.elasticClient, indexName, arg.postFilter.searchText, start, first, "best_fields", [
+    "title^2",
+    "content^2",
+    "name"
+  ])
+  let extractedPostIds = ExtractFieldFromList(result.hits, "_id")
+  if (extractedPostIds.length == 0) return null
+  filterSql = `
+    JOIN (
+      VALUES
+      ${ConvertListToOrderedPair(extractedPostIds)}
+    ) AS x (id,ordering) ON post.id = x.id
+  `
+
+  selectionSql = `x.ordering, `
+  formatSql = `ORDER BY post.ordering ASC`
+
+  return {
+    filterSql,
+    selectionSql,
+    formatSql
   }
 }
 

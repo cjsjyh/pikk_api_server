@@ -194,7 +194,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?, c
       item_gr."FK_brandId",
       COALESCE(
         (
-          SELECT AVG(r.score)
+          SELECT ROUND(AVG(r."score")::numeric,2)
           FROM "ITEM_REVIEW" r
           WHERE r."FK_itemId" = item_var.id
         )

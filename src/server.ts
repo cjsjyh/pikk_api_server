@@ -48,7 +48,6 @@ app.use(compression())
 //Create Apollo Server
 const server = new ApolloServer({
   schema,
-
   context: ({ req }) => {
     const header: any = req.headers
     if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")) {

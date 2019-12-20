@@ -10,10 +10,11 @@ import { GetMetaData, RunSingleSQL, ExtractFieldFromList } from "../Utils/promis
 import { GetFormatSql, MakeMultipleQuery, ConvertListToOrderedPair, MakeCacheNameByObject } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
-import { InsertItem, GetItemsById, GetItemIdInRanking } from "./util"
+import { InsertItem, GetItemsById, GetItemIdInRanking, CombineItem } from "./util"
 import { GetRedis, SetRedis } from "../../database/redisConnect"
 import { performance } from "perf_hooks"
 import { FindAndCombineDuplicateItem } from "./util"
+import { VerifyJWT } from "../Utils/securityUtil"
 
 var logger = require("../../tools/logger")
 
@@ -134,7 +135,7 @@ module.exports = {
     }
   },
   Mutation: {
-    createItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<boolean> => {
       if (!ctx.IsVerified) throw new Error("[Error] User not Logged In!")
       let arg: ArgType.ItemInfoInput = args.itemInfoInput
 
@@ -149,11 +150,25 @@ module.exports = {
       }
     },
 
-    autoMergeItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<String> => {
+    autoMergeItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<string> => {
       try {
         let combinationLog = await FindAndCombineDuplicateItem()
         logger.info(combinationLog)
         return combinationLog
+      } catch (e) {
+        logger.error(e.stack)
+        throw new Error(e)
+      }
+    },
+
+    selfMergeItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<boolean> => {
+      let arg = args.selfMerge
+      try {
+        if (!VerifyJWT(arg.token, arg.accountId)) throw new Error("User not allowed!")
+        let headId = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_REVIEW" WHERE id=${arg.headId}`)
+        let tailId = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_REVIEW" WHERE id=${arg.tailId}`)
+        await CombineItem(headId[0].FK_itemId, [tailId[0].FK_itemId])
+        return true
       } catch (e) {
         logger.error(e.stack)
         throw new Error(e)

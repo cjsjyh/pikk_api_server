@@ -3,6 +3,7 @@
 //-------------------------------
 export type MutationArgInfo = {
   itemInfoInput: ItemInfoInput
+  selfMerge: SelfMergeInfoInput
 }
 
 export type ItemEditInfoInput = {
@@ -57,6 +58,13 @@ type VariationInfo = {
   salePrice: number
   imageUrl: string
   purchaseUrl: string
+}
+
+type SelfMergeInfoInput = {
+  token: string
+  accountId: number
+  headId: number
+  tailId: number
 }
 
 //-------------------------------

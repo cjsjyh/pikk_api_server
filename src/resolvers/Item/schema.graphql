@@ -13,6 +13,7 @@ type Mutation {
   """
   createItem(itemInfoInput: ItemInfoInput!): Boolean!
   autoMergeItem: String!
+  selfMergeItem(selfMerge: SelfMergeInfoInput!): Boolean!
 }
 
 enum ItemSortableField {
@@ -160,6 +161,13 @@ enum CreateItemLevel {
 input PickkItemQuery {
   filterGeneral: ItemFilterGeneral
   userId: Int!
+}
+
+input SelfMergeInfoInput {
+  token: String!
+  accountId: Int!
+  headId: Int!
+  tailId: Int!
 }
 
 #---------------

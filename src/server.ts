@@ -27,6 +27,7 @@ const port = 80
 import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
 import { CopyImageWithDifferentName } from "./tools/tool"
 import { DeployImageBy4Versions } from "./resolvers/Utils/promiseUtil"
+import { VerifyJWT } from "./resolvers/Utils/securityUtil"
 
 //Create Express Server
 const app = express()
@@ -52,23 +53,15 @@ const server = new ApolloServer({
     const header: any = req.headers
     if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")) {
       return { IsVerified: false }
-    } else if (header.authorizationtoken == "undefined" || header.authorizationuserid == "undefined") {
+    } else if (!header.authorizationtoken || !header.authorizationuserid) {
       return { IsVerified: false }
     }
 
-    try {
-      var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
-    } catch (e) {
-      logger.warn("Failed to Verify JWT Token")
-      logger.error(e.stack)
-      return { IsVerified: false }
-    }
-    let IsVerified = false
-    if (decoded.id == header.authorizationuserid) IsVerified = true
+    let IsVerified = VerifyJWT(header.authorizationtoken, header.authorizationuserid)
 
     return {
       IsVerified: IsVerified,
-      userId: decoded.id
+      userId: header.authorizationuserid
     }
   },
 

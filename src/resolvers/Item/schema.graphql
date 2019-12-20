@@ -65,10 +65,13 @@ input ItemQuery {
 }
 
 input ItemRankingFilter {
+  filterGeneral: ItemRankingFilterGeneral
+
   itemMajorType: ItemMajorType
   itemMinorType: ItemMinorType
   itemFinalType: ItemFinalType
-  filterGeneral: ItemRankingFilterGeneral
+  minimumPrice: Int
+  maximumPrice: Int
 }
 
 input ItemMetadataFilter {

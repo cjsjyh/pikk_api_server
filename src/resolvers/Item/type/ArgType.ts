@@ -88,6 +88,9 @@ export type ItemQueryFilter = {
   itemMinorType: string
   itemFinalType: string
   itemId: number
+
+  minimumPrice: number
+  maximumPrice: number
 }
 
 export type ItemRankingFilter = {

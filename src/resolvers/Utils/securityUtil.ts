@@ -1,4 +1,5 @@
 import { RunSingleSQL } from "./promiseUtil"
+var jwt = require("jsonwebtoken")
 
 export function ValidateUser(ctx: any, requestId: number): boolean {
   if (process.env.MODE != "DEPLOY") {
@@ -15,16 +16,22 @@ export async function CheckWriter(tableName: string, contentId: number, accountI
   }
 
   //Check if the user is the writer
-  let checkWriter = await RunSingleSQL(
-    `SELECT id FROM "${tableName}" WHERE id=${contentId} AND "FK_accountId"=${accountId}`
-  )
+  let checkWriter = await RunSingleSQL(`SELECT id FROM "${tableName}" WHERE id=${contentId} AND "FK_accountId"=${accountId}`)
   if (checkWriter.length == 0) {
     //Check if the user is the admin
-    let userRank = await RunSingleSQL(
-      `SELECT rank FROM "USER_INFO" WHERE "FK_accountId"=${accountId}`
-    )
+    let userRank = await RunSingleSQL(`SELECT rank FROM "USER_INFO" WHERE "FK_accountId"=${accountId}`)
     if (userRank[0].rank == "9999") return true
     return false
   }
   return true
+}
+
+export function VerifyJWT(authorizationtoken, authorizationuserid): boolean {
+  try {
+    var decoded = jwt.verify(authorizationtoken, process.env.PICKK_SECRET_KEY)
+  } catch (e) {
+    return false
+  }
+  if (decoded.id == authorizationuserid) return true
+  return false
 }

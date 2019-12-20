@@ -3,6 +3,7 @@
 //-------------------------------
 export type MutationArgInfo = {
   itemInfoInput: ItemInfoInput
+  selfMerge: SelfMergeInfoInput
 }
 
 export type ItemEditInfoInput = {
@@ -59,6 +60,13 @@ type VariationInfo = {
   purchaseUrl: string
 }
 
+type SelfMergeInfoInput = {
+  token: string
+  accountId: number
+  headId: number
+  tailId: number
+}
+
 //-------------------------------
 // Query
 //-------------------------------
@@ -88,6 +96,9 @@ export type ItemQueryFilter = {
   itemMinorType: string
   itemFinalType: string
   itemId: number
+
+  minimumPrice: number
+  maximumPrice: number
 }
 
 export type ItemRankingFilter = {

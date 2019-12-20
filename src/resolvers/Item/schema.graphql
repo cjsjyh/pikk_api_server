@@ -13,6 +13,7 @@ type Mutation {
   """
   createItem(itemInfoInput: ItemInfoInput!): Boolean!
   autoMergeItem: String!
+  selfMergeItem(selfMerge: SelfMergeInfoInput!): Boolean!
 }
 
 enum ItemSortableField {
@@ -65,10 +66,13 @@ input ItemQuery {
 }
 
 input ItemRankingFilter {
+  filterGeneral: ItemRankingFilterGeneral
+
   itemMajorType: ItemMajorType
   itemMinorType: ItemMinorType
   itemFinalType: ItemFinalType
-  filterGeneral: ItemRankingFilterGeneral
+  minimumPrice: Int
+  maximumPrice: Int
 }
 
 input ItemMetadataFilter {
@@ -157,6 +161,13 @@ enum CreateItemLevel {
 input PickkItemQuery {
   filterGeneral: ItemFilterGeneral
   userId: Int!
+}
+
+input SelfMergeInfoInput {
+  token: String!
+  accountId: Int!
+  headId: Int!
+  tailId: Int!
 }
 
 #---------------

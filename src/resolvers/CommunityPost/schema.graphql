@@ -1,9 +1,7 @@
 type Query {
   allCommunityPosts(communityPostOption: CommunityPostQuery!): [CommunityPostInfo!]
   _allCommunityPostsMetadata: Int!
-  getUserPickkCommunityPost(
-    pickkCommunityPostOption: PickkCommunityPostQuery!
-  ): [CommunityPostInfo!]
+  getUserPickkCommunityPost(pickkCommunityPostOption: PickkCommunityPostQuery!): [CommunityPostInfo!]
   _getUserPickkCommunityPostMetadata(pickkCommunityPostOption: PickkCommunityPostQuery!): Int!
 }
 
@@ -21,6 +19,7 @@ type Mutation {
 #--------------
 
 enum ComPostSortableField {
+  id
   title
   time
   viewCount
@@ -46,9 +45,11 @@ input CommunityPostFilterGeneral {
 input CommunityPostQueryFilter {
   accountId: Int
   postId: Int
-  postType: CommunityPostType!
+  postType: CommunityPostType
   #qnaType: QNAType
   #channelId: Int
+
+  searchText: String
 }
 
 input CommunityPostQuery {

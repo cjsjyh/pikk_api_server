@@ -67,6 +67,7 @@ module.exports = {
           //If search is required
           if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
             let sqlResult = await GetSearchSql(arg)
+            if (!sqlResult) return []
             filterSql = sqlResult.filterSql
             selectionSql = sqlResult.selectionSql
             formatSql = sqlResult.formatSql
@@ -518,9 +519,17 @@ async function GetSearchSql(arg: ArgType.RecommendPostQuery): Promise<any> {
     first = arg.filterGeneral.first
   }
 
-  let result = await elastic.SearchElasticSearch(elastic.elasticClient, indexName, arg.postFilter.searchText, start, first)
+  let result = await elastic.SearchElasticSearch(elastic.elasticClient, indexName, arg.postFilter.searchText, start, first, "best_fields", [
+    "brandkor",
+    "content",
+    "itemname",
+    "name",
+    "review",
+    "shortreview^2",
+    "title^3"
+  ])
   let extractedPostIds = ExtractFieldFromList(result.hits, "_id")
-  if (extractedPostIds.length == 0) return []
+  if (extractedPostIds.length == 0) return null
   filterSql = `
     JOIN (
       VALUES

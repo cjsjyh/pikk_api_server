@@ -24,12 +24,10 @@ const port = 80
 //-------------------------------
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
-import {
-  InsertIntoNotificationQueue,
-  ProcessNotificationQueue
-} from "./resolvers/Notification/util"
+import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
 import { CopyImageWithDifferentName } from "./tools/tool"
 import { DeployImageBy4Versions } from "./resolvers/Utils/promiseUtil"
+import { VerifyJWT } from "./resolvers/Utils/securityUtil"
 
 //Create Express Server
 const app = express()
@@ -51,34 +49,19 @@ app.use(compression())
 //Create Apollo Server
 const server = new ApolloServer({
   schema,
-
   context: ({ req }) => {
     const header: any = req.headers
-    if (
-      !Object.prototype.hasOwnProperty.call(header, "authorizationtoken") ||
-      !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")
-    ) {
+    if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")) {
       return { IsVerified: false }
-    } else if (
-      header.authorizationtoken == "undefined" ||
-      header.authorizationuserid == "undefined"
-    ) {
+    } else if (!header.authorizationtoken || !header.authorizationuserid) {
       return { IsVerified: false }
     }
 
-    try {
-      var decoded = jwt.verify(header.authorizationtoken, process.env.PICKK_SECRET_KEY)
-    } catch (e) {
-      logger.warn("Failed to Verify JWT Token")
-      logger.error(e.stack)
-      return { IsVerified: false }
-    }
-    let IsVerified = false
-    if (decoded.id == header.authorizationuserid) IsVerified = true
+    let IsVerified = VerifyJWT(header.authorizationtoken, header.authorizationuserid)
 
     return {
       IsVerified: IsVerified,
-      userId: decoded.id
+      userId: header.authorizationuserid
     }
   },
 
@@ -94,7 +77,6 @@ app.get("/", (req: express.Request, res: express.Response) => {
 
 // async function testfunc() {
 //   await FindAndCombineDuplicateItem()
-//   console.log("Item merge done")
 // }
 // testfunc()
 
@@ -103,9 +85,7 @@ cron.schedule("*/1 * * * *", function() {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: port }, (): void =>
-  logger.info(`GraphQL is now running on http://localhost:${port}/graphql`)
-)
+httpServer.listen({ port: port }, (): void => logger.info(`GraphQL is now running on http://localhost:${port}/graphql`))
 
 /*
 process.on("SIGINT", async function() {

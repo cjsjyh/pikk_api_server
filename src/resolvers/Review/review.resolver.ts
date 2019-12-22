@@ -14,7 +14,12 @@ var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
-    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReviewInfo[]> => {
+    allItemReviews: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<ItemReviewInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       try {
@@ -34,7 +39,15 @@ module.exports = {
           await SequentialPromiseValue(queryResult, FetchUserForReview)
         }
         if (selectionSet.includes("images")) {
-          let imgResult = await GetSubField(queryResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 1, "", `ORDER BY "order" ASC`)
+          let imgResult = await GetSubField(
+            queryResult,
+            "ITEM_REVIEW_IMAGE",
+            "FK_reviewId",
+            "images",
+            1,
+            "",
+            `ORDER BY "order" ASC`
+          )
           imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
         }
         queryResult.forEach(review => {
@@ -42,6 +55,36 @@ module.exports = {
         })
         logger.info(`allItemReviews Called!`)
         return queryResult
+      } catch (e) {
+        logger.warn("Failed to query allItemReviews")
+        logger.error(e.stack)
+        throw new Error("[Error] Failed to query allItemReviews")
+      }
+    },
+
+    _allItemReviewsMetadata: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<ItemReviewInfo[]> => {
+      //Query Review Info
+      let arg: ReviewQuery = args.reviewOption
+      try {
+        let filterSql = GetReviewFilterSql(arg)
+        let reviewSql = `SELECT * FROM "ITEM_REVIEW" ${filterSql}`
+        let overrideSql = OverrideReviewSql(arg)
+        if (overrideSql != "") reviewSql = overrideSql + filterSql
+        let countSql = `
+          WITH review AS (
+            ${reviewSql}
+          )
+          SELECT COUNT(*) FROM review
+        `
+        let queryResult = await RunSingleSQL(countSql)
+
+        logger.info(`allItemReviews Called!`)
+        return queryResult[0].count
       } catch (e) {
         logger.warn("Failed to query allItemReviews")
         logger.error(e.stack)
@@ -58,9 +101,13 @@ module.exports = {
         logger.info(`IncreaseReviewCount Called`)
         return true
       } catch (e) {
-        logger.warn(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
+        logger.warn(
+          `Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`
+        )
         logger.error(e.stack)
-        throw new Error(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
+        throw new Error(
+          `Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`
+        )
       }
     }
   }

@@ -1,5 +1,6 @@
 type Query {
   allItemReviews(reviewOption: ReviewQuery!): [ItemReviewInfo!]
+  _allItemReviewsMetadata(reviewOption: ReviewQuery!): Int!
 }
 type Mutation {
   increaseReviewCount(increaseOption: IncreaseReviewCount!): Boolean!

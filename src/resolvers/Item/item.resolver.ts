@@ -25,39 +25,39 @@ var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
-    allItems: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<ReturnType.ItemInfo[]> => {
-      let arg: ArgType.ItemQuery = args.itemOption
-      try {
-        let formatSql = GetFormatSql(arg)
-        let idList = []
-        let filterSql: string = ""
-        if (Object.prototype.hasOwnProperty.call(arg, "itemFilter")) {
-          filterSql = GetItemFilterSql(arg.itemFilter)
-        }
-        let itemResult = await GetItemsById(idList, formatSql, filterSql)
-        logger.info(`AllItemsCalled`)
-        return itemResult
-      } catch (e) {
-        logger.warn("Failed to fetch all Items")
-        logger.error(e.stack)
-        throw new Error("[Error] Failed to fetch Item data from DB")
-      }
-    },
+    // allItems: async (
+    //   parent: void,
+    //   args: QueryArgInfo,
+    //   ctx: void,
+    //   info: GraphQLResolveInfo
+    // ): Promise<ReturnType.ItemInfo[]> => {
+    //   let arg: ArgType.ItemQuery = args.itemOption
+    //   try {
+    //     let formatSql = GetFormatSql(arg)
+    //     let idList = []
+    //     let filterSql: string = ""
+    //     if (Object.prototype.hasOwnProperty.call(arg, "itemFilter")) {
+    //       filterSql = GetItemFilterSql(arg.itemFilter)
+    //     }
+    //     let itemResult = await GetItemsById(idList, formatSql, filterSql)
+    //     logger.info(`AllItemsCalled`)
+    //     return itemResult
+    //   } catch (e) {
+    //     logger.warn("Failed to fetch all Items")
+    //     logger.error(e.stack)
+    //     throw new Error("[Error] Failed to fetch Item data from DB")
+    //   }
+    // },
 
-    _allItemsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
-      let arg: ArgType.ItemMetadataFilter = args.itemMetadataOption
-      let itemCount = await RunSingleSQL(`
-        SELECT COUNT(*) FROM "ITEM_VARIATION" var 
-        INNER JOIN "ITEM_GROUP" item_gr ON var."FK_itemGroupId" = item_gr.id
-        ${GetItemFilterSql(arg)}
-      `)
-      return itemCount[0].count
-    },
+    // _allItemsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
+    //   let arg: ArgType.ItemMetadataFilter = args.itemMetadataOption
+    //   let itemCount = await RunSingleSQL(`
+    //     SELECT COUNT(*) FROM "ITEM_VARIATION" var
+    //     INNER JOIN "ITEM_GROUP" item_gr ON var."FK_itemGroupId" = item_gr.id
+    //     ${GetItemFilterSql(arg)}
+    //   `)
+    //   return itemCount[0].count
+    // },
 
     getUserPickkItem: async (parent: void, args: QueryArgInfo): Promise<ReturnType.ItemInfo[]> => {
       let arg: ArgType.PickkItemQuery = args.pickkItemOption

@@ -1,6 +1,6 @@
 type Query {
-  allItems(itemOption: ItemQuery!): [ItemInfo!]
-  _allItemsMetadata(itemMetadataOption: ItemMetadataFilter!): Int!
+  # allItems(itemOption: ItemQuery!): [ItemInfo!]
+  # _allItemsMetadata(itemMetadataOption: ItemMetadataFilter!): Int!
   getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
   _getUserPickkItemMetadata(pickkItemOption: PickkItemQuery!): Int!
   getItemRanking(itemRankingOption: ItemRankingFilter!): [ItemInfo!]
@@ -53,23 +53,23 @@ input ItemRankingFilterGeneral {
   sortBy: ItemRankingSortableField = rankScore
 }
 
-input ItemQueryFilter {
-  itemMajorType: ItemMajorType
-  itemMinorType: ItemMinorType
-  itemFinalType: ItemFinalType
-  itemId: Int
-}
+# input ItemQueryFilter {
+#   itemMajorType: ItemMajorType
+#   itemMinorType: ItemMinorType
+#   itemFinalType: ItemFinalType
+#   itemId: Int
+# }
 
-input ItemQuery {
-  filterGeneral: ItemFilterGeneral
-  itemFilter: ItemQueryFilter
-}
+# input ItemQuery {
+#   filterGeneral: ItemFilterGeneral
+#   itemFilter: ItemQueryFilter
+# }
 
-input ItemMetadataFilter {
-  itemMajorType: ItemMajorType
-  itemMinorType: ItemMinorType
-  itemFinalType: ItemFinalType
-}
+# input ItemMetadataFilter {
+#   itemMajorType: ItemMajorType
+#   itemMinorType: ItemMinorType
+#   itemFinalType: ItemFinalType
+# }
 
 input ItemRankingFilter {
   filterGeneral: ItemRankingFilterGeneral

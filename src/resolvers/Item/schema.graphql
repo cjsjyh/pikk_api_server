@@ -4,7 +4,7 @@ type Query {
   getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
   _getUserPickkItemMetadata(pickkItemOption: PickkItemQuery!): Int!
   getItemRanking(itemRankingOption: ItemRankingFilter!): [ItemInfo!]
-  _ItemRankingMetadata(itemMetadataOption: ItemMetadataFilter!): Int!
+  _getItemRankingMetadata(itemMetadataOption: ItemMetadataFilter!): Int!
 }
 
 type Mutation {

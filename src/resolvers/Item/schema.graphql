@@ -4,7 +4,7 @@ type Query {
   getUserPickkItem(pickkItemOption: PickkItemQuery!): [ItemInfo!]
   _getUserPickkItemMetadata(pickkItemOption: PickkItemQuery!): Int!
   getItemRanking(itemRankingOption: ItemRankingFilter!): [ItemInfo!]
-  _getItemRankingMetadata(itemMetadataOption: ItemMetadataFilter!): Int!
+  _getItemRankingMetadata(itemRankingOption: ItemRankingFilter!): Int!
 }
 
 type Mutation {
@@ -65,6 +65,12 @@ input ItemQuery {
   itemFilter: ItemQueryFilter
 }
 
+input ItemMetadataFilter {
+  itemMajorType: ItemMajorType
+  itemMinorType: ItemMinorType
+  itemFinalType: ItemFinalType
+}
+
 input ItemRankingFilter {
   filterGeneral: ItemRankingFilterGeneral
 
@@ -73,12 +79,6 @@ input ItemRankingFilter {
   itemFinalType: ItemFinalType
   minimumPrice: Int
   maximumPrice: Int
-}
-
-input ItemMetadataFilter {
-  itemMajorType: ItemMajorType
-  itemMinorType: ItemMinorType
-  itemFinalType: ItemFinalType
 }
 
 #------------------

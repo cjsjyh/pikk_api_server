@@ -1,4 +1,9 @@
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImageBy4Versions } from "../Utils/promiseUtil"
+import {
+  RunSingleSQL,
+  ExtractSelectionSet,
+  ExtractFieldFromList,
+  DeployImageBy4Versions
+} from "../Utils/promiseUtil"
 import { ConvertListToString, IsNewImage } from "../Utils/stringUtil"
 import * as ReturnType from "./type/ReturnType"
 import { ItemInfoInput, ItemEditInfoInput, GroupEditInfo, VariationEditInfo } from "./type/ArgType"
@@ -20,9 +25,12 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
     }
 
     if (Object.prototype.hasOwnProperty.call(item, "variationInfo")) {
-      if (IsNewImage(item.variationInfo.imageUrl)) item.variationInfo.imageUrl = await DeployImageBy4Versions(item.variationInfo.imageUrl)
+      if (IsNewImage(item.variationInfo.imageUrl))
+        item.variationInfo.imageUrl = await DeployImageBy4Versions(item.variationInfo.imageUrl)
       let variationSql = await GetItemVariationEditSql(item.variationInfo)
-      await RunSingleSQL(`UPDATE "ITEM_VARIATION" SET ${variationSql} WHERE id=${item.variationInfo.itemId}`)
+      await RunSingleSQL(
+        `UPDATE "ITEM_VARIATION" SET ${variationSql} WHERE id=${item.variationInfo.itemId}`
+      )
     }
     return true
   } catch (e) {
@@ -32,7 +40,9 @@ export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
   }
 }
 
-export function InsertItemForRecommendPost(argReview: ItemReviewInfoInput | ItemReviewEditInfoInput): Promise<{}> {
+export function InsertItemForRecommendPost(
+  argReview: ItemReviewInfoInput | ItemReviewEditInfoInput
+): Promise<{}> {
   return new Promise(async (resolve, reject) => {
     try {
       argReview.itemId = await InsertItem(argReview.item)
@@ -52,10 +62,14 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
         let brandId
         //Find Brand Id for the group
         if (arg.groupInfo.isNewBrand == true) {
-          queryResult = await RunSingleSQL(`INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`)
+          queryResult = await RunSingleSQL(
+            `INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`
+          )
           brandId = queryResult[0].id
         } else {
-          queryResult = await RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`)
+          queryResult = await RunSingleSQL(
+            `SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`
+          )
           brandId = queryResult[0].id
         }
         //Create new Group and save Id
@@ -68,7 +82,8 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
         groupId = queryResult[0].id
       } else {
         //Find Group Id of this Item
-        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId")) throw new Error("[Error] groupId not inserted!")
+        if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId"))
+          throw new Error("[Error] groupId not inserted!")
         groupId = arg.variationInfo.groupId
       }
       //Insert Variation
@@ -167,7 +182,12 @@ async function GetSimpleItemInfoByPostId(postList: any) {
   await GetSubField(postList, "", "postId", "simpleItemList", 1, querySql)
 }
 
-export async function GetItemsById(idList: number[], formatSql, customFilter?, customSelector = "") {
+export async function GetItemsById(
+  idList: number[],
+  formatSql,
+  customFilter?,
+  customSelector = ""
+) {
   let filterSql = ""
   if (customFilter != null && customFilter != "") filterSql = customFilter
   else {
@@ -279,10 +299,14 @@ export async function CombineItem(updateId: number, deleteIds: number[]) {
   try {
     let querySql = `
     WITH update_item as (
-      UPDATE "ITEM_REVIEW" SET "FK_itemId" = ${updateId} WHERE "FK_itemId" IN (${ConvertListToString(deleteIds)})
+      UPDATE "ITEM_REVIEW" SET "FK_itemId" = ${updateId} WHERE "FK_itemId" IN (${ConvertListToString(
+      deleteIds
+    )})
     ),
     delete_item as (
-      SELECT "FK_itemGroupId", id FROM "ITEM_VARIATION" WHERE id IN (${ConvertListToString(deleteIds)})
+      SELECT "FK_itemGroupId", id FROM "ITEM_VARIATION" WHERE id IN (${ConvertListToString(
+        deleteIds
+      )})
     )
     DELETE FROM "ITEM_GROUP" USING delete_item WHERE "ITEM_GROUP".id = delete_item."FK_itemGroupId"
     `
@@ -341,7 +365,10 @@ function GetBrandEditSql(itemGroup: GroupEditInfo): string {
   let isMultiple = false
   let resultSql = ""
 
-  if (Object.prototype.hasOwnProperty.call(itemGroup, "brandId") && Object.prototype.hasOwnProperty.call(itemGroup, "brand")) {
+  if (
+    Object.prototype.hasOwnProperty.call(itemGroup, "brandId") &&
+    Object.prototype.hasOwnProperty.call(itemGroup, "brand")
+  ) {
     resultSql += ` "nameKor" = '${itemGroup.brand}'`
     isMultiple = true
   }
@@ -403,7 +430,8 @@ async function GetItemVariationEditSql(itemVar: VariationEditInfo): Promise<stri
   }
 
   if (Object.prototype.hasOwnProperty.call(itemVar, "imageUrl")) {
-    if (IsNewImage(itemVar.imageUrl)) itemVar.imageUrl = await DeployImageBy4Versions(itemVar.imageUrl)
+    if (IsNewImage(itemVar.imageUrl))
+      itemVar.imageUrl = await DeployImageBy4Versions(itemVar.imageUrl)
     if (isMultiple) resultSql += ", "
     resultSql += ` "imageUrl" = '${itemVar.imageUrl}'`
     isMultiple = true

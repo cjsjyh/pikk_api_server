@@ -134,27 +134,40 @@ module.exports = {
     },
 
     _getItemRankingMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
-      let arg: ArgType.ItemMetadataFilter = args.itemMetadataOption
-
-      let itemCount = await RunSingleSQL(`
+      let arg: ArgType.ItemRankingFilter = args.itemRankingOption
+      try {
+        let filterSql = GetItemFilterSql(arg)
+        let itemCount = await RunSingleSQL(`
         WITH items as (
           SELECT 
             var.id,
             item_gr."itemMajorType",
                 item_gr."itemMinorType",
-                item_gr."itemFinalType"
+                item_gr."itemFinalType",
+                (
+                  CASE WHEN var."salePrice" is null 
+                  THEN item_gr."originalPrice" 
+                ELSE var."salePrice" 
+                END
+                ) as price
           FROM "ITEM_VARIATION" var
           INNER JOIN "ITEM_GROUP" item_gr ON var."FK_itemGroupId" = item_gr.id
-          ${GetItemFilterSql(arg)}
+          ${filterSql.primarySql}
         ),
         review as (
           SELECT items.id FROM items
           INNER JOIN "ITEM_REVIEW" rev ON items.id = rev."FK_itemId"
+          ${filterSql.secondarySql}
           GROUP BY items.id, items."itemMinorType",items."itemMajorType",items."itemFinalType"
         )
         SELECT COUNT(*) FROM review
       `)
-      return itemCount[0].count
+        return itemCount[0].count
+      } catch (e) {
+        logger.warn("Failed to call _getItemRankingMetadata")
+        logger.error(e.stack)
+        throw new Error("Failed to call _getItemRankingMetadata")
+      }
     }
   },
   Mutation: {

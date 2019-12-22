@@ -7,7 +7,15 @@ export async function crawlMusinsa(sourceUrl): Promise<CrawledItemInfo> {
   let price = parseHtml(htmlCode.data, "number", "value", "#goods_price")
   if (price == 0) price = parseHtml(htmlCode.data, "number", "value", "#goods_price", "del")
   let saleprice = parseHtml(htmlCode.data, "number", "value", "#sale_price")
-  let itemname = parseHtml(htmlCode.data, "string", "value", ".product_title", "span")
+
+  //Check if delay text exists
+  let itemname = parseHtml(htmlCode.data, "string", "value", ".product_title", ".txt_delay")
+  //If exists, select 2nd span
+  if (itemname != null)
+    itemname = parseHtml(htmlCode.data, "string", "value", ".product_title", "span", "", 1)
+  //If doesn't, select 1st span
+  else itemname = parseHtml(htmlCode.data, "string", "value", ".product_title", "span")
+
   let image = parseHtml(htmlCode.data, "string", "attribute", ".product-img", "img", "src")
   let brand = parseHtml(htmlCode.data, "string", "value", ".item_categories", "a", "", 2)
   brand = brand.replace("(", "")

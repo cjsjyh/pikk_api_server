@@ -33,7 +33,12 @@ input CommentFilterGeneral {
 input CommentQuery {
   filterGeneral: CommentFilterGeneral
   postType: PostType!
-  postId: Int!
+  commentFilter: CommentFilter!
+}
+
+input CommentFilter {
+  postId: Int
+  accountId: Int
 }
 
 # Mutation

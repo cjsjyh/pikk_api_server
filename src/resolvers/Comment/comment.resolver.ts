@@ -16,7 +16,7 @@ module.exports = {
 
       try {
         let boardName = GetBoardName(arg.postType)
-        let querySql = `SELECT * FROM "${boardName}_COMMENT" where "FK_postId"=${arg.postId}`
+        let querySql = `SELECT * FROM "${boardName}_COMMENT" where ${GetCommentQuerySql(arg.commentFilter)}`
         let queryResult = await RunSingleSQL(querySql)
         let commentResults: ReturnType.CommentInfo[] = queryResult
         commentResults.forEach(comment => {
@@ -45,39 +45,19 @@ module.exports = {
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
         }
 
-        let querySql = `INSERT INTO "${ConvertToCommentTableName(
-          arg.targetType
-        )}" ("FK_postId","FK_accountId","FK_parentId","content") 
+        let querySql = `INSERT INTO "${ConvertToCommentTableName(arg.targetType)}" ("FK_postId","FK_accountId","FK_parentId","content") 
         VALUES(
           ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
-        logger.info(
-          `Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`
-        )
+        logger.info(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
 
         //Commented to a post
         if (arg.parentId == null) {
-          InsertIntoNotificationQueue(
-            "COMMENT_TO_MY_POST",
-            arg.targetId,
-            arg.targetType,
-            "",
-            arg.content,
-            -1,
-            arg.accountId
-          )
+          InsertIntoNotificationQueue("COMMENT_TO_MY_POST", arg.targetId, arg.targetType, "", arg.content, -1, arg.accountId)
         }
         //Comented to a comment
         else {
-          InsertIntoNotificationQueue(
-            "COMMENT_TO_MY_COMMENT",
-            arg.targetId,
-            arg.targetType,
-            "",
-            arg.content,
-            arg.parentId,
-            arg.accountId
-          )
+          InsertIntoNotificationQueue("COMMENT_TO_MY_COMMENT", arg.targetId, arg.targetType, "", arg.content, arg.parentId, arg.accountId)
         }
 
         return true
@@ -91,15 +71,9 @@ module.exports = {
     deleteComment: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommentDeleteInput = args.commentInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
-      if (
-        !(await CheckWriter(ConvertToCommentTableName(arg.targetType), arg.targetId, arg.accountId))
-      ) {
-        logger.warn(
-          `[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`
-        )
-        throw new Error(
-          `[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`
-        )
+      if (!(await CheckWriter(ConvertToCommentTableName(arg.targetType), arg.targetId, arg.accountId))) {
+        logger.warn(`[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`)
+        throw new Error(`[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`)
       }
       try {
         if (arg.targetType == "RECOMMEND") {
@@ -107,9 +81,7 @@ module.exports = {
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
         }
 
-        let querySql = `DELETE FROM "${ConvertToCommentTableName(arg.targetType)}" WHERE id = ${
-          arg.targetId
-        }`
+        let querySql = `DELETE FROM "${ConvertToCommentTableName(arg.targetType)}" WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)
 
         logger.info(`Deleted Comment on Post${arg.targetType} id ${arg.targetId}`)
@@ -121,4 +93,23 @@ module.exports = {
       }
     }
   }
+}
+
+function GetCommentQuerySql(arg: ArgType.CommentFilter): string {
+  let isMultiple = false
+  let resultSql = ""
+
+  if (Object.prototype.hasOwnProperty.call(arg, "postId")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"FK_postId"=${arg.postId}`
+    isMultiple = true
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "accountId")) {
+    if (isMultiple) resultSql += ", "
+    resultSql += `"FK_accountId"=${arg.accountId}`
+    isMultiple = true
+  }
+
+  return resultSql
 }

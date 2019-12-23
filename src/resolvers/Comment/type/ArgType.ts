@@ -38,5 +38,10 @@ type CommentFilterGeneral = {
 export type CommentQuery = {
   filterGeneral: CommentFilterGeneral
   postType: string
+  commentFilter: CommentFilter
+}
+
+export type CommentFilter = {
   postId: number
+  accountId: number
 }

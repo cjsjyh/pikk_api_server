@@ -8,13 +8,6 @@ const cheerio = require("cheerio")
 
 export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
   try {
-    // let resultAxios = await axios({
-    //   url: "http://" + process.env.DJANGO_HOST + ":8000/crawler/etc",
-    //   method: "get",
-    //   data: {
-    //     requestUrl: sourceUrl
-    //   }
-    // })
     let resultAxios = await promiseTimeout(
       5000,
       axios({

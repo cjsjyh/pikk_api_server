@@ -1,13 +1,30 @@
 import { getHtmlRequest, parseHtml, getHtmlAxios, extractDomain, extractPorotocol } from "../util"
 import { CrawledItemInfo } from "../type/ReturnType"
 import { strip, hasNumber, hasCurrency, extractNumber, formatUrl } from "../../Utils/stringUtil"
+import { promiseTimeout } from "../../Utils/promiseUtil"
 
 var axios = require("axios")
 const cheerio = require("cheerio")
 
 export async function crawlOthers(sourceUrl): Promise<CrawledItemInfo> {
   try {
-    let resultAxios = await axios.get("http://" + process.env.DJANGO_HOST + ":8000/crawler/" + sourceUrl)
+    // let resultAxios = await axios({
+    //   url: "http://" + process.env.DJANGO_HOST + ":8000/crawler/etc",
+    //   method: "get",
+    //   data: {
+    //     requestUrl: sourceUrl
+    //   }
+    // })
+    let resultAxios = await promiseTimeout(
+      5000,
+      axios({
+        url: "http://" + process.env.DJANGO_HOST + ":8000/crawler/etc",
+        method: "get",
+        data: {
+          requestUrl: sourceUrl
+        }
+      })
+    )
     resultAxios = resultAxios.data
     // let result: CrawledItemInfo = {
     //   brandKor: resultAxios.brand,

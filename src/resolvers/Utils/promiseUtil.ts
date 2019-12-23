@@ -35,6 +35,18 @@ export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, arg
   })
 }
 
+export function promiseTimeout(ms, promise) {
+  // Create a promise that rejects in <ms> milliseconds
+  let timeout = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject("Timed out in " + ms + "ms.")
+    }, ms)
+  })
+
+  // Returns a race between our timeout and the passed in promise
+  return Promise.race([promise, timeout])
+}
+
 export function MakeGroups(data: any, groupBy: string, groupIdList: number[]): any {
   let resultArray = []
   groupIdList.forEach(groupId => {
@@ -227,7 +239,7 @@ export async function DeployImageBy4Versions(imageUrl: string): Promise<string> 
       newImageName = newImageName.split("?")[0]
       let date = getFormatDate(new Date())
       let hour = getFormatHour(new Date())
-      newImageName = date + hour + String(Math.floor(Math.random() * 10000)+1) +  "." + newImageName
+      newImageName = date + hour + String(Math.floor(Math.random() * 10000) + 1) + "." + newImageName
 
       //If image url doesn't start with http://
       if (imageUrl[0] != "h") {

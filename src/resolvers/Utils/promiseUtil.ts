@@ -8,7 +8,7 @@ const readChunk = require("read-chunk")
 var axios = require("axios")
 
 import * as AWS from "aws-sdk"
-import { getFormatDate, getFormatHour, replaceLastOccurence, removeAllButLast } from "./stringUtil"
+import { getFormatDate, getFormatHour, replaceLastOccurence, removeAllButLast, ConvertListToString, IsNewImage } from "./stringUtil"
 var logger = require("../../tools/logger")
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<any> {
@@ -45,6 +45,40 @@ export function promiseTimeout(ms, promise) {
 
   // Returns a race between our timeout and the passed in promise
   return Promise.race([promise, timeout])
+}
+
+export async function GetSubField(
+  parentList: any,
+  tableName: string,
+  filterBy: string,
+  assignTo: string,
+  depth: number = 1,
+  customSql: string = "",
+  formatSql: string = ""
+): Promise<any[]> {
+  let parentIdList = ExtractFieldFromList(parentList, "id", depth)
+  if (parentIdList.length == 0) return []
+
+  let querySql = `
+  SELECT 
+    subfield.* 
+  FROM "${tableName}" AS subfield 
+  WHERE subfield."${filterBy}" IN (${ConvertListToString(parentIdList)}) ${formatSql}`
+
+  let queryResult
+  if (customSql == "") queryResult = await RunSingleSQL(querySql)
+  else queryResult = await RunSingleSQL(customSql)
+
+  if (queryResult.length == 0) {
+    return queryResult
+  }
+
+  //Grouping Reviews
+  let groupedSubfield = MakeGroups(queryResult, filterBy, parentIdList)
+  //Add Review Group to Post
+  AssignGroupsToParent(parentList, groupedSubfield, filterBy, assignTo, depth)
+
+  return groupedSubfield
 }
 
 export function MakeGroups(data: any, groupBy: string, groupIdList: number[]): any {
@@ -170,9 +204,14 @@ export async function DeployImageBy4Versions(imageUrl: string): Promise<string> 
   if (process.env.MODE != "DEPLOY") folderName = "testimage"
 
   try {
+    //Invalid Url
     if (!imageUrl) {
       logger.warn("'null' inserted as imageUrl")
       throw new Error("No Image to Deploy!")
+    }
+    //If Image has been already uploaded
+    else if (!IsNewImage(imageUrl)) {
+      return imageUrl
     }
     //Is Image Self Hosted?
     else if (imageUrl.includes("https://fashiondogam-images")) {

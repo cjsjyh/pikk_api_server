@@ -152,6 +152,7 @@ export function MakeCacheNameByObject(obj: any): string {
 }
 
 export function IsNewImage(imageUrl: string): boolean {
+  if (!imageUrl.includes("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/")) return true
   let removedUrl = imageUrl.replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
   let folderName = removedUrl.split("/")[0]
   if (folderName.includes("_temp")) return true

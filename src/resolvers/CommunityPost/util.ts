@@ -1,10 +1,12 @@
 const { pool } = require("../../database/connectionPool")
 
 import * as PostReturnType from "./type/ReturnType"
-import { RunSingleSQL } from "../Utils/promiseUtil"
+import { RunSingleSQL, DeployImageBy4Versions } from "../Utils/promiseUtil"
 
-import { QueryResult, PoolClient } from "pg"
-import { MakeMultipleQuery } from "../Utils/stringUtil"
+import { MakeMultipleQuery, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
+import { CommunityPostContentEditInput, CommunityPostContentInput } from "./type/ArgType"
+
+var logger = require("../../tools/logger")
 
 export async function GetPostFilterSql(filter: any): Promise<string> {
   let multipleQuery: boolean = false
@@ -35,9 +37,7 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(
-        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
-      )
+      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
       if (rows.length == 0) return null
 
       let postIdSql = ""
@@ -55,11 +55,58 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
   return filterSql
 }
 
-export async function GetCommunityPostImage(
-  postInfo: PostReturnType.CommunityPostInfo
-): Promise<QueryResult> {
-  let rows = await RunSingleSQL(
-    `SELECT "imageUrl" FROM "COMMUNITY_POST_IMAGE" where "FK_postId"=${postInfo.id}`
-  )
-  return rows
+export async function CreateEditCommunityPostContent(postId: number, content: CommunityPostContentEditInput, index: number) {
+  try {
+    //Update
+    if (content.id) {
+      await UpdateCommunityPostContent(content, index)
+    }
+    //Add new
+    else {
+      await InsertCommunityPostContent(postId, content, index)
+    }
+  } catch (e) {
+    logger.warn("Failed to Edit CommunityPost Content")
+    logger.error(e.stack)
+  }
+}
+
+export async function InsertCommunityPostContent(postId: number, content: CommunityPostContentEditInput | CommunityPostContentInput, index: number) {
+  if (content.contentType == "TEXT") {
+    await RunSingleSQL(`
+    INSERT INTO "COMMUNITY_POST_CONTENT" ("FK_postId","text","contentType","order")
+    VALUES (${postId},'${content.text}','${content.contentType}',${index})
+  `)
+  } else if (content.contentType == "IMAGE") {
+    let deployedUrl = await DeployImageBy4Versions(content.imageUrl)
+    await RunSingleSQL(`
+    INSERT INTO "COMMUNITY_POST_CONTENT" ("FK_postId","imageUrl","contentType","order")
+    VALUES (${postId},'${deployedUrl}','${content.contentType}',${index})
+  `)
+  }
+}
+
+export async function UpdateCommunityPostContent(content: CommunityPostContentEditInput, index: number) {
+  if (content.contentType == "TEXT") {
+    await RunSingleSQL(`
+    UPDATE "COMMUNITY_POST_CONTENT" SET 
+      "text"='${content.text}',
+      "contentType"='${content.contentType}',
+      "order"=${index}
+    WHERE id=${content.id}
+  `)
+  } else if (content.contentType == "IMAGE") {
+    let deployedUrl = await DeployImageBy4Versions(content.imageUrl)
+    let deleteImageSql = ""
+    if (deployedUrl != content.imageUrl) deleteImageSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_CONTENT", "imageUrl", "id", [content.id])
+    else console.log("Same Image!")
+    await RunSingleSQL(`
+    ${deleteImageSql}
+    UPDATE "COMMUNITY_POST_CONTENT" SET 
+      "imageUrl"='${deployedUrl}',
+      "contentType"='${content.contentType}',
+      "order"=${index}
+    WHERE id=${content.id}
+  `)
+  }
 }

@@ -25,7 +25,6 @@ enum RecPostSortableField {
 }
 
 enum RecommendPostType {
-  RECOMMEND
   REVIEW
   LOOK
 }

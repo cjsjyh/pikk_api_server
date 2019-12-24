@@ -5,7 +5,13 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 
-import { GetMetaData, SequentialPromiseValue, RunSingleSQL, DeployImageBy4Versions, ExtractFieldFromList } from "../Utils/promiseUtil"
+import {
+  GetMetaData,
+  SequentialPromiseValue,
+  RunSingleSQL,
+  DeployImageBy4Versions,
+  ExtractFieldFromList
+} from "../Utils/promiseUtil"
 import {
   GetFormatSql,
   MakeMultipleQuery,
@@ -32,7 +38,12 @@ var elastic = require("../../database/elasticConnect")
 
 module.exports = {
   Query: {
-    allRecommendPosts: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<ReturnType.RecommendPostInfo[]> => {
+    allRecommendPosts: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: any,
+      info: GraphQLResolveInfo
+    ): Promise<ReturnType.RecommendPostInfo[]> => {
       let arg: ArgType.RecommendPostQuery = args.recommendPostOption
       let cacheName = "allRecom"
       //Get Cached Content
@@ -195,7 +206,10 @@ module.exports = {
       }
     },
 
-    _getUserPickkRecommendPostMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
+    _getUserPickkRecommendPostMetadata: async (
+      parent: void,
+      args: QueryArgInfo
+    ): Promise<number> => {
       let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
       let postSql = `
         SELECT COUNT(*) FROM "RECOMMEND_POST_FOLLOWER" follower WHERE follower."FK_accountId"=${arg.userId}
@@ -260,7 +274,11 @@ module.exports = {
     //getTempSavedRecommendPost: async (parent: void, args: QueryArgInfo, ctx: any, info: GraphQLResolveInfo): Promise<> => {}
   },
   Mutation: {
-    createRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    createRecommendPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.RecommendPostInfoInput = args.recommendPostInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -279,7 +297,8 @@ module.exports = {
         //Deploy title image if it exists
         let deployImageUrl = ""
         try {
-          if (arg.titleType == "IMAGE" && arg.titleImageUrl != null) deployImageUrl = await DeployImageBy4Versions(arg.titleImageUrl)
+          if (arg.titleType == "IMAGE" && arg.titleImageUrl != null)
+            deployImageUrl = await DeployImageBy4Versions(arg.titleImageUrl)
         } catch (e) {
           logger.warn("Failed to deploy titleImage")
           logger.error(e.stack)
@@ -310,7 +329,15 @@ module.exports = {
         logger.info(`Recommend Post created by User${arg.accountId}`)
 
         //Notify Followers
-        InsertIntoNotificationQueue("NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL", recommendPostId, "RECOMMEND", arg.title, "", -1, arg.accountId)
+        InsertIntoNotificationQueue(
+          "NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL",
+          recommendPostId,
+          "RECOMMEND",
+          arg.title,
+          "",
+          -1,
+          arg.accountId
+        )
 
         return true
       } catch (e) {
@@ -325,8 +352,12 @@ module.exports = {
       let arg: ArgType.RecommendPostEditInfoInput = args.recommendPostEditInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       if (!(await CheckWriter("RECOMMEND_POST", arg.postId, arg.accountId))) {
-        logger.warn(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
-        throw new Error(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
+        logger.warn(
+          `[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`
+        )
+        throw new Error(
+          `[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`
+        )
       }
       try {
         await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
@@ -345,7 +376,12 @@ module.exports = {
         if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {
           if (arg.deletedImages.length != 0) {
             let deleteSql = ""
-            deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "id", arg.deletedImages)
+            deleteSql = InsertImageIntoDeleteQueue(
+              "ITEM_REVIEW_IMAGE",
+              "imageUrl",
+              "id",
+              arg.deletedImages
+            )
 
             let idList = ConvertListToString(arg.deletedImages)
             await RunSingleSQL(`
@@ -358,7 +394,12 @@ module.exports = {
         if (Object.prototype.hasOwnProperty.call(arg, "deletedReviews")) {
           if (arg.deletedReviews.length != 0) {
             let deleteSql = ""
-            deleteSql = InsertImageIntoDeleteQueue("ITEM_REVIEW_IMAGE", "imageUrl", "FK_reviewId", arg.deletedReviews)
+            deleteSql = InsertImageIntoDeleteQueue(
+              "ITEM_REVIEW_IMAGE",
+              "imageUrl",
+              "FK_reviewId",
+              arg.deletedReviews
+            )
 
             let idList = ConvertListToString(arg.deletedReviews)
             await RunSingleSQL(`
@@ -384,12 +425,20 @@ module.exports = {
       }
     },
 
-    deleteRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    deleteRecommendPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.RecommendPostDeleteInfoInput = args.recommendPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
       if (!(await CheckWriter("RECOMMEND_POST", arg.postId, arg.accountId))) {
-        logger.warn(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
-        throw new Error(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
+        logger.warn(
+          `[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`
+        )
+        throw new Error(
+          `[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`
+        )
       }
 
       try {
@@ -429,11 +478,18 @@ module.exports = {
       }
     },
 
-    tempSaveRecommendPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
+    tempSaveRecommendPost: async (
+      parent: void,
+      args: MutationArgInfo,
+      ctx: any
+    ): Promise<Boolean> => {
       let arg: ArgType.RecommendPostTempSaveInfoInput = args.recommendPostTempSaveInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
-      let cacheName = `recomCache_${String(arg.accountId)}_` + getFormatDate(new Date()) + getFormatHour(new Date())
+      let cacheName =
+        `recomCache_${String(arg.accountId)}_` +
+        getFormatDate(new Date()) +
+        getFormatHour(new Date())
       try {
         SetRedis(cacheName, arg.content, 604800)
         logger.info(`RecommendPost Temporary Save! Cache key: ${cacheName}`)
@@ -455,13 +511,16 @@ async function GetPostFilterSql(filter: ArgType.RecommendPostQueryFilter): Promi
 
   //if recommendReason exists
   if (filter.recommendReason && filter.recommendReason.length != 0) {
-    filterJoinSql += `
-    INNER JOIN "ITEM_REVIEW" review ON review."FK_postId" = rec_post.id 
-    `
+    filterJoinSql += `INNER JOIN "ITEM_REVIEW" review ON review."FK_postId" = rec_post.id`
+
     filterWhereSql = MakeMultipleQuery(
       multipleWhereQuery,
       filterWhereSql,
-      ` review."recommendReason" = ${ConvertListToString(filter.recommendReason, `OR review."recommendReason"=`, "'")}`
+      ` review."recommendReason" = ${ConvertListToString(
+        filter.recommendReason,
+        `OR review."recommendReason"=`,
+        "'"
+      )}`
     )
     multipleJoinQuery = true
   }
@@ -469,6 +528,9 @@ async function GetPostFilterSql(filter: ArgType.RecommendPostQueryFilter): Promi
   //if any of item category exists
   if (DoPropertiesExist(filter, ["itemMajorType", "itemMinorType", "itemFinalType"], "OR", true)) {
     //join related tables
+    if (!multipleJoinQuery)
+      filterJoinSql += `INNER JOIN "ITEM_REVIEW" review ON review."FK_postId" = rec_post.id`
+
     filterJoinSql += `
     INNER JOIN "ITEM_VARIATION" item_var ON review."FK_itemId" = item_var.id
     INNER JOIN "ITEM_GROUP" item_gr ON item_var."FK_itemGroupId" = item_gr.id 
@@ -479,40 +541,70 @@ async function GetPostFilterSql(filter: ArgType.RecommendPostQueryFilter): Promi
       filterWhereSql = MakeMultipleQuery(
         multipleWhereQuery,
         filterWhereSql,
-        ` item_gr."itemMajorType" = ${ConvertListToString(filter.itemMajorType, `OR item_gr."itemMajorType"=`, "'")}`
+        ` (item_gr."itemMajorType" = ${ConvertListToString(
+          filter.itemMajorType,
+          `OR item_gr."itemMajorType"=`,
+          "'"
+        )})`
       )
     if (DoPropertiesExist(filter, ["itemMinorType"], "AND", true))
       filterWhereSql = MakeMultipleQuery(
         multipleWhereQuery,
         filterWhereSql,
-        ` item_gr."itemMinorType" = ${ConvertListToString(filter.itemMinorType, `OR item_gr."itemMinorType"=`, "'")}`
+        ` (item_gr."itemMinorType" = ${ConvertListToString(
+          filter.itemMinorType,
+          `OR item_gr."itemMinorType"=`,
+          "'"
+        )})`
       )
     if (DoPropertiesExist(filter, ["itemFinalType"], "AND", true))
       filterWhereSql = MakeMultipleQuery(
         multipleWhereQuery,
         filterWhereSql,
-        ` item_gr."itemFinalType" = ${ConvertListToString(filter.itemFinalType, `OR item_gr."itemFinalType"=`, "'")}`
+        ` (item_gr."itemFinalType" = ${ConvertListToString(
+          filter.itemFinalType,
+          `OR item_gr."itemFinalType"=`,
+          "'"
+        )})`
       )
     multipleJoinQuery = true
   }
 
   if (filter.accountId) {
-    filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post."FK_accountId"=${filter.accountId}`)
+    filterWhereSql = MakeMultipleQuery(
+      multipleWhereQuery,
+      filterWhereSql,
+      ` rec_post."FK_accountId"=${filter.accountId}`
+    )
   } else if (filter.postId) {
-    filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post.id=${filter.postId}`)
+    filterWhereSql = MakeMultipleQuery(
+      multipleWhereQuery,
+      filterWhereSql,
+      ` rec_post.id=${filter.postId}`
+    )
   }
 
   if (filter.postType) {
-    filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post."postType"='${filter.postType}'`)
+    filterWhereSql = MakeMultipleQuery(
+      multipleWhereQuery,
+      filterWhereSql,
+      ` rec_post."postType"='${filter.postType}'`
+    )
   }
 
   if (filter.styleType) {
-    filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post."styleType"='${filter.styleType}'`)
+    filterWhereSql = MakeMultipleQuery(
+      multipleWhereQuery,
+      filterWhereSql,
+      ` rec_post."styleType"='${filter.styleType}'`
+    )
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
     try {
-      let rows = await RunSingleSQL(`SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`)
+      let rows = await RunSingleSQL(
+        `SELECT "FK_postId" FROM "ITEM_REVIEW" WHERE "FK_itemId"=${filter.itemId}`
+      )
       if (rows.length == 0) return null
 
       let postIdSql = ""
@@ -521,13 +613,17 @@ async function GetPostFilterSql(filter: ArgType.RecommendPostQueryFilter): Promi
         postIdSql += row.FK_postId
       })
 
-      filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post.id in (${postIdSql})`)
+      filterWhereSql = MakeMultipleQuery(
+        multipleWhereQuery,
+        filterWhereSql,
+        ` rec_post.id in (${postIdSql})`
+      )
     } catch (e) {
       throw new Error("[Error] Failed to fetch postId with itemId")
     }
   }
 
-  if (multipleJoinQuery) filterWhereSql += `GROUP BY rec_post.id`
+  if (multipleJoinQuery) filterWhereSql += ` GROUP BY rec_post.id`
 
   return filterJoinSql + filterWhereSql
 }
@@ -567,9 +663,14 @@ async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<s
     resultSql += `"titleType"='${filter.titleType}'`
     isMultiple = true
   }
-  if (Object.prototype.hasOwnProperty.call(filter, "titleImageUrl") && filter.titleImageUrl != null) {
+  if (
+    Object.prototype.hasOwnProperty.call(filter, "titleImageUrl") &&
+    filter.titleImageUrl != null
+  ) {
     if (IsNewImage(filter.titleImageUrl)) {
-      resultSql = InsertImageIntoDeleteQueue("RECOMMEND_POST", "titleImageUrl", "id", [filter.postId]) + resultSql
+      resultSql =
+        InsertImageIntoDeleteQueue("RECOMMEND_POST", "titleImageUrl", "id", [filter.postId]) +
+        resultSql
       filter.titleImageUrl = await DeployImageBy4Versions(filter.titleImageUrl)
     }
     if (isMultiple) resultSql += ", "
@@ -602,15 +703,15 @@ async function GetSearchSql(arg: ArgType.RecommendPostQuery): Promise<any> {
     first = arg.filterGeneral.first
   }
 
-  let result = await elastic.SearchElasticSearch(elastic.elasticClient, indexName, arg.postFilter.searchText, start, first, "best_fields", [
-    "brandkor",
-    "content",
-    "itemname",
-    "name",
-    "review",
-    "shortreview^2",
-    "title^3"
-  ])
+  let result = await elastic.SearchElasticSearch(
+    elastic.elasticClient,
+    indexName,
+    arg.postFilter.searchText,
+    start,
+    first,
+    "best_fields",
+    ["brandkor", "content", "itemname", "name", "review", "shortreview^2", "title^3"]
+  )
   let extractedPostIds = ExtractFieldFromList(result.hits, "_id")
   if (extractedPostIds.length == 0) return null
   filterSql = `

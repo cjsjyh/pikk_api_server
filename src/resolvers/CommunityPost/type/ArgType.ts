@@ -8,34 +8,40 @@ export type MutationArgInfo = {
   communityPostDeleteInfo: CommunityPostDeleteInfoInput
 }
 
+export type CommunityPostContentInput = {
+  text: string
+  imageUrl: string
+  contentType: string
+}
+
+export type CommunityPostContentEditInput = {
+  id: number
+  text: string
+  imageUrl: string
+  contentType: string
+}
+
 export type CommunityPostInfoInput = {
   accountId: number
   //channelId: number
   title: string
-  content: string
+  contents: CommunityPostContentInput[]
   postType: string
   //qnaType: string
-  imageUrls: CommunityPostImageInfo[]
 }
 
 export type CommunityPostEditInfoInput = {
   accountId: number
   postId: number
   title: string
-  content: string
   postType: string
+  contents: CommunityPostContentEditInput[]
   //qnaType: string
-  imageUrls: CommunityPostEditImageInfo[]
 
-  deletedImages: number[]
+  deletedContents: number[]
 }
 
 export type CommunityPostImageInfo = {
-  id: number
-  imageUrl: string
-}
-
-export type CommunityPostEditImageInfo = {
   id: number
   imageUrl: string
 }

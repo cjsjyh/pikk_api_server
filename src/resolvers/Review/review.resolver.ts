@@ -1,25 +1,17 @@
 import { GraphQLResolveInfo } from "graphql"
 import { QueryArgInfo, MutationArgInfo, ReviewQuery } from "./type/ArgType"
-import * as ArgType from "./type/ArgType"
 import { ItemReviewInfo } from "./type/ReturnType"
-import { ExtractSelectionSet } from "../Utils/promiseUtil"
+import { ExtractSelectionSet, GetSubField } from "../Utils/promiseUtil"
 import { RunSingleSQL, SequentialPromiseValue } from "../Utils/promiseUtil"
 import { GetFormatSql } from "../Utils/stringUtil"
-import { ReviewMatchGraphQL, GetSubField } from "./util"
+import { ReviewMatchGraphQL } from "./util"
 import { FetchItemsForReview } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
-import { ValidateUser } from "../Utils/securityUtil"
-import { decorateWithLogger } from "graphql-tools"
 var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
-    allItemReviews: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<ItemReviewInfo[]> => {
+    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReviewInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       try {
@@ -39,15 +31,7 @@ module.exports = {
           await SequentialPromiseValue(queryResult, FetchUserForReview)
         }
         if (selectionSet.includes("images")) {
-          let imgResult = await GetSubField(
-            queryResult,
-            "ITEM_REVIEW_IMAGE",
-            "FK_reviewId",
-            "images",
-            1,
-            "",
-            `ORDER BY "order" ASC`
-          )
+          let imgResult = await GetSubField(queryResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 1, "", `ORDER BY "order" ASC`)
           imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
         }
         queryResult.forEach(review => {
@@ -62,12 +46,7 @@ module.exports = {
       }
     },
 
-    _allItemReviewsMetadata: async (
-      parent: void,
-      args: QueryArgInfo,
-      ctx: void,
-      info: GraphQLResolveInfo
-    ): Promise<ItemReviewInfo[]> => {
+    _allItemReviewsMetadata: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReviewInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       try {
@@ -101,13 +80,9 @@ module.exports = {
         logger.info(`IncreaseReviewCount Called`)
         return true
       } catch (e) {
-        logger.warn(
-          `Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`
-        )
+        logger.warn(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
         logger.error(e.stack)
-        throw new Error(
-          `Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`
-        )
+        throw new Error(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
       }
     }
   }

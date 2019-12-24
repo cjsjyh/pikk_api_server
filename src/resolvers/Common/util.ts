@@ -1,6 +1,5 @@
 import { RunSingleSQL, DeployImageBy4Versions } from "../Utils/promiseUtil"
 import { IsNewImage, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
-import { CommunityPostEditImageInfo } from "../CommunityPost/type/ArgType"
 import { ItemReviewImgEditInfoInput } from "../Review/type/ArgType"
 var logger = require("../../tools/logger")
 
@@ -34,7 +33,7 @@ export async function InsertImageIntoTable(
 }
 
 export async function EditImageUrlInTable(
-  image: ItemReviewImgEditInfoInput | CommunityPostEditImageInfo,
+  image: ItemReviewImgEditInfoInput,
   tableName: string,
   foreignKeyName: string,
   foreignKeyId: number,

@@ -6,7 +6,8 @@ import {
   SequentialPromiseValue,
   MakeGroups,
   AssignGroupsToParent,
-  DeployImageBy4Versions
+  DeployImageBy4Versions,
+  GetSubField
 } from "../Utils/promiseUtil"
 import { ConvertListToString, ConvertListToOrderedPair } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
@@ -18,7 +19,7 @@ var logger = require("../../tools/logger")
 export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, args: any): Promise<boolean> {
   try {
     //Editing Review
-    if (Object.prototype.hasOwnProperty.call(review, "reviewId") && review.reviewId != null) {
+    if (review.reviewId) {
       let setSql = GetEditSql(review)
       await RunSingleSQL(`
         UPDATE "ITEM_REVIEW" SET
@@ -90,40 +91,6 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
     logger.error(e.stack)
     throw new Error("[Error] Failed to fetch review by post list from DB")
   }
-}
-
-export async function GetSubField(
-  parentList: any,
-  tableName: string,
-  filterBy: string,
-  assignTo: string,
-  depth: number = 1,
-  customSql: string = "",
-  formatSql: string = ""
-): Promise<any[]> {
-  let parentIdList = ExtractFieldFromList(parentList, "id", depth)
-  if (parentIdList.length == 0) return []
-
-  let querySql = `
-  SELECT 
-    subfield.* 
-  FROM "${tableName}" AS subfield 
-  WHERE subfield."${filterBy}" IN (${ConvertListToString(parentIdList)}) ${formatSql}`
-
-  let queryResult
-  if (customSql == "") queryResult = await RunSingleSQL(querySql)
-  else queryResult = await RunSingleSQL(customSql)
-
-  if (queryResult.length == 0) {
-    return queryResult
-  }
-
-  //Grouping Reviews
-  let groupedSubfield = MakeGroups(queryResult, filterBy, parentIdList)
-  //Add Review Group to Post
-  AssignGroupsToParent(parentList, groupedSubfield, filterBy, assignTo, depth)
-
-  return groupedSubfield
 }
 
 export function InsertItemReview(

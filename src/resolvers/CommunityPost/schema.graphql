@@ -31,6 +31,11 @@ enum CommunityPostType {
   ALL
 }
 
+enum CommunityPostContentType {
+  TEXT
+  IMAGE
+}
+
 #------------------
 # Query
 #------------------
@@ -66,6 +71,19 @@ input PickkCommunityPostQuery {
 # Mutation
 #------------------
 
+input CommunityPostContentInput {
+  text: String
+  imageUrl: String
+  contentType: CommunityPostContentType!
+}
+
+input CommunityPostContentEditInput {
+  id: Int
+  text: String
+  imageUrl: String
+  contentType: CommunityPostContentType!
+}
+
 input CommunityPostInfoInput {
   accountId: Int!
   # """
@@ -73,24 +91,22 @@ input CommunityPostInfoInput {
   # """
   # channelId: Int!
   title: String!
-  content: String!
+  contents: [CommunityPostContentInput!]!
   postType: CommunityPostType!
   #qnaType: QNAType
-  imageUrls: [CommunityPostImageInfo!]
 }
 
 input CommunityPostEditInfoInput {
   accountId: Int!
   postId: Int!
   title: String
-  content: String
+  contents: [CommunityPostContentEditInput!]!
   postType: CommunityPostType
   #qnaType: QNAType
-  imageUrls: [CommunityPostEditImageInfo!]
   """
   Insert Image Id
   """
-  deletedImages: [Int!]
+  deletedContents: [Int!]
 }
 
 input CommunityPostImageInfo {
@@ -115,6 +131,13 @@ input CommunityPostDeleteInfoInput {
 #   Return
 #---------------
 
+type CommunityPostContent {
+  id: Int!
+  text: String
+  imageUrl: String
+  contentType: CommunityPostContentType!
+}
+
 type CommunityPostInfo {
   accountId: Int
   name: String!
@@ -126,10 +149,9 @@ type CommunityPostInfo {
   id: Int
   #channelId: Int
   title: String!
-  content: String!
+  contents: [CommunityPostContent]
   time: String!
   viewCount: Int!
-  imageUrls: [String]
   postType: CommunityPostType!
   #qnaType: String
 }

@@ -108,13 +108,16 @@ export function GetFormatSql(filter: any, orderAddOn: string = ""): string {
   return filterSql
 }
 
-export function ConvertListToString(list: any): string {
+export function ConvertListToString(list: any, appendString: string = "", wrapString: string = ""): string {
   let result = ""
   let isFirst = true
+
+  if (!appendString) appendString = ", "
+
   list.forEach(item => {
     if (isFirst) isFirst = false
-    else result += ", "
-    result += String(item)
+    else result += appendString
+    result += wrapString + String(item) + wrapString
   })
 
   return result

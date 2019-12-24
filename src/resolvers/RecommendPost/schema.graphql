@@ -54,6 +54,10 @@ input RecommendPostQueryFilter {
   styleType: StyleType
   itemId: Int
   minimumPickCount: Int = 0
+  recommendReason: [RecommendReason]
+  itemMajorType: [ItemMajorType]
+  itemMinorType: [ItemMinorType]
+  itemFinalType: [ItemFinalType]
 
   searchText: String
 }

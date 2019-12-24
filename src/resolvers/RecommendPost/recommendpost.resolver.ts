@@ -26,6 +26,7 @@ import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
 import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
 import { IncreaseViewCountFunc } from "../Common/util"
 import { InsertIntoNotificationQueue } from "../Notification/util"
+import { DoPropertiesExist } from "../Utils/arrayUtil"
 var logger = require("../../tools/logger")
 var elastic = require("../../database/elasticConnect")
 
@@ -446,26 +447,67 @@ module.exports = {
   }
 }
 
-async function GetPostFilterSql(filter: any): Promise<string> {
-  let multipleQuery: boolean = true
-  let filterSql: string = ` WHERE "postStatus" = 'VISIBLE'`
+async function GetPostFilterSql(filter: ArgType.RecommendPostQueryFilter): Promise<string> {
+  let multipleWhereQuery: boolean = true
+  let multipleJoinQuery: boolean = false
+  let filterWhereSql: string = ` WHERE rec_post."postStatus" = 'VISIBLE'`
+  let filterJoinSql: string = ""
 
-  if (Object.prototype.hasOwnProperty.call(filter, "accountId")) {
-    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "FK_accountId"=${filter.accountId}`)
-  } else if (Object.prototype.hasOwnProperty.call(filter, "postId")) {
-    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` id=${filter.postId}`)
+  //if recommendReason exists
+  if (filter.recommendReason && filter.recommendReason.length != 0) {
+    filterJoinSql += `
+    INNER JOIN "ITEM_REVIEW" review ON review."FK_postId" = rec_post.id 
+    `
+    filterWhereSql = MakeMultipleQuery(
+      multipleWhereQuery,
+      filterWhereSql,
+      ` review."recommendReason" = ${ConvertListToString(filter.recommendReason, `OR review."recommendReason"=`, "'")}`
+    )
+    multipleJoinQuery = true
   }
 
-  if (Object.prototype.hasOwnProperty.call(filter, "postType")) {
-    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "postType"='${filter.postType}'`)
+  //if any of item category exists
+  if (DoPropertiesExist(filter, ["itemMajorType", "itemMinorType", "itemFinalType"], "OR", true)) {
+    //join related tables
+    filterJoinSql += `
+    INNER JOIN "ITEM_VARIATION" item_var ON review."FK_itemId" = item_var.id
+    INNER JOIN "ITEM_GROUP" item_gr ON item_var."FK_itemGroupId" = item_gr.id 
+    `
+
+    //add filtering
+    if (DoPropertiesExist(filter, ["itemMajorType"], "AND", true))
+      filterWhereSql = MakeMultipleQuery(
+        multipleWhereQuery,
+        filterWhereSql,
+        ` item_gr."itemMajorType" = ${ConvertListToString(filter.itemMajorType, `OR item_gr."itemMajorType"=`, "'")}`
+      )
+    if (DoPropertiesExist(filter, ["itemMinorType"], "AND", true))
+      filterWhereSql = MakeMultipleQuery(
+        multipleWhereQuery,
+        filterWhereSql,
+        ` item_gr."itemMinorType" = ${ConvertListToString(filter.itemMinorType, `OR item_gr."itemMinorType"=`, "'")}`
+      )
+    if (DoPropertiesExist(filter, ["itemFinalType"], "AND", true))
+      filterWhereSql = MakeMultipleQuery(
+        multipleWhereQuery,
+        filterWhereSql,
+        ` item_gr."itemFinalType" = ${ConvertListToString(filter.itemFinalType, `OR item_gr."itemFinalType"=`, "'")}`
+      )
+    multipleJoinQuery = true
   }
 
-  if (Object.prototype.hasOwnProperty.call(filter, "channelId")) {
-    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "FK_channelId"='${filter.channelId}'`)
+  if (filter.accountId) {
+    filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post."FK_accountId"=${filter.accountId}`)
+  } else if (filter.postId) {
+    filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post.id=${filter.postId}`)
   }
 
-  if (Object.prototype.hasOwnProperty.call(filter, "styleType")) {
-    filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` "styleType"='${filter.styleType}'`)
+  if (filter.postType) {
+    filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post."postType"='${filter.postType}'`)
+  }
+
+  if (filter.styleType) {
+    filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post."styleType"='${filter.styleType}'`)
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
@@ -479,13 +521,15 @@ async function GetPostFilterSql(filter: any): Promise<string> {
         postIdSql += row.FK_postId
       })
 
-      filterSql = MakeMultipleQuery(multipleQuery, filterSql, ` id in (${postIdSql})`)
+      filterWhereSql = MakeMultipleQuery(multipleWhereQuery, filterWhereSql, ` rec_post.id in (${postIdSql})`)
     } catch (e) {
       throw new Error("[Error] Failed to fetch postId with itemId")
     }
   }
 
-  return filterSql
+  if (multipleJoinQuery) filterWhereSql += `GROUP BY rec_post.id`
+
+  return filterJoinSql + filterWhereSql
 }
 
 async function GetEditSql(filter: ArgType.RecommendPostEditInfoInput): Promise<string> {

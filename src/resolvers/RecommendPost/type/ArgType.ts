@@ -73,6 +73,10 @@ export type RecommendPostQueryFilter = {
   styleType: string
   itemId: number
   minimumPickCount: number
+  recommendReason: string[]
+  itemMajorType: string[]
+  itemMinorType: string[]
+  itemFinalType: string[]
 
   searchText: string
 }

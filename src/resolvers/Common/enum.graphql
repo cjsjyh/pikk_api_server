@@ -3,13 +3,6 @@ enum SortDirection {
   DESC
 }
 
-enum RecommendReason {
-  DESIGN
-  PRICE
-  TEXTURE
-  INDIVIDUALITY
-}
-
 enum StyleType {
   SIMPLEBASIC
   MODERN

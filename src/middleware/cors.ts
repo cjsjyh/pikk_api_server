@@ -28,6 +28,8 @@ var corsOptions = {
   origin: function(origin, callback) {
     if (process.env.MODE != "DEPLOY") callback(null, true)
     else {
+      callback(null, true)
+      return
       if (whitelist.indexOf(origin) !== -1) {
         callback(null, true)
       } else {

@@ -60,8 +60,8 @@ module.exports = {
         if (!ValidateUser(ctx, arg.accountId)) throw new Error("[Error] User not authorized!")
 
         if (arg.targetType == "RECOMMEND") {
-          await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
-          await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
+          await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
+          await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "*")
         }
 
         let query = `SELECT toggle${arg.targetType}Follow(${arg.accountId},${arg.targetId})`

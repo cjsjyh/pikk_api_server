@@ -42,8 +42,8 @@ module.exports = {
 
       try {
         if (arg.targetType == "RECOMMEND") {
-          await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
-          await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
+          await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
+          await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "*")
         }
 
         formatSingleQuoteForString(arg)
@@ -79,8 +79,8 @@ module.exports = {
       }
       try {
         if (arg.targetType == "RECOMMEND") {
-          await DelCacheByPattern("allRecom*DESCtimeRECOMMEND0")
-          await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
+          await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
+          await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "*")
         }
 
         let querySql = `DELETE FROM "${ConvertToCommentTableName(arg.targetType)}" WHERE id = ${arg.targetId}`

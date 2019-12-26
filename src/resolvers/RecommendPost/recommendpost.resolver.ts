@@ -266,7 +266,8 @@ module.exports = {
 
       //Delete Cache
       try {
-        await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
+        if (arg.postType == "REVIEW") await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
+        if (arg.postType == "LOOK") await DelCacheByPattern("allRecom*DESCtimeLOOK*")
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
         logger.warn(`Faield to delete recommend post cache`)
@@ -330,7 +331,8 @@ module.exports = {
         throw new Error(`[Error] User ${arg.accountId} is not the writer of RecommendPost ${arg.postId}`)
       }
       try {
-        await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
+        if (arg.postType == "REVIEW") await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
+        if (arg.postType == "LOOK") await DelCacheByPattern("allRecom*DESCtimeLOOK*")
         await DelCacheByPattern("allRecom01DESCtime" + String(arg.postId) + "*")
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
@@ -396,6 +398,7 @@ module.exports = {
 
       try {
         await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
+        await DelCacheByPattern("allRecom*DESCtimeLOOK*")
         logger.info(`Deleted recommend post cache`)
       } catch (e) {
         logger.warn(`Faield to delete recommend post cache`)

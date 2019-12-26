@@ -20,32 +20,44 @@ module.exports = {
       //Make UserCredential
       try {
         let userAccount: ReturnType.UserCredentialInfo
+        let isNewUser: boolean
         let queryResult = await RunSingleSQL(
           `INSERT INTO "USER_CONFIDENTIAL" ("providerType", "providerId") VALUES ($1,$2) ON CONFLICT DO NOTHING RETURNING id`,
           [arg.providerType, arg.providerId]
         )
+        //Query didn't return anything. Already exists
         if (queryResult.length == 0) {
           queryResult = await RunSingleSQL(
-            `SELECT id FROM "USER_CONFIDENTIAL" where "providerType"='${arg.providerType}' and "providerId"='${arg.providerId}'`
+            `
+            WITH user_conf as (
+              UPDATE "USER_CONFIDENTIAL" SET "lastLogin" = NOW() WHERE 
+              "providerType"='${arg.providerType}' and "providerId"='${arg.providerId}'
+              returning id
+            )
+            SELECT
+              user_conf.id,
+              user_info.name,
+              user_info."profileImgUrl" as "profileImageUrl",
+              user_info.rank
+            FROM "USER_INFO" user_info RIGHT JOIN user_conf ON user_info."FK_accountId"=user_conf.id
+          `
           )
-          userAccount = queryResult[0]
-          await RunSingleSQL(`UPDATE "USER_CONFIDENTIAL" SET "lastLogin" = NOW() WHERE id=${userAccount.id}`)
-          queryResult = await RunSingleSQL(`SELECT * FROM "USER_INFO" WHERE "FK_accountId"=${userAccount.id}`)
+
           //If user didn't insert user info yet
-          if (queryResult.length == 0) userAccount.isNewUser = true
-          else {
-            userAccount.isNewUser = false
-            userAccount.name = queryResult[0].name
-            userAccount.profileImageUrl = queryResult[0].profileImgUrl
-            userAccount.rank = queryResult[0].rank
-          }
-          userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
-        } else {
-          userAccount = queryResult[0]
-          userAccount.isNewUser = true
-          userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
+          if (!queryResult[0].name) isNewUser = true
+          //All required user info exists
+          else isNewUser = false
         }
-        logger.info(`User ${userAccount.id} Created`)
+        //Query returned id, new user
+        else {
+          isNewUser = true
+        }
+
+        userAccount = queryResult[0]
+        userAccount.isNewUser = isNewUser
+        userAccount.token = jwt.sign({ id: userAccount.id }, process.env.PICKK_SECRET_KEY)
+
+        logger.info(`User ${userAccount.id} Login`)
         return userAccount
       } catch (e) {
         logger.warn("Failed to create User")
@@ -81,34 +93,12 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let setSql = ""
-        let isFirst = true
-        let deleteSql = ""
-        if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl") && arg.channel_titleImageUrl != null) {
-          if (IsNewImage(arg.channel_titleImageUrl)) {
-            deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
-            arg.channel_titleImageUrl = await DeployImageBy4Versions(arg.channel_titleImageUrl)
-          }
-          setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
-          isFirst = false
-        }
-
-        if (Object.prototype.hasOwnProperty.call(arg, "channel_snsUrl")) {
-          if (!isFirst) setSql += ", "
-          isFirst = false
-          setSql += `"channel_snsUrl"='${arg.channel_snsUrl}'`
-        }
-
-        if (Object.prototype.hasOwnProperty.call(arg, "channel_description")) {
-          if (!isFirst) setSql += ", "
-          isFirst = false
-          setSql += `"channel_description"='${arg.channel_description}'`
-        }
+        let channelSql = await GetUpdateChannelInfoSql(arg)
 
         await RunSingleSQL(`
-          ${deleteSql}
+          ${channelSql.deleteSql}
           UPDATE "USER_INFO" SET
-          ${setSql}
+          ${channelSql.setSql}
           WHERE "FK_accountId"=${arg.accountId}
         `)
         logger.info(`User Channel Info Updated! id ${arg.accountId}`)
@@ -346,4 +336,35 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
   resultSql += `
   WHERE "FK_accountId" = ${arg.accountId}`
   return resultSql
+}
+
+async function GetUpdateChannelInfoSql(arg): Promise<any> {
+  let setSql = ""
+  let isFirst = true
+  let deleteSql = ""
+  if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl") && arg.channel_titleImageUrl != null) {
+    if (IsNewImage(arg.channel_titleImageUrl)) {
+      deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
+      arg.channel_titleImageUrl = await DeployImageBy4Versions(arg.channel_titleImageUrl)
+    }
+    setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
+    isFirst = false
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "channel_snsUrl")) {
+    if (!isFirst) setSql += ", "
+    isFirst = false
+    setSql += `"channel_snsUrl"='${arg.channel_snsUrl}'`
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "channel_description")) {
+    if (!isFirst) setSql += ", "
+    isFirst = false
+    setSql += `"channel_description"='${arg.channel_description}'`
+  }
+
+  return {
+    setSql,
+    deleteSql
+  }
 }

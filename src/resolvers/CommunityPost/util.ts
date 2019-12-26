@@ -99,7 +99,7 @@ export async function UpdateCommunityPostContent(content: CommunityPostContentEd
     let deployedUrl = await DeployImageBy4Versions(content.imageUrl)
     let deleteImageSql = ""
     if (deployedUrl != content.imageUrl) deleteImageSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_CONTENT", "imageUrl", "id", [content.id])
-    else console.log("Same Image!")
+
     await RunSingleSQL(`
     ${deleteImageSql}
     UPDATE "COMMUNITY_POST_CONTENT" SET 

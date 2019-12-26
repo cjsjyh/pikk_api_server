@@ -164,10 +164,14 @@ export function MakeCacheNameByObject(obj: any): string {
         })
       }
       //Non-Array Objects
-      else MakeCacheNameByObject(value)
+      else {
+        result += MakeCacheNameByObject(value)
+      }
     }
     //Not an Object
-    else result += String(value)
+    else {
+      result += String(value)
+    }
   }
   return result
 }

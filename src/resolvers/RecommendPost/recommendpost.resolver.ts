@@ -339,8 +339,9 @@ module.exports = {
       }
 
       try {
+        formatSingleQuoteForString(arg)
+        //Edit Main Body
         let setSql = await GetEditSql(arg)
-        //Edit others
         await RunSingleSQL(setSql)
         //Delete Images
         if (Object.prototype.hasOwnProperty.call(arg, "deletedImages")) {

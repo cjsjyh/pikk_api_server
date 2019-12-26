@@ -4,7 +4,13 @@ import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql, InsertCommunityPostContent, UpdateCommunityPostContent, CreateEditCommunityPostContent } from "./util"
 import { RunSingleSQL, ExtractSelectionSet, DeployImageBy4Versions, ExtractFieldFromList, GetSubField } from "../Utils/promiseUtil"
-import { GetFormatSql, ConvertListToOrderedPair, ConvertListToString, InsertImageIntoDeleteQueue, formatSingleQuoteForString } from "../Utils/stringUtil"
+import {
+  GetFormatSql,
+  ConvertListToOrderedPair,
+  ConvertListToString,
+  InsertImageIntoDeleteQueue,
+  formatSingleQuoteForString
+} from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { IncreaseViewCountFunc } from "../Common/util"
@@ -199,6 +205,7 @@ module.exports = {
         throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
       }
       try {
+        formatSingleQuoteForString(arg)
         //Update Body
         let querySql = GetCommunityPostEditSql(arg)
         await RunSingleSQL(`

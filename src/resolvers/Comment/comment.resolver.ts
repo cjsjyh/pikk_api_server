@@ -42,7 +42,6 @@ module.exports = {
 
       try {
         if (arg.targetType == "RECOMMEND") {
-          await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "*")
         }
 
@@ -79,7 +78,6 @@ module.exports = {
       }
       try {
         if (arg.targetType == "RECOMMEND") {
-          await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "*")
         }
 

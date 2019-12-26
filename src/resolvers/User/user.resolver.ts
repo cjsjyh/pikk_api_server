@@ -286,6 +286,7 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
       try {
         if (IsNewImage(arg.profileImageUrl)) {
           await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
+          await DelCacheByPattern("allRecom*DESCtimeLOOK*")
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.accountId) + "*")
 
           deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "profileImgUrl", "FK_accountId", [arg.accountId])

@@ -4,7 +4,7 @@ import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetPostFilterSql, InsertCommunityPostContent, UpdateCommunityPostContent, CreateEditCommunityPostContent } from "./util"
 import { RunSingleSQL, ExtractSelectionSet, DeployImageBy4Versions, ExtractFieldFromList, GetSubField } from "../Utils/promiseUtil"
-import { GetFormatSql, ConvertListToOrderedPair, ConvertListToString, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
+import { GetFormatSql, ConvertListToOrderedPair, ConvertListToString, InsertImageIntoDeleteQueue, formatSingleQuoteForString } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { IncreaseViewCountFunc } from "../Common/util"
@@ -172,6 +172,7 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
+        formatSingleQuoteForString(arg)
         //Insert Community Post
         let postIdResult = await RunSingleSQL(
           `INSERT INTO "COMMUNITY_POST"("FK_accountId","title","postType") 

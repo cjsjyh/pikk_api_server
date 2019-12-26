@@ -15,7 +15,8 @@ import {
   getFormatHour,
   IsNewImage,
   InsertImageIntoDeleteQueue,
-  ConvertListToOrderedPair
+  ConvertListToOrderedPair,
+  formatSingleQuoteForString
 } from "../Utils/stringUtil"
 
 import { InsertItemForRecommendPost } from "../Item/util"
@@ -37,8 +38,7 @@ module.exports = {
       let cacheName = "allRecom"
       //Get Cached Content
       try {
-        cacheName += MakeCacheNameByObject(arg.filterGeneral)
-        cacheName += MakeCacheNameByObject(arg.postFilter)
+        cacheName += MakeCacheNameByObject(arg)
         let recomPostCache: any = await GetRedis(cacheName)
         if (recomPostCache != null) {
           //Increae View if this cache has complete recommend post
@@ -284,9 +284,10 @@ module.exports = {
           logger.warn("Failed to deploy titleImage")
           logger.error(e.stack)
         }
-
+        
         //Deploy RecommendPost Body
-        if (arg.styleType === undefined) arg.styleType = "NONE"
+        if (!arg.styleType) arg.styleType = "NONE"
+        formatSingleQuoteForString(arg)
         let insertResult = await RunSingleSQL(
           `INSERT INTO "RECOMMEND_POST"
           ("FK_accountId","title","content","postType","styleType","titleType","titleYoutubeUrl","titleImageUrl") 

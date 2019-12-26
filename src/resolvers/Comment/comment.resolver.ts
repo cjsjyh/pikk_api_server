@@ -7,6 +7,7 @@ import { ConvertToCommentTableName, GetBoardName } from "./util"
 import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
 import { InsertIntoNotificationQueue } from "../Notification/util"
 import { DelCacheByPattern } from "../../database/redisConnect"
+import { formatSingleQuoteForString } from "../Utils/stringUtil"
 var logger = require("../../tools/logger")
 
 module.exports = {
@@ -45,6 +46,7 @@ module.exports = {
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "RECOMMEND0")
         }
 
+        formatSingleQuoteForString(arg)
         let querySql = `INSERT INTO "${ConvertToCommentTableName(arg.targetType)}" ("FK_postId","FK_accountId","FK_parentId","content") 
         VALUES(
           ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`

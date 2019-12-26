@@ -90,6 +90,17 @@ export function getFormatHour(secs, delimiter = "") {
   return hours + delimiter + minutes + delimiter + seconds
 }
 
+export function formatSingleQuoteForString(obj) {
+  if (obj == undefined) return ""
+  for (let [key, value] of Object.entries(obj)) {
+    if (typeof value === "object") {
+      MakeCacheNameByObject(value)
+    } else if (typeof value === "string") {
+      obj[key] = value.replace(/'/g, "''")
+    }
+  }
+}
+
 export function strip(str) {
   return str.replace(/^\s+|\s+$/g, "")
 }
@@ -146,9 +157,8 @@ export function MakeCacheNameByObject(obj: any): string {
   let result = ""
   for (let [key, value] of Object.entries(obj)) {
     if (typeof value === "object") {
-      continue
-    }
-    result += String(value)
+      result += MakeCacheNameByObject(value)
+    } else result += String(value)
   }
 
   return result

@@ -7,12 +7,7 @@ import * as ReturnType from "./type/ReturnType"
 import { QueryArgInfo } from "./type/ArgType"
 import { MutationArgInfo } from "./type/ArgType"
 import { GetMetaData, RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
-import {
-  GetFormatSql,
-  MakeMultipleQuery,
-  ConvertListToOrderedPair,
-  MakeCacheNameByObject
-} from "../Utils/stringUtil"
+import { GetFormatSql, MakeMultipleQuery, ConvertListToOrderedPair, MakeCacheNameByObject } from "../Utils/stringUtil"
 
 import { GraphQLResolveInfo } from "graphql"
 import { InsertItem, GetItemsById, GetItemIdInRanking, CombineItem } from "./util"
@@ -64,9 +59,7 @@ module.exports = {
 
       try {
         let formatSql = GetFormatSql(arg)
-        let queryResult = await RunSingleSQL(
-          `SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
-        )
+        let queryResult = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
         if (queryResult.length == 0) return []
         let idList = ExtractFieldFromList(queryResult, "FK_itemId")
 
@@ -82,9 +75,7 @@ module.exports = {
 
     _getUserPickkItemMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
       let arg: ArgType.PickkItemQuery = args.pickkItemOption
-      let queryResult = await RunSingleSQL(
-        `SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
-      )
+      let queryResult = await RunSingleSQL(`SELECT COUNT(*) FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
       return queryResult[0].count
     },
 
@@ -94,7 +85,6 @@ module.exports = {
       try {
         let cacheName = "itemRank"
         cacheName += MakeCacheNameByObject(arg)
-        cacheName += MakeCacheNameByObject(arg.filterGeneral)
         let itemRankCache: any = await GetRedis(cacheName)
         if (itemRankCache != null) {
           logger.info("getItemRank Cache Return")
@@ -103,11 +93,7 @@ module.exports = {
 
         let filterSql = GetItemFilterSql(arg)
         let formatSql = GetFormatSql(arg, `, review_score."itemId" DESC `)
-        let rankList = await GetItemIdInRanking(
-          formatSql,
-          filterSql.primarySql,
-          filterSql.secondarySql
-        )
+        let rankList = await GetItemIdInRanking(formatSql, filterSql.primarySql, filterSql.secondarySql)
         let itemIdList = ExtractFieldFromList(rankList, "id")
         let customFilterSql = `
         JOIN (
@@ -116,12 +102,7 @@ module.exports = {
         ) AS x (id,ordering) ON item_var.id = x.id
       `
         if (itemIdList.length == 0) return []
-        let itemList = await GetItemsById(
-          itemIdList,
-          "ORDER BY item_full.ordering ASC",
-          customFilterSql,
-          "x.ordering,"
-        )
+        let itemList = await GetItemsById(itemIdList, "ORDER BY item_full.ordering ASC", customFilterSql, "x.ordering,")
         await SetRedis(cacheName, JSON.stringify(itemList), 1800)
 
         logger.info("ItemRanking Called")
@@ -201,12 +182,8 @@ module.exports = {
       let arg = args.selfMerge
       try {
         if (!VerifyJWT(arg.token, arg.accountId)) throw new Error("User not allowed!")
-        let headId = await RunSingleSQL(
-          `SELECT "FK_itemId" FROM "ITEM_REVIEW" WHERE id=${arg.headId}`
-        )
-        let tailId = await RunSingleSQL(
-          `SELECT "FK_itemId" FROM "ITEM_REVIEW" WHERE id=${arg.tailId}`
-        )
+        let headId = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_REVIEW" WHERE id=${arg.headId}`)
+        let tailId = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_REVIEW" WHERE id=${arg.tailId}`)
         await CombineItem(headId[0].FK_itemId, [tailId[0].FK_itemId])
         return true
       } catch (e) {
@@ -231,47 +208,27 @@ function GetItemFilterSql(filter: any): any {
   }
   if (Object.prototype.hasOwnProperty.call(filter, "itemMinorType")) {
     if (filter.itemMinorType != "ALL") {
-      primarySql = MakeMultipleQuery(
-        multiplePrimaryQuery,
-        primarySql,
-        ` item_gr."itemMinorType"='${filter.itemMinorType}'`
-      )
+      primarySql = MakeMultipleQuery(multiplePrimaryQuery, primarySql, ` item_gr."itemMinorType"='${filter.itemMinorType}'`)
       multiplePrimaryQuery = true
     }
   }
   if (Object.prototype.hasOwnProperty.call(filter, "itemFinalType")) {
     if (filter.itemFinalType != "ALL") {
-      primarySql = MakeMultipleQuery(
-        multiplePrimaryQuery,
-        primarySql,
-        ` item_gr."itemFinalType"='${filter.itemFinalType}'`
-      )
+      primarySql = MakeMultipleQuery(multiplePrimaryQuery, primarySql, ` item_gr."itemFinalType"='${filter.itemFinalType}'`)
       multiplePrimaryQuery = true
     }
   }
   if (Object.prototype.hasOwnProperty.call(filter, "itemId")) {
-    primarySql = MakeMultipleQuery(
-      multiplePrimaryQuery,
-      primarySql,
-      ` item_var.id=${filter.itemId}`
-    )
+    primarySql = MakeMultipleQuery(multiplePrimaryQuery, primarySql, ` item_var.id=${filter.itemId}`)
     multiplePrimaryQuery = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter, "minimumPrice")) {
-    secondarySql = MakeMultipleQuery(
-      multipleSecondaryQuery,
-      secondarySql,
-      ` "items".price > ${filter.minimumPrice}`
-    )
+    secondarySql = MakeMultipleQuery(multipleSecondaryQuery, secondarySql, ` "items".price > ${filter.minimumPrice}`)
     multipleSecondaryQuery = true
   }
   if (Object.prototype.hasOwnProperty.call(filter, "maximumPrice")) {
-    secondarySql = MakeMultipleQuery(
-      multipleSecondaryQuery,
-      secondarySql,
-      ` "items".price < ${filter.maximumPrice}`
-    )
+    secondarySql = MakeMultipleQuery(multipleSecondaryQuery, secondarySql, ` "items".price < ${filter.maximumPrice}`)
     multipleSecondaryQuery = true
   }
 

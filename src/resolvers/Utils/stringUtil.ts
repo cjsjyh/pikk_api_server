@@ -157,10 +157,18 @@ export function MakeCacheNameByObject(obj: any): string {
   let result = ""
   for (let [key, value] of Object.entries(obj)) {
     if (typeof value === "object") {
-      result += MakeCacheNameByObject(value)
-    } else result += String(value)
+      //Array
+      if (Array.isArray(value)) {
+        value.forEach(arrayElem => {
+          result += String(arrayElem)
+        })
+      }
+      //Non-Array Objects
+      else MakeCacheNameByObject(value)
+    }
+    //Not an Object
+    else result += String(value)
   }
-
   return result
 }
 

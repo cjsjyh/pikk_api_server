@@ -93,34 +93,12 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
-        let setSql = ""
-        let isFirst = true
-        let deleteSql = ""
-        if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl") && arg.channel_titleImageUrl != null) {
-          if (IsNewImage(arg.channel_titleImageUrl)) {
-            deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
-            arg.channel_titleImageUrl = await DeployImageBy4Versions(arg.channel_titleImageUrl)
-          }
-          setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
-          isFirst = false
-        }
-
-        if (Object.prototype.hasOwnProperty.call(arg, "channel_snsUrl")) {
-          if (!isFirst) setSql += ", "
-          isFirst = false
-          setSql += `"channel_snsUrl"='${arg.channel_snsUrl}'`
-        }
-
-        if (Object.prototype.hasOwnProperty.call(arg, "channel_description")) {
-          if (!isFirst) setSql += ", "
-          isFirst = false
-          setSql += `"channel_description"='${arg.channel_description}'`
-        }
+        let channelSql = await GetUpdateChannelInfoSql(arg)
 
         await RunSingleSQL(`
-          ${deleteSql}
+          ${channelSql.deleteSql}
           UPDATE "USER_INFO" SET
-          ${setSql}
+          ${channelSql.setSql}
           WHERE "FK_accountId"=${arg.accountId}
         `)
         logger.info(`User Channel Info Updated! id ${arg.accountId}`)
@@ -358,4 +336,35 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
   resultSql += `
   WHERE "FK_accountId" = ${arg.accountId}`
   return resultSql
+}
+
+async function GetUpdateChannelInfoSql(arg): Promise<any> {
+  let setSql = ""
+  let isFirst = true
+  let deleteSql = ""
+  if (Object.prototype.hasOwnProperty.call(arg, "channel_titleImageUrl") && arg.channel_titleImageUrl != null) {
+    if (IsNewImage(arg.channel_titleImageUrl)) {
+      deleteSql = InsertImageIntoDeleteQueue("USER_INFO", "channel_titleImgUrl", "FK_accountId", [arg.accountId])
+      arg.channel_titleImageUrl = await DeployImageBy4Versions(arg.channel_titleImageUrl)
+    }
+    setSql += `"channel_titleImgUrl"='${arg.channel_titleImageUrl}'`
+    isFirst = false
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "channel_snsUrl")) {
+    if (!isFirst) setSql += ", "
+    isFirst = false
+    setSql += `"channel_snsUrl"='${arg.channel_snsUrl}'`
+  }
+
+  if (Object.prototype.hasOwnProperty.call(arg, "channel_description")) {
+    if (!isFirst) setSql += ", "
+    isFirst = false
+    setSql += `"channel_description"='${arg.channel_description}'`
+  }
+
+  return {
+    setSql,
+    deleteSql
+  }
 }

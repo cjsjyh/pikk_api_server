@@ -94,7 +94,7 @@ export function formatSingleQuoteForString(obj) {
   if (obj == undefined) return ""
   for (let [key, value] of Object.entries(obj)) {
     if (typeof value === "object") {
-      MakeCacheNameByObject(value)
+      formatSingleQuoteForString(value)
     } else if (typeof value === "string") {
       obj[key] = value.replace(/'/g, "''")
     }

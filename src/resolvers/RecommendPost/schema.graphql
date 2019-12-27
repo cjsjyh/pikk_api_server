@@ -19,9 +19,9 @@ type Mutation {
 }
 
 enum RecPostSortableField {
-  title
   time
   viewCount
+  pickCount
 }
 
 enum RecommendPostType {

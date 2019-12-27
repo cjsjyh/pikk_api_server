@@ -69,6 +69,7 @@ module.exports = {
           if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
             let sqlResult = await GetSearchSql(arg)
             if (!sqlResult) return []
+
             filterSql = sqlResult.filterSql
             selectionSql = sqlResult.selectionSql
             formatSql = sqlResult.formatSql
@@ -76,7 +77,8 @@ module.exports = {
           //If Queried from DB
           else {
             filterSql = await GetPostFilterSql(arg.postFilter)
-            if (filterSql == null) return []
+            if (!filterSql) return []
+
             formatSql = GetFormatSql(arg)
           }
 

@@ -18,15 +18,21 @@ module.exports = {
         if (arg.targetType == "ITEM") {
           tableName = "ITEM"
           variableName = "itemId"
-        } else if (arg.targetType == "RECOMMEND") {
-          tableName = "RECOMMEND_POST"
-          variableName = "postId"
         } else if (arg.targetType == "CHANNEL") {
           tableName = "CHANNEL"
           variableName = "channelId"
+        } else if (arg.targetType == "RECOMMEND") {
+          tableName = "RECOMMEND_POST"
+          variableName = "postId"
+        } else if (arg.targetType == "RECOMMEND_COMMENT") {
+          tableName = "RECOMMEND_POST_COMMENT"
+          variableName = "commentId"
         } else if (arg.targetType == "COMMUNITY") {
           tableName = "COMMUNITY_POST"
           variableName = "postId"
+        } else if (arg.targetType == "COMMUNITY_COMMENT") {
+          tableName = "COMMUNITY_POST_COMMENT"
+          variableName = "commentId"
         }
 
         let query = `SELECT "FK_accountId" FROM "${tableName}_FOLLOWER" WHERE "FK_accountId"=${arg.accountId} and "FK_${variableName}"=${arg.targetId}`
@@ -62,14 +68,14 @@ module.exports = {
         if (arg.targetType == "RECOMMEND") {
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "*")
         }
-
-        let query = `SELECT toggle${arg.targetType}Follow(${arg.accountId},${arg.targetId})`
+        let query = `SELECT toggle_${arg.targetType}_Follow(${arg.accountId},${arg.targetId})`
         let result = await RunSingleSQL(query)
         result = Object.values(result[0])
-
         //If target was followed (not cancelled)
         if ((arg.targetType == "RECOMMEND" || arg.targetType == "COMMUNITY") && result[0] == 1)
           InsertIntoNotificationQueue("NEW_PICKK_TO_MY_POST", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
+        else if ((arg.targetType == "RECOMMEND_COMMENT" || arg.targetType == "COMMUNITY_COMMENT") && result[0] == 1)
+          InsertIntoNotificationQueue("NEW_PICKK_TO_MY_COMMENT", arg.targetId, arg.targetType, "", "", arg.targetId, arg.accountId)
         else if (arg.targetType == "CHANNEL" && result[0] == 1)
           InsertIntoNotificationQueue("NEW_PICKK_TO_MY_CHANNEL", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
 

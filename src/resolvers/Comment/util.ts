@@ -8,8 +8,8 @@ export function ConvertToCommentTableName(targetName: string): string {
 
 export function GetBoardName(name: string): string {
   let boardName = ""
-  if (name == "COMMUNITY") boardName = "COMMUNITY_POST"
-  else if (name == "RECOMMEND") boardName = "RECOMMEND_POST"
+  if (name == "COMMUNITY" || name == "COMMUNITY_COMMENT") boardName = "COMMUNITY_POST"
+  else if (name == "RECOMMEND" || name == "RECOMMEND_COMMENT") boardName = "RECOMMEND_POST"
 
   return boardName
 }

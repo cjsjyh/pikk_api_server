@@ -3,6 +3,7 @@ import { NotificationInfo, NotificationDBInfo } from "./type/ReturnType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
 import { PushRedisQueue, PopRedisQueue, RedisQueueLength } from "../../database/redisConnect"
 import { NotificationSetInfoInput } from "./type/ArgType"
+import { formatSingleQuoteForString } from "../Utils/stringUtil"
 var logger = require("../../tools/logger")
 
 export async function InsertIntoNotificationQueue(
@@ -40,38 +41,15 @@ export async function ProcessNotificationQueue() {
     let task = await PopRedisQueue("Notification_Queue")
     task = JSON.parse(task)
     if (task.notiType == "COMMENT_TO_MY_POST") {
-      await NotifyPostWriter(
-        task.targetId,
-        task.targetType,
-        task.content,
-        task.sentUserId,
-        task.notiType
-      )
+      await NotifyPostWriter(task.targetId, task.targetType, task.content, task.sentUserId, task.notiType)
     } else if (task.notiType == "NEW_PICKK_TO_MY_POST") {
-      await NotifyPostWriter(
-        task.targetId,
-        task.targetType,
-        task.content,
-        task.sentUserId,
-        task.notiType
-      )
+      await NotifyPostWriter(task.targetId, task.targetType, task.content, task.sentUserId, task.notiType)
+    } else if (task.notiType == "NEW_PICKK_TO_MY_COMMENT") {
+      await NotifyCommentWriter(-1, task.targetType, task.content, task.targetId, task.sentUserId, task.notiType)
     } else if (task.notiType == "NEW_RECOMMEND_POST_BY_MY_PICKK_CHANNEL") {
-      await NotifyFollowers(
-        task.targetId,
-        task.targetType,
-        task.targetTitle,
-        task.sentUserId,
-        task.notiType
-      )
+      await NotifyFollowers(task.targetId, task.targetType, task.targetTitle, task.sentUserId, task.notiType)
     } else if (task.notiType == "COMMENT_TO_MY_COMMENT") {
-      await NotifyCommentWriter(
-        task.targetId,
-        task.targetType,
-        task.content,
-        task.parentId,
-        task.sentUserId,
-        task.notiType
-      )
+      await NotifyCommentWriter(task.targetId, task.targetType, task.content, task.parentId, task.sentUserId, task.notiType)
     } else if (task.notiType == "NEW_PICKK_TO_MY_CHANNEL") {
       await NotifyChannelOwner(task.targetId, task.sentUserId, task.notiType)
     } else {
@@ -84,20 +62,12 @@ export async function ProcessNotificationQueue() {
   }
 }
 
-async function NotifyPostWriter(
-  postId: number,
-  postType: string,
-  content: string,
-  sentUserId: number,
-  notiType: string
-) {
+async function NotifyPostWriter(postId: number, postType: string, content: string, sentUserId: number, notiType: string) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     //Get PostInfo of the post
     let postResult = await RunSingleSQL(`
-    SELECT post."FK_accountId", post.title FROM "${GetBoardName(
-      postType
-    )}" post WHERE "id" =${postId}
+    SELECT post."FK_accountId", post.title FROM "${GetBoardName(postType)}" post WHERE "id" =${postId}
     `)
 
     NotiInfo.postId = postId
@@ -106,6 +76,7 @@ async function NotifyPostWriter(
 
     NotiInfo.content = content
 
+    formatSingleQuoteForString(NotiInfo)
     await RunSingleSQL(`
     INSERT INTO "NOTIFICATION"
     ("notificationType","postId","postType","postTitle","content","FK_sentUserId","FK_accountId") 
@@ -139,13 +110,7 @@ async function NotifyChannelOwner(channelId: number, sentUserId: number, notiTyp
   }
 }
 
-async function NotifyFollowers(
-  postId: number,
-  postType: string,
-  postTitle: string,
-  sentUserId: number,
-  notiType: string
-) {
+async function NotifyFollowers(postId: number, postType: string, postTitle: string, sentUserId: number, notiType: string) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
     NotiInfo.postId = postId
@@ -153,6 +118,7 @@ async function NotifyFollowers(
     NotiInfo.postTitle = postTitle
     NotiInfo.content = null
 
+    formatSingleQuoteForString(NotiInfo)
     await RunSingleSQL(`
       INSERT INTO "NOTIFICATION"
       ("notificationType","postId","postType","postTitle","content","FK_sentUserId","FK_accountId") 
@@ -173,30 +139,31 @@ async function NotifyFollowers(
   }
 }
 
-async function NotifyCommentWriter(
-  postId: number,
-  postType: string,
-  content: string,
-  parentId: number,
-  sentUserId: number,
-  notiType: string
-) {
+async function NotifyCommentWriter(postId: number, postType: string, content: string, parentId: number, sentUserId: number, notiType: string) {
   let NotiInfo: NotificationInfo = {} as NotificationInfo
   try {
-    NotiInfo.postId = postId
-    NotiInfo.postType = postType
+    //Get accountId of the parent comment
+    let commentResult = await RunSingleSQL(`
+      SELECT com."FK_accountId", com.content, com."FK_postId" FROM "${GetBoardName(postType)}_COMMENT" com WHERE id = ${parentId}
+    `)
+
+    if (postType == "RECOMMEND" || postType == "COMMUNITY") {
+      NotiInfo.postId = postId
+      NotiInfo.postType = postType
+      NotiInfo.content = content
+    } else if (postType == "RECOMMEND_COMMENT" || postType == "COMMUNITY_COMMENT") {
+      NotiInfo.postId = commentResult[0].FK_postId
+      NotiInfo.postType = postType.replace("_COMMENT", "")
+      NotiInfo.content = commentResult[0].content
+    }
+
     //Get PostInfo of parent comment Id
     let postResult = await RunSingleSQL(`
-    SELECT post.title FROM "${GetBoardName(postType)}" post WHERE post.id=${postId}
+      SELECT post.title FROM "${GetBoardName(NotiInfo.postType)}" post WHERE post.id=${NotiInfo.postId}
     `)
     NotiInfo.postTitle = postResult[0].title
 
-    //Get accountId of the parent comment
-    let commentResult = await RunSingleSQL(`
-    SELECT com."FK_accountId" FROM "${GetBoardName(postType)}_COMMENT" com WHERE id = ${parentId}
-    `)
-    NotiInfo.content = content
-
+    formatSingleQuoteForString(NotiInfo)
     await RunSingleSQL(`
     INSERT INTO "NOTIFICATION"
     ("notificationType","postId","postType","postTitle","content","FK_sentUserId","FK_accountId") 
@@ -229,7 +196,8 @@ export function GroupPickNotifications(dbResult: any): NotificationInfo[] {
 
     if (
       record.notificationType == "NEW_PICKK_TO_MY_POST" ||
-      record.notificationType == "NEW_PICKK_TO_MY_CHANNEL"
+      record.notificationType == "NEW_PICKK_TO_MY_CHANNEL" ||
+      record.notificationType == "NEW_PICKK_TO_MY_COMMENT"
     ) {
       let key = record.notificationType + String(record.postId) + String(record.isViewed)
       //Key not set yet

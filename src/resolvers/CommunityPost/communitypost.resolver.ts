@@ -28,6 +28,7 @@ module.exports = {
         let formatSql: string = ""
         let selectionSql: string = ""
         if (Object.prototype.hasOwnProperty.call(arg, "postFilter")) {
+          //Find communityPost by search
           if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
             let sqlResult = await GetSearchSql(arg)
             if (!sqlResult) return []
@@ -36,7 +37,6 @@ module.exports = {
             formatSql = sqlResult.formatSql
           } else {
             formatSql = GetFormatSql(arg)
-            //Get CommentCount & PickkCount
           }
           filterSql += await GetPostFilterSql(arg.postFilter)
         }

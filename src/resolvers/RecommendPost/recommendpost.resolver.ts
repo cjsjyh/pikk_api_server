@@ -318,9 +318,10 @@ module.exports = {
 
         return true
       } catch (e) {
-        logger.warn("Failed to insert Item or Review for RecommendPost")
-        logger.error(e.stack)
+        //If creation failed after creating the body, delete body
         await RunSingleSQL(`DELETE FROM "RECOMMEND_POST" WHERE id = ${recommendPostId}`)
+        logger.warn("Failed to insert Item or Review for RecommendPost")
+        logger.error(e)
         throw new Error("Failed to insert Item or Review for RecommendPost")
       }
     },

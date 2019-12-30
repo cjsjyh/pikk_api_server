@@ -18,8 +18,7 @@ module.exports = {
       try {
         let boardName = GetBoardName(arg.postType)
         let querySql = `SELECT * FROM "${boardName}_COMMENT" where ${GetCommentQuerySql(arg.commentFilter)}`
-        let queryResult = await RunSingleSQL(querySql)
-        let commentResults: ReturnType.CommentInfo[] = queryResult
+        let commentResults: ReturnType.CommentInfo[] = await RunSingleSQL(querySql)
         commentResults.forEach(comment => {
           comment.postId = comment.FK_postId
           comment.accountId = comment.FK_accountId
@@ -28,6 +27,22 @@ module.exports = {
 
         logger.info(`GetComments Called`)
         return commentResults
+      } catch (e) {
+        logger.warn("Failed to Fetch comments")
+        logger.error(e.stack)
+        throw new Error("[Error] Failed to fetch comments")
+      }
+    },
+
+    _getCommentsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
+      let arg: ArgType.CommentQuery = args.commentOption
+      try {
+        let boardName = GetBoardName(arg.postType)
+        let querySql = `SELECT COUNT(*) FROM "${boardName}_COMMENT" where ${GetCommentQuerySql(arg.commentFilter)}`
+        let queryResult = await RunSingleSQL(querySql)
+
+        logger.info(`GetComments Metadata Called`)
+        return queryResult[0].count
       } catch (e) {
         logger.warn("Failed to Fetch comments")
         logger.error(e.stack)

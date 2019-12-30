@@ -1,5 +1,6 @@
 type Query {
   getComments(commentOption: CommentQuery!): [CommentInfo!]
+  _getCommentsMetadata(commentOption: CommentQuery!): Int!
 }
 
 type Mutation {

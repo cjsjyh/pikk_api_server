@@ -332,6 +332,12 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
     isMultiple = true
   }
 
+  if (Object.prototype.hasOwnProperty.call(arg, "rank")) {
+    if (isMultiple) resultSql += " ,"
+    resultSql += `"rank"=${arg.rank}`
+    isMultiple = true
+  }
+
   resultSql = deleteSql + " " + resultSql
   resultSql += `
   WHERE "FK_accountId" = ${arg.accountId}`

@@ -217,9 +217,17 @@ module.exports = {
       try {
         let formatSql = GetFormatSql(arg)
         let postSql = `
-          SELECT rec.* FROM "RECOMMEND_POST_FOLLOWER" follow
-          INNER JOIN "RECOMMEND_POST" rec ON rec.id = follow."FK_postId"
-          WHERE follow."FK_accountId" = ${arg.userId} AND rec."postStatus" = 'VISIBLE'
+          WITH post AS (
+            SELECT rec.* FROM "CHANNEL_FOLLOWER" follow
+            INNER JOIN "RECOMMEND_POST" rec ON rec."FK_accountId" = follow."FK_channelId"
+            WHERE follow."FK_accountId" = ${arg.userId} AND rec."postStatus" = 'VISIBLE'
+          )
+          SELECT
+            post.*, user_info.name, user_info."profileImgUrl" as "profileImageUrl",
+            (SELECT COUNT(*) AS "commentCount" FROM "RECOMMEND_POST_COMMENT" rec_comment WHERE rec_comment."FK_postId"=post.id),
+            (SELECT COUNT(*) AS "pickCount" FROM "RECOMMEND_POST_FOLLOWER" follow WHERE follow."FK_postId"=post.id)
+          FROM post
+          INNER JOIN "USER_INFO" user_info ON user_info."FK_accountId" = post."FK_accountId"
           ${formatSql}`
         let postResult = await GetRecommendPostList(postSql, info)
         logger.info(`userFollowRecommendPost Called`)
@@ -240,16 +248,14 @@ module.exports = {
       let arg: ArgType.PickkRecommendPostQuery = args.pickkRecommendPostOption
       if (!ValidateUser(ctx, arg.userId)) throw new Error(`[Error] Unauthorized User`)
       try {
-        let formatSql = GetFormatSql(arg)
         let postSql = `
-          SELECT
-            COUNT(*)
-          FROM (
-            SELECT rec.* FROM "RECOMMEND_POST_FOLLOWER" follow
-            INNER JOIN "RECOMMEND_POST" rec ON rec.id = follow."FK_postId"
-            WHERE follow."FK_accountId" = ${arg.userId}
-          ) AS rec
-          ${formatSql}`
+        WITH post AS (
+          SELECT rec.* FROM "CHANNEL_FOLLOWER" follow
+          INNER JOIN "RECOMMEND_POST" rec ON rec."FK_accountId" = follow."FK_channelId"
+          WHERE follow."FK_accountId" = ${arg.userId} AND rec."postStatus" = 'VISIBLE'
+        )
+        SELECT COUNT(*) FROM post
+        `
         let postCount = await RunSingleSQL(postSql)
         return postCount[0].count
       } catch (e) {

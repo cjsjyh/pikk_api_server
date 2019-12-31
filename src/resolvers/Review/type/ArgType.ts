@@ -64,6 +64,8 @@ export type ReviewQueryFilter = {
   reviewId: number
   itemId: number
   userId: number
+
+  searchText: string
 }
 
 export interface ReviewQuery {

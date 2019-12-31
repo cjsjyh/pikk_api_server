@@ -68,7 +68,9 @@ module.exports = {
           //If search is required
           if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
             let sqlResult = await GetSearchSql(arg)
-            if (!sqlResult) return []
+            if (!sqlResult) {
+              return []
+            }
 
             filterSql = sqlResult.filterSql
             selectionSql = sqlResult.selectionSql
@@ -102,7 +104,6 @@ module.exports = {
         ${pickCountSql}
         ${formatSql}
         `
-
         let postResult = await GetRecommendPostList(postSql, info)
         logger.info(`allRecommendPosts Called`)
         try {
@@ -127,8 +128,8 @@ module.exports = {
           //If search is required
           if (Object.prototype.hasOwnProperty.call(arg.postFilter, "searchText")) {
             let sqlResult = await GetSearchSql(arg)
-            if (!sqlResult) return 0
-            filterSql = sqlResult.filterSql
+            if (!sqlResult.hitCount) return 0
+            return sqlResult.hitCount
           }
           //If Queried from DB
           else {
@@ -607,6 +608,8 @@ async function GetSearchSql(arg: ArgType.RecommendPostQuery): Promise<any> {
   let filterSql: string = ""
   let selectionSql: string = ""
   let formatSql: string = ""
+  let hitCount: number = 0
+
   if (process.env.MODE == "DEPLOY") indexName = "recpost"
   else indexName = "recpost_test"
 
@@ -617,17 +620,21 @@ async function GetSearchSql(arg: ArgType.RecommendPostQuery): Promise<any> {
     first = arg.filterGeneral.first
   }
 
-  let result = await elastic.SearchElasticSearch(elastic.elasticClient, indexName, arg.postFilter.searchText, start, first, "best_fields", [
-    "brandkor",
-    "content",
-    "itemname",
-    "name",
-    "review",
-    "shortreview^2",
-    "title^3"
-  ])
-  let extractedPostIds = ExtractFieldFromList(result.hits, "_id")
+  let result = await elastic.SearchCollapseElasticSearch(
+    elastic.elasticClient,
+    indexName,
+    arg.postFilter.searchText,
+    start,
+    first,
+    "best_fields",
+    ["brandkor", "content", "itemname", "name", "review", "shortreview^2", "title^3"],
+    ["fk_postId"],
+    "fk_postid"
+  )
+  let extractedPostIds = ExtractFieldFromList(result.hits.hits, "fk_postid", 1, true)
   if (extractedPostIds.length == 0) return null
+
+  hitCount = result.aggregations.total.value
   filterSql = `
     JOIN (
       VALUES
@@ -635,13 +642,13 @@ async function GetSearchSql(arg: ArgType.RecommendPostQuery): Promise<any> {
     ) AS x (id,ordering) ON rec_post.id = x.id
     order by x.ordering
   `
-
   selectionSql = `x.ordering, `
   formatSql = `ORDER BY post.ordering ASC`
 
   return {
     filterSql,
     selectionSql,
-    formatSql
+    formatSql,
+    hitCount
   }
 }

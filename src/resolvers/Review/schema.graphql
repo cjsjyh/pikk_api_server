@@ -30,6 +30,8 @@ input ReviewQueryFilter {
   reviewId: Int
   itemId: Int
   userId: Int
+
+  searchText: String
 }
 
 input ReviewQuery {

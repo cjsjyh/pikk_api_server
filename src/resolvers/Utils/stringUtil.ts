@@ -101,6 +101,25 @@ export function formatSingleQuoteForString(obj) {
   }
 }
 
+export function findFieldFromObject(obj, fieldName, isTargetInArray) {
+  if (!obj || Object.keys(obj).length === 0) return []
+
+  let result = []
+  for (let [key, value] of Object.entries(obj)) {
+    //if not an object and matches field name
+    if (key == fieldName) {
+      if (isTargetInArray) result = result.concat(value)
+      else result.push(value)
+    }
+    //if object, recursive
+    else if (typeof value === "object") {
+      let tempArray = findFieldFromObject(value, fieldName, isTargetInArray)
+      result = result.concat(tempArray)
+    }
+  }
+  return result
+}
+
 export function strip(str) {
   return str.replace(/^\s+|\s+$/g, "")
 }

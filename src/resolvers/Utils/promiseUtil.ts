@@ -8,7 +8,15 @@ const readChunk = require("read-chunk")
 var axios = require("axios")
 
 import * as AWS from "aws-sdk"
-import { getFormatDate, getFormatHour, replaceLastOccurence, removeAllButLast, ConvertListToString, IsNewImage } from "./stringUtil"
+import {
+  getFormatDate,
+  getFormatHour,
+  replaceLastOccurence,
+  removeAllButLast,
+  ConvertListToString,
+  IsNewImage,
+  findFieldFromObject
+} from "./stringUtil"
 var logger = require("../../tools/logger")
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<any> {
@@ -459,14 +467,27 @@ export async function UploadImageTemp(itemImg: any): Promise<string> {
   }
 }
 
-export function ExtractFieldFromList(list: any, fieldName: string, depth: number = 1): any {
+export function ExtractFieldFromList(list: any, fieldName: string, depth: number = 1, isTargetInArray: boolean = false): any {
   let result = []
+
   list.forEach(item => {
     if (depth != 1) {
       let tempArray = ExtractFieldFromList(item, fieldName, depth - 1)
       result = result.concat(tempArray)
-    } else result.push(item[fieldName])
+    } else {
+      //Iterate through properties
+      for (let [key, value] of Object.entries(item)) {
+        //if object, recursive
+        if (typeof value === "object") {
+          let tempArray = findFieldFromObject(value, fieldName, isTargetInArray)
+          result = result.concat(tempArray)
+        }
+        //if not an object and matches field name
+        else if (key == "fieldName") result.push(value)
+      }
+    }
   })
+
   return result
 }
 

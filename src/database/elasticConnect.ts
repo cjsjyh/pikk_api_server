@@ -47,6 +47,48 @@ async function SearchElasticSearch(
   return result.body.hits
 }
 
+async function SearchCollapseElasticSearch(
+  client: any,
+  indexName: string,
+  searchText: string,
+  start: number,
+  first: number,
+  searchType: string,
+  searchFields: string[],
+  returnFields: string[],
+  collapseField: string
+) {
+  let param = {
+    index: indexName,
+    body: {
+      _source: returnFields,
+      from: start,
+      size: first,
+      query: {
+        multi_match: {
+          query: searchText,
+          type: searchType,
+          fields: searchFields
+        }
+      },
+      collapse: {
+        field: collapseField
+      },
+      aggs: {
+        total: {
+          cardinality: {
+            field: collapseField
+          }
+        }
+      },
+      sort: [{ _score: { order: "desc" } }, { "@timestamp": { order: "desc" } }]
+    }
+  }
+
+  let result = await client.search(param)
+  return result.body
+}
+
 async function InsertElasticSearch(client: any, indexName: string, properties: string[], values: string[]) {
   let param = {
     index: indexName,
@@ -66,5 +108,6 @@ module.exports = {
   elasticClient,
   GetNewElasticClient,
   SearchElasticSearch,
+  SearchCollapseElasticSearch,
   InsertElasticSearch
 }

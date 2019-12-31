@@ -101,7 +101,7 @@ export function formatSingleQuoteForString(obj) {
   }
 }
 
-export function findFieldFromObject(obj, fieldName, isTargetInArray) {
+export function ExtractFieldFromObject(obj, fieldName, isTargetInArray) {
   if (!obj || Object.keys(obj).length === 0) return []
 
   let result = []
@@ -113,7 +113,7 @@ export function findFieldFromObject(obj, fieldName, isTargetInArray) {
     }
     //if object, recursive
     else if (typeof value === "object") {
-      let tempArray = findFieldFromObject(value, fieldName, isTargetInArray)
+      let tempArray = ExtractFieldFromObject(value, fieldName, isTargetInArray)
       result = result.concat(tempArray)
     }
   }

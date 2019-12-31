@@ -15,7 +15,7 @@ import {
   removeAllButLast,
   ConvertListToString,
   IsNewImage,
-  findFieldFromObject
+  ExtractFieldFromObject
 } from "./stringUtil"
 var logger = require("../../tools/logger")
 
@@ -477,13 +477,16 @@ export function ExtractFieldFromList(list: any, fieldName: string, depth: number
     } else {
       //Iterate through properties
       for (let [key, value] of Object.entries(item)) {
+        //if not an object and matches field name
+        if (key == fieldName) {
+          if (isTargetInArray) result = result.concat(value)
+          else result.push(value)
+        }
         //if object, recursive
-        if (typeof value === "object") {
-          let tempArray = findFieldFromObject(value, fieldName, isTargetInArray)
+        else if (typeof value === "object") {
+          let tempArray = ExtractFieldFromObject(value, fieldName, isTargetInArray)
           result = result.concat(tempArray)
         }
-        //if not an object and matches field name
-        else if (key == "fieldName") result.push(value)
       }
     }
   })

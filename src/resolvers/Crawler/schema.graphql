@@ -13,4 +13,8 @@ type CrawledItemInfo {
   purchaseUrl: String
   imageUrl: [String]
   isEstimated: Boolean
+
+  itemMajorType: ItemMajorType
+  itemMinorType: ItemMinorType
+  itemFinalType: ItemFinalType
 }

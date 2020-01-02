@@ -12,7 +12,12 @@ var elastic = require("../../database/elasticConnect")
 
 module.exports = {
   Query: {
-    allItemReviews: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<ItemReviewInfo[]> => {
+    allItemReviews: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<ItemReviewInfo[]> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       try {
@@ -49,13 +54,26 @@ module.exports = {
           await SequentialPromiseValue(queryResult, FetchUserForReview)
         }
         if (selectionSet.includes("images")) {
-          let imgResult = await GetSubField(queryResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 1, "", `ORDER BY "order" ASC`)
-          imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
+          let imgResult = await GetSubField(
+            queryResult,
+            "ITEM_REVIEW_IMAGE",
+            "FK_reviewId",
+            "images",
+            1,
+            "",
+            `ORDER BY "order" ASC`
+          )
+          imgResult.forEach(imgGroup => {
+            imgGroup.forEach(img => {
+              img.reviewId = img.FK_reviewId
+            })
+          })
         }
         queryResult.forEach(review => {
           ReviewMatchGraphQL(review)
         })
         logger.info(`allItemReviews Called!`)
+
         return queryResult
       } catch (e) {
         logger.warn("Failed to query allItemReviews")
@@ -64,7 +82,12 @@ module.exports = {
       }
     },
 
-    _allItemReviewsMetadata: async (parent: void, args: QueryArgInfo, ctx: void, info: GraphQLResolveInfo): Promise<number> => {
+    _allItemReviewsMetadata: async (
+      parent: void,
+      args: QueryArgInfo,
+      ctx: void,
+      info: GraphQLResolveInfo
+    ): Promise<number> => {
       //Query Review Info
       let arg: ReviewQuery = args.reviewOption
       try {
@@ -113,9 +136,13 @@ module.exports = {
         logger.info(`IncreaseReviewCount Called`)
         return true
       } catch (e) {
-        logger.warn(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
+        logger.warn(
+          `Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`
+        )
         logger.error(e.stack)
-        throw new Error(`Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`)
+        throw new Error(
+          `Failed to increase REVIEW COUNT for ${args.increaseOption.type} ${args.increaseOption.id}`
+        )
       }
     }
   }
@@ -178,12 +205,15 @@ async function GetSearchSql(arg: ReviewQuery): Promise<any> {
     first = arg.filterGeneral.first
   }
 
-  let result = await elastic.SearchElasticSearch(elastic.elasticClient, indexName, arg.reviewFilter.searchText, start, first, "best_fields", [
-    "review^2",
-    "shortreview^2",
-    "name^3",
-    "content"
-  ])
+  let result = await elastic.SearchElasticSearch(
+    elastic.elasticClient,
+    indexName,
+    arg.reviewFilter.searchText,
+    start,
+    first,
+    "best_fields",
+    ["review^2", "shortreview^2", "name^3", "content"]
+  )
   let extractedPostIds = ExtractFieldFromList(result.hits, "_id")
   if (extractedPostIds.length == 0) return null
   filterSql = `

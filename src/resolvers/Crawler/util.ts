@@ -1,5 +1,6 @@
 import { CrawledItemInfo } from "./type/ReturnType"
 import { strip, formatUrl, formatUrls } from "../Utils/stringUtil"
+import { RunSingleSQL } from "../Utils/promiseUtil"
 
 const cheerio = require("cheerio")
 const request = require("request")
@@ -9,8 +10,14 @@ const charset = require("charset") //해당 사이트의 charset값을 알 수 �
 
 var logger = require("../../tools/logger")
 
-export async function fetchConvertDjangoResult(websiteName: string, sourceUrl: string, brandName?: string): Promise<any> {
-  let resultAxios = await axios.get(`http://${process.env.DJANGO_HOST}:8000/crawler/${websiteName}/${sourceUrl}`)
+export async function fetchConvertDjangoResult(
+  websiteName: string,
+  sourceUrl: string,
+  brandName?: string
+): Promise<any> {
+  let resultAxios = await axios.get(
+    `http://${process.env.DJANGO_HOST}:8000/crawler/${websiteName}/${sourceUrl}`
+  )
   resultAxios = resultAxios.data
   let result: CrawledItemInfo = {
     brandKor: resultAxios.brand || brandName,
@@ -103,13 +110,30 @@ export function parseHtml(
   return value
 }
 
-function convertSelectorListToString(selectors: string[]): string {
-  let result = ""
-  selectors.forEach((selector, index) => {
-    if (index != 0) result += ", "
-    result += selector
-  })
-  return result
+export async function checkDuplicateCrawlingUrl(url: string): Promise<any> {
+  let querySql = `
+    SELECT * FROM "ITEM_VARIATION" item_var
+    INNER JOIN "ITEM_GROUP" item_gr ON item_var."FK_itemGroupId" = item_gr.id
+    INNER JOIN "BRAND" brand ON item_gr."FK_brandId" = brand.id
+    WHERE item_var."purchaseUrl" = '${url}'
+  `
+  let result = await RunSingleSQL(querySql)
+  if (result.length == 0) return null
+  else {
+    return {
+      brandKor: result[0].nameKor,
+      name: result[0].name,
+      originalPrice: result[0].originalPrice,
+      salePrice: null,
+      purchaseUrl: url,
+      imageUrl: [result[0].imageUrl],
+      isEstimated: false,
+
+      itemMajorType: result[0].itemMajorType,
+      itemMinorType: result[0].itemMinorType,
+      itemFinalType: result[0].itemFinalType
+    }
+  }
 }
 
 function convertStringToNumber(str: string): number {

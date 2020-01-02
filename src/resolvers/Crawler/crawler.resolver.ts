@@ -1,5 +1,5 @@
 import { CrawledItemInfo } from "./type/ReturnType"
-import { extractDomain, fetchConvertDjangoResult } from "./util"
+import { extractDomain, fetchConvertDjangoResult, checkDuplicateCrawlingUrl } from "./util"
 import { strip } from "../Utils/stringUtil"
 
 import { crawlCoor } from "./brands/coor"
@@ -26,6 +26,9 @@ module.exports = {
       args.url = strip(args.url)
       args.url = encodeURI(args.url)
 
+      let checkResult = await checkDuplicateCrawlingUrl(args.url)
+      if (checkResult) return checkResult
+
       let splitDomain = extractDomain(args.url)
       let domain = splitDomain[0]
       let subdomain = splitDomain[1]
@@ -48,14 +51,22 @@ module.exports = {
         else if (domain == "ssg.com") result = await crawlSSG(args.url)
         else if (domain == "ocokorea.com") result = await crawlOco(args.url)
         else if (domain == "29cm.co.kr") result = await fetchConvertDjangoResult("29cm", args.url)
-        else if (domain == "zara.com") result = await fetchConvertDjangoResult("zara", args.url, "자라")
-        else if (domain == "hm.com") result = await fetchConvertDjangoResult("handm", args.url, "H&M")
-        else if (domain == "nike.com") result = await fetchConvertDjangoResult("nike", args.url, "나이키")
-        else if (domain == "front.wemakeprice.com") result = await fetchConvertDjangoResult("wemakeprice", args.url, "")
-        else if (domain == "cosstores.com") result = await fetchConvertDjangoResult("cos", args.url, "코스")
-        else if (domain == "smartstore.naver.com") result = await fetchConvertDjangoResult("naverstore", args.url, "")
-        else if (domain == "shopping.naver.com") result = await fetchConvertDjangoResult("navershopping", args.url, "")
-        else if (domain == "ssfshop.com" && subdomain == "8seconds") result = await fetchConvertDjangoResult("8seconds", args.url, "에잇세컨즈")
+        else if (domain == "zara.com")
+          result = await fetchConvertDjangoResult("zara", args.url, "자라")
+        else if (domain == "hm.com")
+          result = await fetchConvertDjangoResult("handm", args.url, "H&M")
+        else if (domain == "nike.com")
+          result = await fetchConvertDjangoResult("nike", args.url, "나이키")
+        else if (domain == "front.wemakeprice.com")
+          result = await fetchConvertDjangoResult("wemakeprice", args.url, "")
+        else if (domain == "cosstores.com")
+          result = await fetchConvertDjangoResult("cos", args.url, "코스")
+        else if (domain == "smartstore.naver.com")
+          result = await fetchConvertDjangoResult("naverstore", args.url, "")
+        else if (domain == "shopping.naver.com")
+          result = await fetchConvertDjangoResult("navershopping", args.url, "")
+        else if (domain == "ssfshop.com" && subdomain == "8seconds")
+          result = await fetchConvertDjangoResult("8seconds", args.url, "에잇세컨즈")
         else {
           result = await crawlOthers(args.url)
           logger.debug(result.purchaseUrl)

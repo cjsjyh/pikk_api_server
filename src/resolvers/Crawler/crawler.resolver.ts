@@ -18,6 +18,7 @@ import { crawlWConcept } from "./brands/wconcept"
 import { crawlOco } from "./brands/oco"
 import { crawlSSG } from "./brands/ssg"
 
+const request = require("request")
 var logger = require("../../tools/logger")
 
 module.exports = {
@@ -42,7 +43,15 @@ module.exports = {
         else if (domain == "draw-fit.com") result = await crawlDrawFit(args.url)
         else if (domain == "theknitcompany.com") result = await crawlTheKnitCompany(args.url)
         else if (domain == "store.musinsa.com") result = await crawlMusinsa(args.url)
-        else if (domain == "llud.co.kr") result = await crawlLlude(args.url)
+        else if (domain == "musinsaapp.page.link") {
+          let redirectUrl: string = await new Promise((resolve, reject) => {
+            request(args.url, function(e, response) {
+              resolve(response.request.uri.href)
+            })
+          })
+          redirectUrl = redirectUrl.replace("https://m.", "https://")
+          result = await crawlMusinsa(redirectUrl)
+        } else if (domain == "llud.co.kr") result = await crawlLlude(args.url)
         else if (domain == "lfmall.co.kr") result = await crawlLfmall(args.url)
         else if (domain == "wconcept.co.kr") result = await crawlWConcept(args.url)
         else if (domain == "mustit.co.kr") result = await crawlMustIt(args.url)

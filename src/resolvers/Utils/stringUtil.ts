@@ -124,11 +124,16 @@ export function strip(str) {
   return str.replace(/^\s+|\s+$/g, "")
 }
 
-export function GetFormatSql(filter: any, orderAddOn: string = ""): string {
+export function GetFormatSql(filter: any, orderAddOn: string = "", tableName: string = ""): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
-    if (Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") && Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")) {
-      filterSql += ` ORDER BY "${filter.filterGeneral.sortBy}" ${filter.filterGeneral.sort} ${orderAddOn} NULLS LAST`
+    if (
+      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") &&
+      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")
+    ) {
+      filterSql += ` ORDER BY ${tableName == "" ? "" : tableName + "."}"${
+        filter.filterGeneral.sortBy
+      }" ${filter.filterGeneral.sort} ${orderAddOn} NULLS LAST`
     }
     if (filter.filterGeneral.first > 30) filter.filterGeneral.first = 30
     filterSql += " LIMIT " + filter.filterGeneral.first + " OFFSET " + filter.filterGeneral.start
@@ -138,7 +143,11 @@ export function GetFormatSql(filter: any, orderAddOn: string = ""): string {
   return filterSql
 }
 
-export function ConvertListToString(list: any, appendString: string = "", wrapString: string = ""): string {
+export function ConvertListToString(
+  list: any,
+  appendString: string = "",
+  wrapString: string = ""
+): string {
   let result = ""
   let isFirst = true
 
@@ -153,7 +162,11 @@ export function ConvertListToString(list: any, appendString: string = "", wrapSt
   return result
 }
 
-export function ConvertListToOrderedPair(list: any, append: string = "", isNumber: boolean = true): string {
+export function ConvertListToOrderedPair(
+  list: any,
+  append: string = "",
+  isNumber: boolean = true
+): string {
   let result = ""
   list.forEach((item, index) => {
     if (index != 0) result += ","
@@ -196,8 +209,12 @@ export function MakeCacheNameByObject(obj: any): string {
 }
 
 export function IsNewImage(imageUrl: string): boolean {
-  if (!imageUrl.includes("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/")) return true
-  let removedUrl = imageUrl.replace("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/", "")
+  if (!imageUrl.includes("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/"))
+    return true
+  let removedUrl = imageUrl.replace(
+    "https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/",
+    ""
+  )
   let folderName = removedUrl.split("/")[0]
   if (folderName.includes("_temp")) return true
   else return false

@@ -72,6 +72,7 @@ export type RecommendPostQueryFilter = {
   postType: string
   styleType: string
   itemId: number
+  reviewId: number
   minimumPickCount: number
   recommendReason: string[]
   itemMajorType: string[]

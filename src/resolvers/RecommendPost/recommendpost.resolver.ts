@@ -585,6 +585,18 @@ async function GetPostFilterSql(filter: ArgType.RecommendPostQueryFilter): Promi
     multipleJoinQuery = true
   }
 
+  if (filter.reviewId) {
+    if (!multipleJoinQuery)
+      filterJoinSql += `INNER JOIN "ITEM_REVIEW" review ON review."FK_postId" = rec_post.id`
+
+    filterWhereSql = MakeMultipleQuery(
+      multipleWhereQuery,
+      filterWhereSql,
+      ` review.id = ${filter.reviewId}`
+    )
+    multipleJoinQuery = true
+  }
+
   if (filter.accountId) {
     filterWhereSql = MakeMultipleQuery(
       multipleWhereQuery,

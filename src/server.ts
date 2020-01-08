@@ -24,7 +24,10 @@ const port = 80
 //-------------------------------
 //TEMPORARY IMPORT FOR TESTING
 //-------------------------------
-import { InsertIntoNotificationQueue, ProcessNotificationQueue } from "./resolvers/Notification/util"
+import {
+  InsertIntoNotificationQueue,
+  ProcessNotificationQueue
+} from "./resolvers/Notification/util"
 import { CopyImageWithDifferentName } from "./tools/tool"
 import { DeployImageBy4Versions } from "./resolvers/Utils/promiseUtil"
 import { VerifyJWT } from "./resolvers/Utils/securityUtil"
@@ -51,7 +54,10 @@ const server = new ApolloServer({
   schema,
   context: ({ req }) => {
     const header: any = req.headers
-    if (!Object.prototype.hasOwnProperty.call(header, "authorizationtoken") || !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")) {
+    if (
+      !Object.prototype.hasOwnProperty.call(header, "authorizationtoken") ||
+      !Object.prototype.hasOwnProperty.call(header, "authorizationuserid")
+    ) {
       return { IsVerified: false }
     } else if (!header.authorizationtoken || !header.authorizationuserid) {
       return { IsVerified: false }
@@ -76,7 +82,10 @@ app.get("/", (req: express.Request, res: express.Response) => {
 })
 
 // async function testfunc() {
-//   await FindAndCombineDuplicateItem()
+//   const request = require("request")
+//   // await request("https://musinsaapp.page.link/ufpBJAk3YoE6krGk9", function(e, response) {
+//   //   console.log(response.request.uri.href)
+//   // })
 // }
 // testfunc()
 
@@ -85,7 +94,9 @@ cron.schedule("*/1 * * * *", function() {
 })
 
 const httpServer = createServer(app)
-httpServer.listen({ port: port }, (): void => logger.info(`GraphQL is now running on http://localhost:${port}/graphql`))
+httpServer.listen({ port: port }, (): void =>
+  logger.info(`GraphQL is now running on http://localhost:${port}/graphql`)
+)
 
 /*
 process.on("SIGINT", async function() {

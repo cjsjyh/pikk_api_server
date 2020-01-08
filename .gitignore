@@ -9,4 +9,6 @@ config.json
 *.ppk
 *.csv
 '~/
+logs/
+log/
 image/

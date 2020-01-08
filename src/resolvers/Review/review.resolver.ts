@@ -33,14 +33,21 @@ module.exports = {
 
             filterSql = sqlResult.filterSql
             formatSql = sqlResult.formatSql
-          } else {
+          }
+          //Filter from DB
+          else {
             filterSql = GetReviewFilterSql(arg)
-            formatSql = GetFormatSql(arg)
+            formatSql = GetFormatSql(arg, "", "review")
             overrideSql = OverrideReviewSql(arg)
           }
         }
 
-        let reviewSql = `SELECT * FROM "ITEM_REVIEW" review ${filterSql} ${formatSql}`
+        let reviewSql = `
+          SELECT review.* FROM "ITEM_REVIEW" review
+          INNER JOIN "RECOMMEND_POST" post ON post.id = review."FK_postId"
+          ${filterSql} ${formatSql}
+        `
+
         if (overrideSql != "") reviewSql = overrideSql + filterSql + formatSql
 
         let queryResult = await RunSingleSQL(reviewSql)
@@ -151,11 +158,19 @@ module.exports = {
 function GetReviewFilterSql(filter: ReviewQuery): string {
   let filterSql: string = ""
   if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "reviewId")) {
-    filterSql = `WHERE id=${filter.reviewFilter.reviewId}`
+    filterSql = `WHERE review.id=${filter.reviewFilter.reviewId}`
   }
 
   if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "itemId")) {
-    filterSql = `WHERE "FK_itemId"=${filter.reviewFilter.itemId}`
+    filterSql = `WHERE review."FK_itemId"=${filter.reviewFilter.itemId}`
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "postId")) {
+    filterSql = `WHERE review."FK_postId"=${filter.reviewFilter.postId}`
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "postType")) {
+    filterSql = `WHERE post."postType"='${filter.reviewFilter.postType}'`
   }
 
   return filterSql

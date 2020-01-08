@@ -1,9 +1,13 @@
 type Query {
   allRecommendPosts(recommendPostOption: RecommendPostQuery!): [RecommendPostInfo!]
   _allRecommendPostsMetadata(recommendPostOption: RecommendPostQuery!): Int!
-  getUserPickkRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
+  getUserPickkRecommendPost(
+    pickkRecommendPostOption: PickkRecommendPostQuery!
+  ): [RecommendPostInfo!]
   _getUserPickkRecommendPostMetadata(pickkRecommendPostOption: PickkRecommendPostQuery!): Int!
-  getUserFollowRecommendPost(pickkRecommendPostOption: PickkRecommendPostQuery!): [RecommendPostInfo!]
+  getUserFollowRecommendPost(
+    pickkRecommendPostOption: PickkRecommendPostQuery!
+  ): [RecommendPostInfo!]
   _getUserFollowRecommendPostMetadata(pickkRecommendPostOption: PickkRecommendPostQuery!): Int!
   #getTempSavedRecommendPost(tempSavedRecommendPostOption: TempSavedRecommendPostQuery!): #------
 }
@@ -53,6 +57,7 @@ input RecommendPostQueryFilter {
   postType: RecommendPostType
   styleType: StyleType
   itemId: Int
+  reviewId: Int
   minimumPickCount: Int = 0
   recommendReason: [RecommendReason]
   itemMajorType: [ItemMajorType]

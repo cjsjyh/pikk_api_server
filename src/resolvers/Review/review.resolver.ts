@@ -49,7 +49,7 @@ module.exports = {
         `
 
         if (overrideSql != "") reviewSql = overrideSql + filterSql + formatSql
-
+        console.log(reviewSql)
         let queryResult = await RunSingleSQL(reviewSql)
         //Query Item Info
         let selectionSet = ExtractSelectionSet(info.fieldNodes[0])
@@ -156,21 +156,34 @@ module.exports = {
 }
 
 function GetReviewFilterSql(filter: ReviewQuery): string {
+  let isMultiple = false
   let filterSql: string = ""
   if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "reviewId")) {
-    filterSql = `WHERE review.id=${filter.reviewFilter.reviewId}`
+    if (!isMultiple) filterSql += " WHERE "
+    else filterSql += " AND "
+    filterSql += ` review.id=${filter.reviewFilter.reviewId}`
+    isMultiple = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "itemId")) {
-    filterSql = `WHERE review."FK_itemId"=${filter.reviewFilter.itemId}`
+    if (!isMultiple) filterSql += " WHERE "
+    else filterSql += " AND "
+    filterSql += ` review."FK_itemId"=${filter.reviewFilter.itemId}`
+    isMultiple = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "postId")) {
-    filterSql = `WHERE review."FK_postId"=${filter.reviewFilter.postId}`
+    if (!isMultiple) filterSql += " WHERE "
+    else filterSql += " AND "
+    filterSql += ` review."FK_postId"=${filter.reviewFilter.postId}`
+    isMultiple = true
   }
 
   if (Object.prototype.hasOwnProperty.call(filter.reviewFilter, "postType")) {
-    filterSql = `WHERE post."postType"='${filter.reviewFilter.postType}'`
+    if (!isMultiple) filterSql += " WHERE "
+    else filterSql += " AND "
+    filterSql += ` post."postType"='${filter.reviewFilter.postType}'`
+    isMultiple = true
   }
 
   return filterSql

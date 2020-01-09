@@ -36,7 +36,7 @@ module.exports = {
           //Filter from DB
           else {
             filterSql = GetReviewFilterSql(arg)
-            if (arg.filterGeneral.sortBy == "userId") arg.filterGeneral.sortBy = "FK_accountId"
+            if (arg.filterGeneral && arg.filterGeneral.sortBy == "userId") arg.filterGeneral.sortBy = "FK_accountId"
             formatSql = GetFormatSql(arg, "", "review")
             overrideSql = OverrideReviewSql(arg)
           }

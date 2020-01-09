@@ -126,10 +126,7 @@ export function strip(str) {
 export function GetFormatSql(filter: any, orderAddOn: string = "", tableName: string = ""): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
-    if (
-      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") &&
-      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")
-    ) {
+    if ( Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") && Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")) {
       filterSql += ` ORDER BY ${tableName == "" ? "" : tableName + "."}"${
         filter.filterGeneral.sortBy
       }" ${filter.filterGeneral.sort} ${orderAddOn} NULLS LAST`

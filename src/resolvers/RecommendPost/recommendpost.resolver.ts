@@ -1,39 +1,20 @@
 import { GraphQLResolveInfo } from "graphql"
-
-import * as ArgType from "./type/ArgType"
-import * as ReturnType from "./type/ReturnType"
-import { QueryArgInfo } from "./type/ArgType"
-import { MutationArgInfo } from "./type/ArgType"
-
-import {
-  GetMetaData,
-  SequentialPromiseValue,
-  RunSingleSQL,
-  DeployImageBy4Versions,
-  ExtractFieldFromList
-} from "../Utils/promiseUtil"
-import {
-  GetFormatSql,
-  MakeMultipleQuery,
-  ConvertListToString,
-  MakeCacheNameByObject,
-  getFormatDate,
-  getFormatHour,
-  IsNewImage,
-  InsertImageIntoDeleteQueue,
-  ConvertListToOrderedPair,
-  formatSingleQuoteForString
-} from "../Utils/stringUtil"
-
-import { InsertItemForRecommendPost } from "../Item/util"
-import { InsertItemReview, EditReview } from "../Review/util"
-import { performance } from "perf_hooks"
-import { GetRecommendPostList } from "./util"
-import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
-import { GetRedis, SetRedis, DelCacheByPattern } from "../../database/redisConnect"
+import { DelCacheByPattern, GetRedis, SetRedis } from "../../database/redisConnect"
 import { IncreaseViewCountFunc } from "../Common/util"
+import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertIntoNotificationQueue } from "../Notification/util"
+import { EditReview, InsertItemReview } from "../Review/util"
 import { DoPropertiesExist } from "../Utils/arrayUtil"
+import { DeployImageBy4Versions, ExtractFieldFromList, RunSingleSQL, SequentialPromiseValue } from "../Utils/promiseUtil"
+import { CheckWriter, ValidateUser } from "../Utils/securityUtil"
+import { ConvertListToOrderedPair, ConvertListToString, formatSingleQuoteForString, getFormatDate, getFormatHour, GetFormatSql, InsertImageIntoDeleteQueue, IsNewImage, MakeCacheNameByObject, MakeMultipleQuery } from "../Utils/stringUtil"
+import * as ArgType from "./type/ArgType"
+import { MutationArgInfo, QueryArgInfo } from "./type/ArgType"
+import * as ReturnType from "./type/ReturnType"
+import { GetRecommendPostList } from "./util"
+
+
+
 var logger = require("../../tools/logger")
 var elastic = require("../../database/elasticConnect")
 
@@ -372,6 +353,7 @@ module.exports = {
         )
       }
       try {
+        //delete cache to show new contents
         if (arg.postType == "REVIEW") await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
         if (arg.postType == "LOOK") await DelCacheByPattern("allRecom*DESCtimeLOOK*")
         await DelCacheByPattern("allRecom01DESCtime" + String(arg.postId) + "*")
@@ -405,6 +387,7 @@ module.exports = {
           }
         }
 
+        //delete reviews
         if (Object.prototype.hasOwnProperty.call(arg, "deletedReviews")) {
           if (arg.deletedReviews.length != 0) {
             let deleteSql = ""
@@ -456,6 +439,7 @@ module.exports = {
       }
 
       try {
+        //delete cache to hide deleted posts
         await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
         await DelCacheByPattern("allRecom*DESCtimeLOOK*")
         logger.info(`Deleted recommend post cache`)
@@ -493,6 +477,7 @@ module.exports = {
       }
     },
 
+    //Not used yet. requires testing
     tempSaveRecommendPost: async (
       parent: void,
       args: MutationArgInfo,

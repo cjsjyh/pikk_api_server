@@ -1,20 +1,19 @@
 var jwt = require("jsonwebtoken")
 
-import * as ArgType from "./type/ArgType"
-import * as ReturnType from "./type/ReturnType"
-import { QueryArgInfo } from "./type/ArgType"
-import { MutationArgInfo } from "./type/ArgType"
-import { RunSingleSQL, ExtractSelectionSet, ExtractFieldFromList, DeployImageBy4Versions } from "../Utils/promiseUtil"
-import { GetFormatSql, ConvertListToOrderedPair, InsertImageIntoDeleteQueue, IsNewImage } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
-import { GetUserInfoByIdList, GetChannelRankingId } from "./util"
-import { ValidateUser } from "../Utils/securityUtil"
-import { InsertImageIntoTable } from "../Common/util"
 import { DelCacheByPattern } from "../../database/redisConnect"
+import { DeployImageBy4Versions, ExtractFieldFromList, ExtractSelectionSet, RunSingleSQL } from "../Utils/promiseUtil"
+import { ValidateUser } from "../Utils/securityUtil"
+import { ConvertListToOrderedPair, GetFormatSql, InsertImageIntoDeleteQueue, IsNewImage } from "../Utils/stringUtil"
+import * as ArgType from "./type/ArgType"
+import { MutationArgInfo, QueryArgInfo } from "./type/ArgType"
+import * as ReturnType from "./type/ReturnType"
+import { GetChannelRankingId, GetUserInfoByIdList } from "./util"
 var logger = require("../../tools/logger")
 
 module.exports = {
   Mutation: {
+    //crate user or return id if not a new user
     createUser: async (parent: void, args: MutationArgInfo, ctx: any): Promise<ReturnType.UserCredentialInfo> => {
       let arg: ArgType.UserCredentialInput = args.userAccountInfo
       //Make UserCredential
@@ -127,6 +126,7 @@ module.exports = {
       }
     },
 
+    //check if username already exists
     isDuplicateName: async (parent: void, args: any): Promise<Boolean> => {
       try {
         let query = `SELECT * FROM "USER_INFO" WHERE name='${args.name}'`
@@ -164,9 +164,11 @@ module.exports = {
         let postSql = `SELECT "FK_channelId" FROM "CHANNEL_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`
         let followingChannelList = await RunSingleSQL(postSql)
         if (followingChannelList.length == 0) return []
-
+        //extract channel id(user id) of channels that requested user followed
         let channelIdList = ExtractFieldFromList(followingChannelList, "FK_channelId")
+
         let requestSql = UserInfoSelectionField(info)
+        //find user info of extracted channel id
         let final_result = await GetUserInfoByIdList(channelIdList, requestSql, formatSql)
         logger.info(`User Pick Channel called id ${arg.userId}`)
         return final_result
@@ -274,6 +276,7 @@ async function GetUpdateUserInfoSql(arg: ArgType.UserEditInfoInput): Promise<str
   if (Object.prototype.hasOwnProperty.call(arg, "profileImageUrl") && arg.profileImageUrl != null) {
     if (arg.profileImageUrl != null) {
       try {
+        //if user changed profile image, delete cache to reflect changes
         if (IsNewImage(arg.profileImageUrl)) {
           await DelCacheByPattern("allRecom*DESCtimeREVIEW*")
           await DelCacheByPattern("allRecom*DESCtimeLOOK*")

@@ -3,7 +3,6 @@ export function logWithDate(content: any) {
 }
 
 export function removeAllButLast(string, token) {
-  /* Requires STRING not contain TOKEN */
   var parts = string.split(token)
   return parts.slice(0, -1).join("") + token + parts.slice(-1)
 }
@@ -127,10 +126,7 @@ export function strip(str) {
 export function GetFormatSql(filter: any, orderAddOn: string = "", tableName: string = ""): string {
   let filterSql = ""
   if (Object.prototype.hasOwnProperty.call(filter, "filterGeneral")) {
-    if (
-      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") &&
-      Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")
-    ) {
+    if ( Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sortBy") && Object.prototype.hasOwnProperty.call(filter.filterGeneral, "sort")) {
       filterSql += ` ORDER BY ${tableName == "" ? "" : tableName + "."}"${
         filter.filterGeneral.sortBy
       }" ${filter.filterGeneral.sort} ${orderAddOn} NULLS LAST`
@@ -209,6 +205,7 @@ export function MakeCacheNameByObject(obj: any): string {
 }
 
 export function IsNewImage(imageUrl: string): boolean {
+  //not self hosted
   if (!imageUrl.includes("https://fashiondogam-images.s3.ap-northeast-2.amazonaws.com/"))
     return true
   let removedUrl = imageUrl.replace(

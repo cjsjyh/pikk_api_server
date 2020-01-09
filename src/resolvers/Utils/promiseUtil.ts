@@ -8,15 +8,7 @@ const readChunk = require("read-chunk")
 var axios = require("axios")
 
 import * as AWS from "aws-sdk"
-import {
-  getFormatDate,
-  getFormatHour,
-  replaceLastOccurence,
-  removeAllButLast,
-  ConvertListToString,
-  IsNewImage,
-  ExtractFieldFromObject
-} from "./stringUtil"
+import { ConvertListToString, ExtractFieldFromObject, getFormatDate, getFormatHour, IsNewImage, removeAllButLast, replaceLastOccurence } from "./stringUtil"
 var logger = require("../../tools/logger")
 
 export async function SequentialPromiseValue<T, U>(arr: T[], func: Function, args: Array<U> = []): Promise<any> {

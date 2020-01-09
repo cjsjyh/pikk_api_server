@@ -49,6 +49,7 @@ module.exports = {
   },
 
   Mutation: {
+    //Upload Images temporarily
     UploadImages: async (parent: void, args: any, ctx: any): Promise<string[]> => {
       try {
         let imageUrls: string[] = await SequentialPromiseValue(args.images, UploadImageWrapper)
@@ -60,22 +61,26 @@ module.exports = {
       }
     },
 
+    //Toggle Follow Target (calls PostgreSQL function)
     FollowTarget: async (parent: void, args: MutationArgInfo, ctx: any): Promise<number> => {
       let arg: ReturnType.FollowInfo = args.followInfo
       try {
         if (!ValidateUser(ctx, arg.accountId)) throw new Error("[Error] User not authorized!")
 
+        //To increase pick count in post list, delete cache
         if (arg.targetType == "RECOMMEND") {
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "*")
         }
         let query = `SELECT toggle_${arg.targetType}_Follow(${arg.accountId},${arg.targetId})`
         let result = await RunSingleSQL(query)
         result = Object.values(result[0])
-        //If target was followed (not cancelled)
+        //Send Notification: to post writer
         if ((arg.targetType == "RECOMMEND" || arg.targetType == "COMMUNITY") && result[0] == 1)
           InsertIntoNotificationQueue("NEW_PICKK_TO_MY_POST", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
+        //Send Notification: to comment writer
         else if ((arg.targetType == "RECOMMEND_COMMENT" || arg.targetType == "COMMUNITY_COMMENT") && result[0] == 1)
           InsertIntoNotificationQueue("NEW_PICKK_TO_MY_COMMENT", arg.targetId, arg.targetType, "", "", arg.targetId, arg.accountId)
+        //Send Notification: to user
         else if (arg.targetType == "CHANNEL" && result[0] == 1)
           InsertIntoNotificationQueue("NEW_PICKK_TO_MY_CHANNEL", arg.targetId, arg.targetType, "", "", -1, arg.accountId)
 
@@ -88,6 +93,7 @@ module.exports = {
       }
     },
 
+    //Increase viewcount for RECOMMEND_POST and COMMUNITY_POST
     IncreaseViewCount: async (parent: void, args: any): Promise<Boolean> => {
       try {
         let query = `UPDATE "${args.postType}_POST" SET "viewCount" = "viewCount" + 1 WHERE id = ${args.postId}`

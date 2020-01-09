@@ -3,6 +3,7 @@ import { IsNewImage, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
 import { ItemReviewImgEditInfoInput } from "../Review/type/ArgType"
 var logger = require("../../tools/logger")
 
+//IncreaseViewFunction for other resolvers to call
 export function IncreaseViewCountFunc(postType: string, postId: number): Promise<Boolean> {
   return new Promise(async (resolve, reject) => {
     try {
@@ -17,6 +18,7 @@ export function IncreaseViewCountFunc(postType: string, postId: number): Promise
   })
 }
 
+//Insert image into tables with image url
 export async function InsertImageIntoTable(
   multipleValues: string = "",
   tableName?: string,
@@ -32,6 +34,7 @@ export async function InsertImageIntoTable(
   await RunSingleSQL(querySql)
 }
 
+//Edit image into tables with image url
 export async function EditImageUrlInTable(
   image: ItemReviewImgEditInfoInput,
   tableName: string,
@@ -44,10 +47,14 @@ export async function EditImageUrlInTable(
     if (Object.prototype.hasOwnProperty.call(image, "id") && image.id != null) {
       let deployUrl = image.imageUrl
       let deleteSql = ""
+      //If new image
       if (IsNewImage(image.imageUrl)) {
+        //Add previous url into delete table
         deleteSql = InsertImageIntoDeleteQueue(tableName, "imageUrl", "id", [image.id])
+        //deploy image and get imageUrl
         deployUrl = await DeployImageBy4Versions(deployUrl)
       }
+      //Update image url
       await RunSingleSQL(`
       ${deleteSql}
       UPDATE "${tableName}" SET "imageUrl"='${deployUrl}', "order"=${index} WHERE id=${image.id}`)

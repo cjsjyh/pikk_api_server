@@ -1,6 +1,6 @@
-import { CrawledItemInfo } from "./type/ReturnType"
-import { strip, formatUrl, formatUrls } from "../Utils/stringUtil"
 import { RunSingleSQL } from "../Utils/promiseUtil"
+import { formatUrls, strip } from "../Utils/stringUtil"
+import { CrawledItemInfo } from "./type/ReturnType"
 
 const cheerio = require("cheerio")
 const request = require("request")
@@ -31,6 +31,7 @@ export async function fetchConvertDjangoResult(
   return result
 }
 
+//crawl using request
 export async function getHtmlRequest(sourceUrl: string) {
   try {
     return new Promise((resolve, reject) => {
@@ -56,6 +57,7 @@ export async function getHtmlRequest(sourceUrl: string) {
   }
 }
 
+//crawl using axios
 export async function getHtmlAxios(sourceUrl: string) {
   try {
     return axios.get(sourceUrl, {
@@ -66,6 +68,7 @@ export async function getHtmlAxios(sourceUrl: string) {
   }
 }
 
+//traverse html
 export function parseHtml(
   htmlCode: any,
   returnType: "string" | "number",
@@ -110,6 +113,7 @@ export function parseHtml(
   return value
 }
 
+//check if requested url has been already crawled
 export async function checkDuplicateCrawlingUrl(url: string): Promise<any> {
   let querySql = `
     SELECT * FROM "ITEM_VARIATION" item_var

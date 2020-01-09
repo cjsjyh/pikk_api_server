@@ -16,9 +16,11 @@ module.exports = {
       let arg: ArgType.CommentQuery = args.commentOption
 
       try {
+        //get table name of this comment RECOMMEND / COMMUNITY
         let boardName = GetBoardName(arg.postType)
         let querySql = `SELECT * FROM "${boardName}_COMMENT" where ${GetCommentQuerySql(arg.commentFilter)}`
         let commentResults: ReturnType.CommentInfo[] = await RunSingleSQL(querySql)
+        //match DB query result to GraphQL schema
         commentResults.forEach(comment => {
           comment.postId = comment.FK_postId
           comment.accountId = comment.FK_accountId
@@ -34,6 +36,7 @@ module.exports = {
       }
     },
 
+    //get comment count (query with same options but returns count instead of comment info)
     _getCommentsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
       let arg: ArgType.CommentQuery = args.commentOption
       try {
@@ -56,22 +59,25 @@ module.exports = {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
       try {
+        //To increase comment count in post list, delete cache
         if (arg.targetType == "RECOMMEND") {
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "*")
         }
 
+        //Take care of ' in text
         formatSingleQuoteForString(arg)
+        //Insert comment
         let querySql = `INSERT INTO "${ConvertToCommentTableName(arg.targetType)}" ("FK_postId","FK_accountId","FK_parentId","content") 
         VALUES(
           ${arg.targetId},${arg.accountId},${arg.parentId},'${arg.content}')`
         let rows = await RunSingleSQL(querySql)
         logger.info(`Comment created by User${arg.accountId} on Post${arg.targetType} id ${arg.targetId}`)
 
-        //Commented to a post
+        //Send notification: Commented to a post
         if (arg.parentId == null) {
           InsertIntoNotificationQueue("COMMENT_TO_MY_POST", arg.targetId, arg.targetType, "", arg.content, -1, arg.accountId)
         }
-        //Comented to a comment
+        //Send notification: Comented to a comment
         else {
           InsertIntoNotificationQueue("COMMENT_TO_MY_COMMENT", arg.targetId, arg.targetType, "", arg.content, arg.parentId, arg.accountId)
         }
@@ -92,10 +98,12 @@ module.exports = {
         throw new Error(`[Error] User ${arg.accountId} is not the writer of ${arg.targetType} Comment ${arg.targetId}`)
       }
       try {
+        //To increase comment count in post list, delete cache
         if (arg.targetType == "RECOMMEND") {
           await DelCacheByPattern("allRecom01DESCtime" + String(arg.targetId) + "*")
         }
 
+        //Delete comment
         let querySql = `DELETE FROM "${ConvertToCommentTableName(arg.targetType)}" WHERE id = ${arg.targetId}`
         let rows = await RunSingleSQL(querySql)
 
@@ -110,6 +118,7 @@ module.exports = {
   }
 }
 
+//Get SQL to filter comments
 function GetCommentQuerySql(arg: ArgType.CommentFilter): string {
   let isMultiple = false
   let resultSql = ""

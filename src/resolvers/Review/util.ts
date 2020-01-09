@@ -1,19 +1,10 @@
-import * as ReviewArgType from "./type/ArgType"
-import {
-  ExtractSelectionSet,
-  RunSingleSQL,
-  ExtractFieldFromList,
-  SequentialPromiseValue,
-  MakeGroups,
-  AssignGroupsToParent,
-  DeployImageBy4Versions,
-  GetSubField
-} from "../Utils/promiseUtil"
-import { ConvertListToString, ConvertListToOrderedPair } from "../Utils/stringUtil"
 import { GraphQLResolveInfo } from "graphql"
-import { FetchItemsForReview, EditItem, InsertItemForRecommendPost } from "../Item/util"
+import { EditImageUrlInTable, IncreaseViewCountFunc, InsertImageIntoTable } from "../Common/util"
+import { EditItem, FetchItemsForReview, InsertItemForRecommendPost } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
-import { IncreaseViewCountFunc, InsertImageIntoTable, EditImageUrlInTable } from "../Common/util"
+import { DeployImageBy4Versions, ExtractFieldFromList, ExtractSelectionSet, GetSubField, RunSingleSQL, SequentialPromiseValue } from "../Utils/promiseUtil"
+import { ConvertListToOrderedPair } from "../Utils/stringUtil"
+import * as ReviewArgType from "./type/ArgType"
 var logger = require("../../tools/logger")
 
 export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, args: any): Promise<boolean> {
@@ -26,7 +17,7 @@ export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, 
         ${setSql}
         WHERE "id"=${review.reviewId}
       `)
-
+      //Edit image
       if (Object.prototype.hasOwnProperty.call(review, "images")) {
         await Promise.all(
           review.images.map((image, index) => {
@@ -34,7 +25,7 @@ export async function EditReview(review: ReviewArgType.ItemReviewEditInfoInput, 
           })
         )
       }
-
+      //Edit imte
       if (Object.prototype.hasOwnProperty.call(review, "item")) {
         await EditItem(review.item)
       }
@@ -62,15 +53,18 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           return IncreaseViewCountFunc("RECOMMEND", post.id)
         })
       )
+      //fetch reviews for a rec post and set as a property
       let reviewResult = await GetSubField(postResult, "ITEM_REVIEW", "FK_postId", "reviews", 1, "", `ORDER BY "order" ASC`)
       reviewResult.forEach(review => {
         ReviewMatchGraphQL(review)
         review.images = []
       })
+      // fetch images for a review and set as a property
       if (IsSubFieldRequired(selectionSet, "reviews", "images")) {
         let imgResult = await GetSubField(reviewResult, "ITEM_REVIEW_IMAGE", "FK_reviewId", "images", 2, "", `ORDER BY "order" ASC`)
         imgResult.forEach(img => (img.reviewId = img.FK_reviewId))
       }
+      // fetch userinfo for a review and set as a property
       if (IsSubFieldRequired(selectionSet, "reviews", "userInfo")) {
         await Promise.all(
           reviewResult.map(reviewSet => {
@@ -78,6 +72,7 @@ export async function GetReviewsByPostList(postResult: any, info: GraphQLResolve
           })
         )
       }
+      // fetch iteminfo for a review and set as a property
       if (IsSubFieldRequired(selectionSet, "reviews", "itemInfo")) {
         await Promise.all(
           reviewResult.map(reviewSet => {
@@ -125,10 +120,12 @@ export function InsertItemReview(
           await Promise.all(
             imgUrlList.map((imgUrl, index) => {
               return new Promise(async (resolve, reject) => {
+                //deploy images and set returned url in their original order
                 try {
                   imgUrlList[index] = await DeployImageBy4Versions(imgUrl)
                   resolve()
                 } catch (e) {
+                  //if failed, retry
                   try {
                     imgUrlList[index] = await DeployImageBy4Versions(imgUrl)
                     resolve()

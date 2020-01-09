@@ -3,14 +3,14 @@ import express from "express"
 import { ApolloServer } from "apollo-server-express"
 import { createServer } from "http"
 import compression from "compression"
-const path = require("path")
 
 //Security
 import cors from "cors"
-var jwt = require("jsonwebtoken")
+import { VerifyJWT } from "./resolvers/Utils/securityUtil"
 require("dotenv").config()
 
 //Utility
+import { ProcessNotificationQueue } from "./resolvers/Notification/util"
 var logger = require("./tools/logger")
 var cron = require("node-cron")
 
@@ -21,16 +21,6 @@ import schema from "./schema"
 //Constants
 const port = 80
 
-//-------------------------------
-//TEMPORARY IMPORT FOR TESTING
-//-------------------------------
-import {
-  InsertIntoNotificationQueue,
-  ProcessNotificationQueue
-} from "./resolvers/Notification/util"
-import { CopyImageWithDifferentName } from "./tools/tool"
-import { DeployImageBy4Versions } from "./resolvers/Utils/promiseUtil"
-import { VerifyJWT } from "./resolvers/Utils/securityUtil"
 
 //Create Express Server
 const app = express()
@@ -81,13 +71,6 @@ app.get("/", (req: express.Request, res: express.Response) => {
   res.send("TEST")
 })
 
-// async function testfunc() {
-//   const request = require("request")
-//   // await request("https://musinsaapp.page.link/ufpBJAk3YoE6krGk9", function(e, response) {
-//   //   console.log(response.request.uri.href)
-//   // })
-// }
-// testfunc()
 
 cron.schedule("*/1 * * * *", function() {
   ProcessNotificationQueue()
@@ -97,17 +80,3 @@ const httpServer = createServer(app)
 httpServer.listen({ port: port }, (): void =>
   logger.info(`GraphQL is now running on http://localhost:${port}/graphql`)
 )
-
-/*
-process.on("SIGINT", async function() {
-  await pool.end()
-  
-  if (process.env.MODE == "DEPLOY") {
-    limiter.redisClient.quit()
-  }
-  httpServer.close(function() {
-    process.exit(0)
-  })
-  
-})
-*/

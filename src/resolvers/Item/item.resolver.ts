@@ -1,25 +1,20 @@
-import * as AWS from "aws-sdk"
-const { pool } = require("../../database/connectionPool")
-const { S3 } = require("../../database/aws_s3")
-
-import * as ArgType from "./type/ArgType"
-import * as ReturnType from "./type/ReturnType"
-import { QueryArgInfo } from "./type/ArgType"
-import { MutationArgInfo } from "./type/ArgType"
-import { GetMetaData, RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { GetFormatSql, MakeMultipleQuery, ConvertListToOrderedPair, MakeCacheNameByObject } from "../Utils/stringUtil"
-
-import { GraphQLResolveInfo } from "graphql"
-import { InsertItem, GetItemsById, GetItemIdInRanking, CombineItem } from "./util"
 import { GetRedis, SetRedis } from "../../database/redisConnect"
-import { performance } from "perf_hooks"
-import { FindAndCombineDuplicateItem } from "./util"
+import { ExtractFieldFromList, RunSingleSQL } from "../Utils/promiseUtil"
 import { VerifyJWT } from "../Utils/securityUtil"
+import { ConvertListToOrderedPair, GetFormatSql, MakeCacheNameByObject, MakeMultipleQuery } from "../Utils/stringUtil"
+import * as ArgType from "./type/ArgType"
+import { MutationArgInfo, QueryArgInfo } from "./type/ArgType"
+import * as ReturnType from "./type/ReturnType"
+import { CombineItem, FindAndCombineDuplicateItem, GetItemIdInRanking, GetItemsById, InsertItem } from "./util"
+
 
 var logger = require("../../tools/logger")
 
 module.exports = {
   Query: {
+
+    //Deprecated resolver. Need to be updated to be used
+
     // allItems: async (
     //   parent: void,
     //   args: QueryArgInfo,
@@ -61,8 +56,10 @@ module.exports = {
         let formatSql = GetFormatSql(arg)
         let queryResult = await RunSingleSQL(`SELECT "FK_itemId" FROM "ITEM_FOLLOWER" WHERE "FK_accountId"=${arg.userId}`)
         if (queryResult.length == 0) return []
+        //extract item id
         let idList = ExtractFieldFromList(queryResult, "FK_itemId")
 
+        //get item info with extracted id
         let itemResult = await GetItemsById(idList, formatSql)
         logger.info(`User ${arg.userId} queried PickItem`)
         return itemResult
@@ -86,6 +83,7 @@ module.exports = {
         let cacheName = "itemRank"
         cacheName += MakeCacheNameByObject(arg)
         let itemRankCache: any = await GetRedis(cacheName)
+        //if cache exists, return cache
         if (itemRankCache != null) {
           logger.info("getItemRank Cache Return")
           return JSON.parse(itemRankCache)
@@ -93,7 +91,9 @@ module.exports = {
 
         let filterSql = GetItemFilterSql(arg)
         let formatSql = GetFormatSql(arg, `, review_score."itemId" DESC `)
+        //Get item ids in the ranking
         let rankList = await GetItemIdInRanking(formatSql, filterSql.primarySql, filterSql.secondarySql)
+        //extract item id
         let itemIdList = ExtractFieldFromList(rankList, "id")
         let customFilterSql = `
         JOIN (
@@ -102,7 +102,9 @@ module.exports = {
         ) AS x (id,ordering) ON item_var.id = x.id
       `
         if (itemIdList.length == 0) return []
+        //get item info with extracted id
         let itemList = await GetItemsById(itemIdList, "ORDER BY item_full.ordering ASC", customFilterSql, "x.ordering,")
+        //save ranking data as redis cache
         await SetRedis(cacheName, JSON.stringify(itemList), 1800)
 
         logger.info("ItemRanking Called")
@@ -167,6 +169,7 @@ module.exports = {
       }
     },
 
+    //auto merge items with same name
     autoMergeItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<string> => {
       try {
         let combinationLog = await FindAndCombineDuplicateItem()
@@ -178,6 +181,7 @@ module.exports = {
       }
     },
 
+    //replace tail item with head item and delete tail item
     selfMergeItem: async (parent: void, args: MutationArgInfo, ctx: any): Promise<boolean> => {
       let arg = args.selfMerge
       try {

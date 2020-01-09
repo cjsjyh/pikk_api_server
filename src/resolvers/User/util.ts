@@ -1,8 +1,9 @@
 const { pool } = require("../../database/connectionPool")
-import * as ReturnType from "./type/ReturnType"
-import { RunSingleSQL, ExtractFieldFromList } from "../Utils/promiseUtil"
+import { ExtractFieldFromList, RunSingleSQL } from "../Utils/promiseUtil"
 import { ConvertListToString } from "../Utils/stringUtil"
+import * as ReturnType from "./type/ReturnType"
 
+//fetch multiple user info
 export async function GetUserInfoByIdList(
   userIdList: any,
   requestSql: string = "",

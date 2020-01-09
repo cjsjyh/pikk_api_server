@@ -1,9 +1,9 @@
 import { RunSingleSQL } from "../Utils/promiseUtil"
-import * as ReturnType from "./type/ReturnType"
 import { ValidateUser } from "../Utils/securityUtil"
-import { NotificationSetInfoInput, NotificationGetInfoInput } from "./type/ArgType"
-import { GroupPickNotifications, BulkUpdateNotificationsSQL } from "./util"
 import { GetFormatSql } from "../Utils/stringUtil"
+import { NotificationGetInfoInput, NotificationSetInfoInput } from "./type/ArgType"
+import * as ReturnType from "./type/ReturnType"
+import { BulkUpdateNotificationsSQL, GroupPickNotifications } from "./util"
 var logger = require("../../tools/logger")
 
 module.exports = {
@@ -39,6 +39,7 @@ module.exports = {
           WHERE noti."FK_accountId"=${arg.accountId} 
           ORDER BY time DESC ${formatSql}
         `)
+        //Group notifications with same type
         let result = GroupPickNotifications(dbResult)
         logger.info(`User notification fetched for userId: ${arg.accountId}`)
         return result
@@ -59,6 +60,7 @@ module.exports = {
   },
 
   Mutation: {
+    //set notificaiton as read
     setUserNotification: async (parent: void, args: any, ctx: any): Promise<boolean> => {
       let arg: NotificationSetInfoInput = args.notificationSetInfoInput
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
@@ -76,6 +78,7 @@ module.exports = {
       }
     },
 
+    //set all notifications as read
     setAllUserNotification: async (parent: void, arg: any, ctx: any): Promise<boolean> => {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 
@@ -92,6 +95,7 @@ module.exports = {
       }
     },
 
+    //delete notification
     deleteUserNotification: async (parent: void, args: any, ctx: any): Promise<boolean> => {
       let arg: NotificationSetInfoInput = args.notificationSetInfoInput
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
@@ -107,6 +111,7 @@ module.exports = {
       }
     },
 
+    //delete all notification
     deleteAllUserNotification: async (parent: void, arg: any, ctx: any): Promise<boolean> => {
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
 

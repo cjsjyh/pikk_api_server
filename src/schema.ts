@@ -4,8 +4,6 @@ import { GraphQLSchema } from "graphql"
 
 import path from "path"
 import { fileLoader, mergeTypes, mergeResolvers } from "merge-graphql-schemas"
-import * as fs from "fs"
-import * as glob from "glob"
 
 const graphqlArray = fileLoader(path.join(__dirname, "/**/*.graphql"))
 const resolverArray = fileLoader(path.join(__dirname, "./**/*.resolver.*"))

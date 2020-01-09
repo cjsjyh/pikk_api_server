@@ -1,9 +1,8 @@
-import { RecommendPostInfo } from "./type/ReturnType"
-import { RunSingleSQL } from "../Utils/promiseUtil"
-import { GetReviewsByPostList } from "../Review/util"
-import { GetSimpleItemListByPostList } from "../Item/util"
 import { GraphQLResolveInfo } from "graphql"
-import { ConvertListToOrderedPair } from "../Utils/stringUtil"
+import { GetSimpleItemListByPostList } from "../Item/util"
+import { GetReviewsByPostList } from "../Review/util"
+import { RunSingleSQL } from "../Utils/promiseUtil"
+import { RecommendPostInfo } from "./type/ReturnType"
 
 export function RecommendPostMatchGraphQL(postList: RecommendPostInfo[]) {
   postList.forEach(post => {
@@ -12,19 +11,23 @@ export function RecommendPostMatchGraphQL(postList: RecommendPostInfo[]) {
 }
 
 export async function GetRecommendPostList(sql: string, info: GraphQLResolveInfo) {
-  let queryResult = await RunSingleSQL(sql)
+  //fetch recommend post list with sql
+  let postResult = await RunSingleSQL(sql)
 
-  let postResult: any = queryResult
   if (postResult.length == 0) {
     return []
   }
+  //fetch reviews and set as property
   await GetReviewsByPostList(postResult, info)
+  //fetch simple itme list and set as property
   await GetSimpleItemListByPostList(postResult, info)
   RecommendPostMatchGraphQL(postResult)
 
   return postResult
 }
 
+
+//recommend post ranking. Not being used yet. requires testing & update.
 export async function GetRecommendPostRankingId(postOption: string) {
   let queryResult = await RunSingleSQL(`
     WITH post_group as

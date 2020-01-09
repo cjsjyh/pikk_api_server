@@ -1,10 +1,9 @@
 const { pool } = require("../../database/connectionPool")
 
-import * as PostReturnType from "./type/ReturnType"
-import { RunSingleSQL, DeployImageBy4Versions } from "../Utils/promiseUtil"
-
-import { MakeMultipleQuery, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
+import { DeployImageBy4Versions, RunSingleSQL } from "../Utils/promiseUtil"
+import { InsertImageIntoDeleteQueue, MakeMultipleQuery } from "../Utils/stringUtil"
 import { CommunityPostContentEditInput, CommunityPostContentInput } from "./type/ArgType"
+
 
 var logger = require("../../tools/logger")
 
@@ -55,6 +54,7 @@ export async function GetPostFilterSql(filter: any): Promise<string> {
   return filterSql
 }
 
+//Create or Edit Community post content
 export async function CreateEditCommunityPostContent(postId: number, content: CommunityPostContentEditInput, index: number) {
   try {
     //Update
@@ -72,12 +72,15 @@ export async function CreateEditCommunityPostContent(postId: number, content: Co
 }
 
 export async function InsertCommunityPostContent(postId: number, content: CommunityPostContentEditInput | CommunityPostContentInput, index: number) {
+  //Insert text content
   if (content.contentType == "TEXT") {
     await RunSingleSQL(`
     INSERT INTO "COMMUNITY_POST_CONTENT" ("FK_postId","text","contentType","order")
     VALUES (${postId},'${content.text}','${content.contentType}',${index})
   `)
-  } else if (content.contentType == "IMAGE") {
+  } 
+  //Insert Image content
+  else if (content.contentType == "IMAGE") {
     let deployedUrl = await DeployImageBy4Versions(content.imageUrl)
     await RunSingleSQL(`
     INSERT INTO "COMMUNITY_POST_CONTENT" ("FK_postId","imageUrl","contentType","order")
@@ -87,6 +90,7 @@ export async function InsertCommunityPostContent(postId: number, content: Commun
 }
 
 export async function UpdateCommunityPostContent(content: CommunityPostContentEditInput, index: number) {
+  //Update text content
   if (content.contentType == "TEXT") {
     await RunSingleSQL(`
     UPDATE "COMMUNITY_POST_CONTENT" SET 
@@ -95,7 +99,9 @@ export async function UpdateCommunityPostContent(content: CommunityPostContentEd
       "order"=${index}
     WHERE id=${content.id}
   `)
-  } else if (content.contentType == "IMAGE") {
+  } 
+  //Update Image content
+  else if (content.contentType == "IMAGE") {
     let deployedUrl = await DeployImageBy4Versions(content.imageUrl)
     let deleteImageSql = ""
     if (deployedUrl != content.imageUrl) deleteImageSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_CONTENT", "imageUrl", "id", [content.id])

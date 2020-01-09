@@ -1,9 +1,9 @@
+import { PopRedisQueue, PushRedisQueue, RedisQueueLength } from "../../database/redisConnect"
 import { GetBoardName } from "../Comment/util"
-import { NotificationInfo, NotificationDBInfo } from "./type/ReturnType"
 import { RunSingleSQL } from "../Utils/promiseUtil"
-import { PushRedisQueue, PopRedisQueue, RedisQueueLength } from "../../database/redisConnect"
-import { NotificationSetInfoInput } from "./type/ArgType"
 import { formatSingleQuoteForString } from "../Utils/stringUtil"
+import { NotificationSetInfoInput } from "./type/ArgType"
+import { NotificationInfo } from "./type/ReturnType"
 var logger = require("../../tools/logger")
 
 export async function InsertIntoNotificationQueue(

@@ -1,12 +1,11 @@
 import { GraphQLResolveInfo } from "graphql"
-import { QueryArgInfo, MutationArgInfo, ReviewQuery } from "./type/ArgType"
-import { ItemReviewInfo } from "./type/ReturnType"
-import { ExtractSelectionSet, GetSubField, ExtractFieldFromList } from "../Utils/promiseUtil"
-import { RunSingleSQL, SequentialPromiseValue } from "../Utils/promiseUtil"
-import { GetFormatSql, ConvertListToOrderedPair } from "../Utils/stringUtil"
-import { ReviewMatchGraphQL } from "./util"
 import { FetchItemsForReview } from "../Item/util"
 import { FetchUserForReview } from "../User/util"
+import { ExtractFieldFromList, ExtractSelectionSet, GetSubField, RunSingleSQL, SequentialPromiseValue } from "../Utils/promiseUtil"
+import { ConvertListToOrderedPair, GetFormatSql } from "../Utils/stringUtil"
+import { QueryArgInfo, ReviewQuery } from "./type/ArgType"
+import { ItemReviewInfo } from "./type/ReturnType"
+import { ReviewMatchGraphQL } from "./util"
 var logger = require("../../tools/logger")
 var elastic = require("../../database/elasticConnect")
 
@@ -57,9 +56,11 @@ module.exports = {
         if (selectionSet.includes("itemInfo")) {
           await SequentialPromiseValue(queryResult, FetchItemsForReview)
         }
+        //Query User Info
         if (selectionSet.includes("userInfo")) {
           await SequentialPromiseValue(queryResult, FetchUserForReview)
         }
+        //Query Images and set as a property
         if (selectionSet.includes("images")) {
           let imgResult = await GetSubField(
             queryResult,
@@ -76,6 +77,7 @@ module.exports = {
             })
           })
         }
+        //refine reviews to match graphQL schema
         queryResult.forEach(review => {
           ReviewMatchGraphQL(review)
         })
@@ -136,6 +138,7 @@ module.exports = {
   },
 
   Mutation: {
+    //takes care of increasing purchaseCount, detailPageClickCount etc (all counts related to review)
     increaseReviewCount: async (parent: void, args: QueryArgInfo): Promise<Boolean> => {
       try {
         let query = `UPDATE "ITEM_REVIEW" SET "${args.increaseOption.type}" = "${args.increaseOption.type}" + 1 WHERE id = ${args.increaseOption.id}`

@@ -9,18 +9,23 @@ var logger = require("../../tools/logger")
 
 export async function EditItem(item: ItemEditInfoInput): Promise<boolean> {
   try {
+    //edit item group info
     if (Object.prototype.hasOwnProperty.call(item, "groupInfo")) {
       let groupSql = GetItemGroupEditSql(item.groupInfo)
       await RunSingleSQL(`UPDATE "ITEM_GROUP" SET ${groupSql} WHERE id=${item.groupInfo.groupId}`)
 
+      //edit brand info
       if (Object.prototype.hasOwnProperty.call(item.groupInfo, "brandId")) {
         let brandSql = GetBrandEditSql(item.groupInfo)
         await RunSingleSQL(`UPDATE "BRAND" SET ${brandSql} WHERE id=${item.groupInfo.brandId}`)
       }
     }
 
+    //edit item variation info
     if (Object.prototype.hasOwnProperty.call(item, "variationInfo")) {
+      //change item image
       if (IsNewImage(item.variationInfo.imageUrl)) item.variationInfo.imageUrl = await DeployImageBy4Versions(item.variationInfo.imageUrl)
+      //update variation info
       let variationSql = await GetItemVariationEditSql(item.variationInfo)
       await RunSingleSQL(`UPDATE "ITEM_VARIATION" SET ${variationSql} WHERE id=${item.variationInfo.itemId}`)
     }
@@ -50,11 +55,13 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
       let groupId
       if (arg.createItemLevel == "GROUP") {
         let brandId
-        //Find Brand Id for the group
+        //insert new brand
         if (arg.groupInfo.isNewBrand == true) {
           queryResult = await RunSingleSQL(`INSERT INTO "BRAND"("nameKor") VALUES ('${arg.groupInfo.brand}') RETURNING id`)
           brandId = queryResult[0].id
-        } else {
+        } 
+        //fetch brand id
+        else {
           queryResult = await RunSingleSQL(`SELECT id FROM "BRAND" WHERE "nameEng"='${arg.groupInfo.brand}' OR "nameKor"='${arg.groupInfo.brand}'`)
           brandId = queryResult[0].id
         }
@@ -71,9 +78,9 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
         if (!Object.prototype.hasOwnProperty.call(arg.variationInfo, "groupId")) throw new Error("[Error] groupId not inserted!")
         groupId = arg.variationInfo.groupId
       }
-      //Insert Variation
-      if (arg.variationInfo.salePrice === undefined) arg.variationInfo.salePrice = null
 
+      if (!arg.variationInfo.salePrice) arg.variationInfo.salePrice = null
+      //deploy item image
       let deployImageUrl = ""
       try {
         deployImageUrl = await DeployImageBy4Versions(arg.variationInfo.imageUrl)
@@ -81,6 +88,7 @@ export function InsertItem(arg: ItemInfoInput | ItemEditInfoInput): Promise<numb
         logger.warn("Failed to deploy item image: " + arg.variationInfo.imageUrl)
       }
 
+      //create item variation
       queryResult = await RunSingleSQL(`INSERT INTO "ITEM_VARIATION"("name","imageUrl","purchaseUrl","salePrice","FK_itemGroupId")
         VALUES ('${arg.variationInfo.name}','${deployImageUrl}','${arg.variationInfo.purchaseUrl}',${arg.variationInfo.salePrice},${groupId}) RETURNING id`)
       resolve(queryResult[0].id)
@@ -119,6 +127,7 @@ export async function GetSimpleItemListByPostList(postResult: any, info: GraphQL
   }
 }
 
+//get item info for simpleItemInfo
 async function GetSimpleItemInfoByPostId(postList: any) {
   let postIdList = ExtractFieldFromList(postList, "id")
   let querySql = `
@@ -167,6 +176,7 @@ async function GetSimpleItemInfoByPostId(postList: any) {
   await GetSubField(postList, "", "postId", "simpleItemList", 1, querySql)
 }
 
+//fetch item info by id
 export async function GetItemsById(idList: number[], formatSql, customFilter?, customSelector = "") {
   let filterSql = ""
   if (customFilter != null && customFilter != "") filterSql = customFilter
@@ -216,6 +226,7 @@ export async function GetItemsById(idList: number[], formatSql, customFilter?, c
   return itemInfo
 }
 
+//find item ranking and return id
 export async function GetItemIdInRanking(
   formatSql: string,
   primaryFilterSql: string,
@@ -292,6 +303,7 @@ export async function CombineItem(updateId: number, deleteIds: number[]) {
   }
 }
 
+//find items with same name and combine them
 export async function FindAndCombineDuplicateItem() {
   try {
     let findSql = `

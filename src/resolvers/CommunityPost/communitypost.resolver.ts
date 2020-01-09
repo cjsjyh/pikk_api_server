@@ -1,20 +1,13 @@
-import * as ArgType from "./type/ArgType"
-import * as PostReturnType from "./type/ReturnType"
-import { QueryArgInfo } from "./type/ArgType"
-import { MutationArgInfo } from "./type/ArgType"
-import { GetPostFilterSql, InsertCommunityPostContent, UpdateCommunityPostContent, CreateEditCommunityPostContent } from "./util"
-import { RunSingleSQL, ExtractSelectionSet, DeployImageBy4Versions, ExtractFieldFromList, GetSubField } from "../Utils/promiseUtil"
-import {
-  GetFormatSql,
-  ConvertListToOrderedPair,
-  ConvertListToString,
-  InsertImageIntoDeleteQueue,
-  formatSingleQuoteForString
-} from "../Utils/stringUtil"
-
 import { GraphQLResolveInfo } from "graphql"
 import { IncreaseViewCountFunc } from "../Common/util"
-import { ValidateUser, CheckWriter } from "../Utils/securityUtil"
+import { ExtractFieldFromList, ExtractSelectionSet, GetSubField, RunSingleSQL } from "../Utils/promiseUtil"
+import { CheckWriter, ValidateUser } from "../Utils/securityUtil"
+import { ConvertListToOrderedPair, ConvertListToString, formatSingleQuoteForString, GetFormatSql, InsertImageIntoDeleteQueue } from "../Utils/stringUtil"
+import * as ArgType from "./type/ArgType"
+import { MutationArgInfo, QueryArgInfo } from "./type/ArgType"
+import * as PostReturnType from "./type/ReturnType"
+import { CreateEditCommunityPostContent, GetPostFilterSql, InsertCommunityPostContent } from "./util"
+
 var logger = require("../../tools/logger")
 var elastic = require("../../database/elasticConnect")
 
@@ -35,9 +28,12 @@ module.exports = {
             filterSql = sqlResult.filterSql
             selectionSql = sqlResult.selectionSql
             formatSql = sqlResult.formatSql
-          } else {
+          } 
+          //find communitypost from db
+          else {
             formatSql = GetFormatSql(arg)
           }
+          //filter result
           filterSql += await GetPostFilterSql(arg.postFilter)
         }
 
@@ -67,6 +63,7 @@ module.exports = {
 
         let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
         if (selectionSet.includes("contents")) {
+          //find content for each post body and set as a property
           let contentResult = await GetSubField(postResult, "COMMUNITY_POST_CONTENT", "FK_postId", "contents", 1, "", `ORDER BY "order" ASC`)
           //Increase View Count
           postResult.map(async post => IncreaseViewCountFunc("COMMUNITY", post.id))
@@ -81,6 +78,7 @@ module.exports = {
       }
     },
 
+    //Find count of community post with same option
     _allCommunityPostsMetadata: async (parent: void, args: QueryArgInfo): Promise<number> => {
       let arg: ArgType.CommunityPostQuery = args.communityPostOption
       try {
@@ -123,6 +121,7 @@ module.exports = {
       try {
         let formatSql = GetFormatSql(arg)
 
+        //find list of community post that user picked
         let querySql = `
         WITH post as (
           SELECT post.* FROM "COMMUNITY_POST" post
@@ -145,6 +144,7 @@ module.exports = {
 
         let selectionSet: string[] = ExtractSelectionSet(info.fieldNodes[0])
         if (selectionSet.includes("contents")) {
+          //find content for each post body and set as a property
           let contentResult = await GetSubField(postResult, "COMMUNITY_POST_CONTENT", "FK_postId", "contents", 1, "", `ORDER BY "order" ASC`)
         }
         logger.info(`userPickkCommunityPosts ${arg.userId} Called!`)
@@ -186,6 +186,7 @@ module.exports = {
         )
         let postId = postIdResult[0].id
 
+        //Insert community post content
         await Promise.all(arg.contents.map(async (content, index) => InsertCommunityPostContent(postId, content, index)))
 
         logger.info(`Community Post has been created by User ${arg.accountId}`)
@@ -200,6 +201,7 @@ module.exports = {
     editCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommunityPostEditInfoInput = args.communityPostEditInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+      //Check if requested user is the writer
       if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))) {
         logger.warn(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
         throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
@@ -242,6 +244,7 @@ module.exports = {
     deleteCommunityPost: async (parent: void, args: MutationArgInfo, ctx: any): Promise<Boolean> => {
       let arg: ArgType.CommunityPostDeleteInfoInput = args.communityPostDeleteInfo
       if (!ValidateUser(ctx, arg.accountId)) throw new Error(`[Error] Unauthorized User`)
+      //Check if requested user is the writer
       if (!(await CheckWriter("COMMUNITY_POST", arg.postId, arg.accountId))) {
         logger.warn(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
         throw new Error(`[Error] User ${arg.accountId} is not the writer of CommunityPost ${arg.postId}`)
@@ -251,6 +254,7 @@ module.exports = {
         let deleteSql = ""
         deleteSql = InsertImageIntoDeleteQueue("COMMUNITY_POST_CONTENT", "imageUrl", "FK_postId", [arg.postId])
 
+        //change post status
         let querySql = `${deleteSql} UPDATE "COMMUNITY_POST" SET "postStatus"='DELETED' WHERE id=${arg.postId}`
         let result = await RunSingleSQL(querySql)
         logger.info(`Deleted CommunityPost id ${arg.accountId}`)
@@ -279,13 +283,16 @@ async function GetSearchSql(arg: ArgType.CommunityPostQuery): Promise<any> {
     first = arg.filterGeneral.first
   }
 
+  //Search on elastic search
   let result = await elastic.SearchElasticSearch(elastic.elasticClient, indexName, arg.postFilter.searchText, start, first, "best_fields", [
     "title^2",
     "content^2",
     "name"
   ])
+  //extract post id from result
   let extractedPostIds = ExtractFieldFromList(result.hits, "_id")
   if (extractedPostIds.length == 0) return null
+  //make sql to query posts from result
   filterSql = `
     JOIN (
       VALUES

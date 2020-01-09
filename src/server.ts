@@ -1,3 +1,5 @@
+require("dotenv").config()
+
 //IMPORT CORE PACKAGES
 import express from "express"
 import { ApolloServer } from "apollo-server-express"
@@ -7,7 +9,6 @@ import compression from "compression"
 //Security
 import cors from "cors"
 import { VerifyJWT } from "./resolvers/Utils/securityUtil"
-require("dotenv").config()
 
 //Utility
 import { ProcessNotificationQueue } from "./resolvers/Notification/util"

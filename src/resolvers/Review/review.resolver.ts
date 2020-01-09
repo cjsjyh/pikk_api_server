@@ -37,6 +37,7 @@ module.exports = {
           //Filter from DB
           else {
             filterSql = GetReviewFilterSql(arg)
+            if (arg.filterGeneral.sortBy == "userId") arg.filterGeneral.sortBy = "FK_accountId"
             formatSql = GetFormatSql(arg, "", "review")
             overrideSql = OverrideReviewSql(arg)
           }
@@ -49,7 +50,6 @@ module.exports = {
         `
 
         if (overrideSql != "") reviewSql = overrideSql + filterSql + formatSql
-        console.log(reviewSql)
         let queryResult = await RunSingleSQL(reviewSql)
         //Query Item Info
         let selectionSet = ExtractSelectionSet(info.fieldNodes[0])

@@ -96,7 +96,6 @@ input IncreaseReviewCount {
 #---------------
 type ItemReviewInfo {
   id: Int!
-  itemId: Int!
   postId: Int!
   recommendReason: RecommendReason!
   shortReview: String!

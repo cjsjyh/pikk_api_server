@@ -7,7 +7,6 @@ export type ItemReviewInfo = {
   FK_postId: number
   //Review
   id: number
-  itemId: number
   postId: number
   recommendReason: string
   shortReview: string

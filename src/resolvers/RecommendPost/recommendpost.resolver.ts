@@ -5,7 +5,7 @@ import { InsertItemForRecommendPost } from "../Item/util"
 import { InsertIntoNotificationQueue } from "../Notification/util"
 import { EditReview, InsertItemReview } from "../Review/util"
 import { DoPropertiesExist } from "../Utils/arrayUtil"
-import { DeployImageBy4Versions, ExtractFieldFromList, RunSingleSQL, SequentialPromiseValue } from "../Utils/promiseUtil"
+import { DeployImageBy4Versions, ExtractFieldFromList, RunSingleSQL, SequentialPromiseValue, ExtractSelectionSet } from "../Utils/promiseUtil"
 import { CheckWriter, ValidateUser } from "../Utils/securityUtil"
 import { ConvertListToOrderedPair, ConvertListToString, formatSingleQuoteForString, getFormatDate, getFormatHour, GetFormatSql, InsertImageIntoDeleteQueue, IsNewImage, MakeCacheNameByObject, MakeMultipleQuery } from "../Utils/stringUtil"
 import * as ArgType from "./type/ArgType"
@@ -31,6 +31,7 @@ module.exports = {
       //Get Cached Content
       try {
         cacheName += MakeCacheNameByObject(arg)
+        cacheName += MakeCacheNameByObject(ExtractSelectionSet(info.fieldNodes[0]))
         let recomPostCache: any = await GetRedis(cacheName)
         if (recomPostCache != null) {
           //Increae View if this cache has complete recommend post

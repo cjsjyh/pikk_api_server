@@ -43,6 +43,7 @@ enum ItemMinorType {
   MUFFLER
   ETC_ACCESSORY
   ALL
+  SLEEVELESS
   JACKET
   JUMPER
   VEST

@@ -39,7 +39,15 @@ export async function FetchUserForReview(reviewInfo: any): Promise<{}> {
       let queryResult = await RunSingleSQL(
         `SELECT "FK_accountId" FROM "RECOMMEND_POST" WHERE id = ${reviewInfo.FK_postId}`
       )
-      queryResult = await GetUserInfoByIdList(ExtractFieldFromList(queryResult, "FK_accountId"))
+      queryResult = await GetUserInfoByIdList(
+        ExtractFieldFromList(queryResult, "FK_accountId"),
+        `,
+        COALESCE((
+          SELECT COUNT(*)
+          FROM "CHANNEL_FOLLOWER" follower WHERE follower."FK_channelId"=user_info."FK_accountId"
+        ),0) as "channel_pickCount"
+        `
+      )
       UserMatchGraphQL(queryResult[0])
       reviewInfo.userInfo = queryResult[0]
       resolve()
